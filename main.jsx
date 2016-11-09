@@ -1,0 +1,100 @@
+// Each entry has a 'title', 'stat', 'org', and 'pub_date'
+var test_data = [
+  {'title': 'Cost of Cyber Crime 2014', 'stat': 'Average annual losses to companies worldwide now exceed $7.7 million, with studied companies losing up to $65 million.', 'org':'Ponemon Institute', 'pub_date': '10/09/2016'},
+  {'title': 'Verizon Report 2014', 'stat': 'Two-thirds of respondents identified cyber risk as one of their top five concerns - an increase of 25 points since March 2014', 'org': 'Verizon', 'pub_date': '10/20/2016'},
+  {'title': 'Cost of Cyber Crime 2015', 'stat': 'Average annual losses to companies worldwide now exceed $7.7 million, with studied companies losing up to $65 million.', 'org':'Ponemon Institute', 'pub_date': '10/09/2016'},
+  {'title': 'Best way to break a firewall', 'stat': 'Average annual losses to companies worldwide now exceed $7.7 million, with studied companies losing up to $65 million.', 'org':'Ponemon Institute', 'pub_date': '10/09/2016'},
+  {'title': 'Cost of Breaches again!', 'stat': 'Two-thirds of respondents identified cyber risk as one of their top five concerns - an increase of 25 points since March 2014', 'org': 'Verizon', 'pub_date': '10/20/2016'},
+
+]
+
+/* This is a React component for an individual Stat, which is a row in the "StatTable" component.
+   The properties that it gets is "data", which is an individual JS object that has properties
+  'title', 'stat', 'org', and 'pub_date', all of which get rendered in with <td> tags. */
+var Stat = React.createClass({
+  render:function(){
+    return(
+      <tr>
+        <td>{this.props.data.title}</td>
+        <td>{this.props.data.stat}</td>
+        <td>{this.props.data.org}</td>
+        <td>{this.props.data.pub_date}</td>
+      </tr>
+    )
+  }
+});
+
+/*This is a React component for the StatTable, which holds the headings
+As well as the rest of the individual "Stat" entries.
+Within the <tbody>, each entry in the'data' property that is passed to this component
+(an array of objects), gets mapped to a "Stat" entry, adding a new row to the table
+for each element in the "data" property.
+
+Note: (d,i) => is equivalent to .map(function(d,i){}). [In case you haven't gotten around to using ES6]
+
+Styling courtesy of materialize.css*/
+var StatTable = React.createClass({
+  render:function(){
+    return(
+      <div>
+        <table className='striped'>
+          <thead>
+            <tr>
+                <th className='center-align' data-field="title">Title</th>
+                <th className='center-align' data-field="stat">Stat</th>
+                <th data-field="org">Organization</th>
+                <th data-field="pub_date">Date Published</th>
+            </tr>
+          </thead>
+          <tbody>
+            {this.props.data.map((d,i) => <Stat key={'stat-' + i} data={d}/>)}
+          </tbody>
+        </table>
+      </div>
+    )
+  }
+});
+
+var StatSearch = React.createClass({
+  getInitialState:function(){
+    return ({searchTerm:'', searchCriteria:'title'});
+  },
+  filter:function(event){
+    this.setState({searchTerm:event.target.value, searchCriteria:event.target.id});
+  },
+  render:function() {
+      var stats = this.props.data;
+      var searchTerm = this.state.searchTerm.trim();
+      var searchCriteria = this.state.searchCriteria.trim();
+
+      if(searchTerm.length > 0){
+         // We are searching. Filter the results.
+         stats = stats.filter(function(stat){
+             return stat[searchCriteria].match( searchTerm );
+         });
+      }
+      return(
+          <div className='row'>
+            <div className="input-field col s6">
+              <input placeholder="Enter a Title" id="title" type="text" className="validate" onChange={this.filter}></input>
+              <label>Title Search</label>
+            </div>
+            <div className="input-field col s6">
+              <input placeholder="Enter an Organization" id="org" type="text" className="validate" onChange={this.filter}></input>
+              <label>Org Search</label>
+            </div>
+            <div className="input-field col s12">
+              <input placeholder="Enter a Stat" id="stat" type="text" className="validate" onChange={this.filter}></input>
+              <label>Stat Search</label>
+            </div>
+            <div className='col s12'>
+              <StatTable data={stats}/>
+            </div>
+          </div>
+      )
+  }
+
+});
+
+
+ReactDOM.render(<StatSearch data={test_data} />, document.querySelector('div'));
