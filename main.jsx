@@ -55,20 +55,26 @@ var StatTable = React.createClass({
   }
 });
 
+//Contains the search functionality. and rendering of the StatTable.
 var StatSearch = React.createClass({
+  //Sets the initial searchTerm and searchCriteria
   getInitialState:function(){
     return ({searchTerm:'', searchCriteria:'title'});
   },
+  // Sets the searchTerm and searchCriteria to the event's value and id, respectively.
+  // This determines what will be searched and what that search will be on.
   filter:function(event){
     this.setState({searchTerm:event.target.value, searchCriteria:event.target.id});
   },
+  // renders the StatSearch component.
   render:function() {
-      var stats = this.props.data;
-      var searchTerm = this.state.searchTerm.trim();
-      var searchCriteria = this.state.searchCriteria.trim();
+      var stats = this.props.data; //passed in value
+      var searchTerm = this.state.searchTerm.trim(); //set by either getInitialState or filter
+      var searchCriteria = this.state.searchCriteria.trim(); //set by either getInitialState or filter
 
       if(searchTerm.length > 0){
-         // We are searching. Filter the results.
+         // set the Stat entries to be displayed as those that match the 'searchTerm'(i.e. 'Verizon Report')
+         // for the specified 'searchCriteria'(i.e. "title").
          stats = stats.filter(function(stat){
              return stat[searchCriteria].match( searchTerm );
          });
@@ -93,8 +99,8 @@ var StatSearch = React.createClass({
           </div>
       )
   }
-
 });
 
-
+// The ReactDOM.render renders components to the dom. It takes 2 args:
+// 1. Component(s) to be rendered and 2. Location to render specified component(s)
 ReactDOM.render(<StatSearch data={test_data} />, document.querySelector('div'));
