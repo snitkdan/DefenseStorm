@@ -62,26 +62,34 @@ var StatTable = React.createClass({
 var StatSearch = React.createClass({
   //Sets the initial searchTerm and searchCriteria
   getInitialState:function(){
-    return ({searchTerm:'', searchCriteria:'title'});
+    return ({title:'', org:'', stat:''});
   },
   // Sets the searchTerm and searchCriteria to the event's value and id, respectively.
   // This determines what will be searched and what that search will be on.
   filter:function(event){
-    this.setState({searchTerm:event.target.value, searchCriteria:event.target.id});
+    var obj = {};
+    obj[event.target.id] = event.target.value;
+    this.setState(obj);
   },
   // renders the StatSearch component.
   render:function() {
       var stats = this.props.data; //passed in value
-      var searchTerm = this.state.searchTerm.trim(); //set by either getInitialState or filter
-      var searchCriteria = this.state.searchCriteria.trim(); //set by either getInitialState or filter
 
-      if(searchTerm.length > 0){
-         // set the Stat entries to be displayed as those that match the 'searchTerm'(i.e. 'Verizon Report')
-         // for the specified 'searchCriteria'(i.e. "title").
-         stats = stats.filter(function(stat){
-             return stat[searchCriteria].match( searchTerm );
-         });
+      for (var searchCriteria in this.state)
+      {
+        console.log(searchCriteria);
+        var searchTerm = this.state[searchCriteria];
+        console.log(searchTerm);
+        if (searchTerm.length > 0)
+        {
+          searchTerm = searchTerm.trim();
+          stats = stats.filter(function(stat){
+            console.log(stat)
+            return stat[searchCriteria].match(searchTerm);
+          });
+        }
       }
+
       return(
           <div className='row'>
             <div className="input-field col s6">
