@@ -62,7 +62,7 @@ var StatTable = React.createClass({
 var StatSearch = React.createClass({
   //Sets the initial searchTerm and searchCriteria
   getInitialState:function(){
-    return ({title:'', org:'', stat:''});
+    return ({title:'', org:'', stat:'', beginDate:'', endDate:''});
   },
   // Sets the searchTerm and searchCriteria to the event's value and id, respectively.
   // This determines what will be searched and what that search will be on.
@@ -82,11 +82,47 @@ var StatSearch = React.createClass({
         console.log(searchTerm);
         if (searchTerm.length > 0)
         {
-          searchTerm = searchTerm.trim();
-          stats = stats.filter(function(stat){
-            console.log(stat)
-            return stat[searchCriteria].match(searchTerm);
-          });
+          if (searchCriteria == 'beginDate')
+          {
+            var beginElements = searchTerm.split("-");
+            var beginDate = new Date(beginElements[0], beginElements[1], beginElements[2]);
+            console.log("begin Date:");
+            console.log(beginDate);
+            stats = stats.filter(function(stat) {
+              var statElements = stat['pub_date'].split("/");
+              var date = new Date(statElements[2], statElements[0], statElements[1]);
+              console.log("Date:");
+              console.log(date);
+              if (date > beginDate)
+                return stat;
+              else
+                return null;
+            });
+          }
+          else if (searchCriteria == 'endDate')
+          {
+            var endElements = searchTerm.split("-");
+            var endDate = new Date(endElements[0], endElements[1], endElements[2]);
+            console.log("End Date:");
+            console.log(endDate);
+            stats = stats.filter(function(stat) {
+              var statElements = stat['pub_date'].split("/");
+              var date = new Date(statElements[2], statElements[0], statElements[1]);
+              console.log("Date:");
+              console.log(date);
+              if (date < endDate)
+                return stat;
+              else
+                return null;
+            });
+          }
+          else
+          {
+            searchTerm = searchTerm.trim();
+            stats = stats.filter(function(stat){
+              return stat[searchCriteria].match(searchTerm);
+            });
+          }
         }
       }
 
@@ -100,9 +136,15 @@ var StatSearch = React.createClass({
               <input placeholder="Enter an Organization" id="org" type="text" className="validate" onChange={this.filter}></input>
               <label>Org Search</label>
             </div>
-            <div className="input-field col s12">
+            <div className="input-field col s6">
               <input placeholder="Enter a Stat" id="stat" type="text" className="validate" onChange={this.filter}></input>
               <label>Stat Search</label>
+            </div>
+            <div className="input-field col s3">
+              <input id="beginDate" type="date" onChange={this.filter}></input>
+            </div>
+            <div className="input-field col s3">
+              <input id="endDate" type="date" onChange={this.filter}></input>
             </div>
             <div className='col s12'>
               <StatTable data={stats}/>
