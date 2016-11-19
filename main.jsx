@@ -121,7 +121,7 @@ var StatSearch = React.createClass({
             searchTerm = searchTerm.trim();
             stats = stats.filter(function(stat){
               var result = stat[searchCriteria].match("/" + searchTerm + "/i");
-              if (var)
+              if (result)
                 return stat;
               else
                 return null;
@@ -158,6 +158,89 @@ var StatSearch = React.createClass({
   }
 });
 
+//Contains the Stat-adding feature
+var AddStat = React.createClass({
+  // An array storing the submission in the following order:
+  // source,org, published, entryType, stat, topicTags[]
+  submission: {
+    source: '',
+    org: '',
+    published: '',
+    entryType: '',
+    stat: '',
+    topicTags: []
+  },
+
+  saveInput: function(event){
+    var inputId = event.target.id;
+    this.submission[inputId] = event.target.value;
+    console.log(this.submission[inputId]);
+  },
+
+  saveTags: function(event) {
+    this.submission[event.target.id] = event.target.value.split(', ');
+  },
+
+  submit: function(event) {
+    gapi.client.sheets.spreadsheets.values.append({
+      spreadsheetId: SPREADSHEET_ID,
+      range: RANGE,
+      insertDataOption: 'INSERT_ROWS',
+      valueInputOption: 'USER_ENTERED',
+      values: [
+        ['blah1', 'blah2', 'blah3', 'blah4']
+      ]
+    // Success callback
+    }).then(function(response) {
+      alert(response.updates.updatedCells);
+    // Error callback
+    }, function(response) {
+      console.log('Error. Sheets API response: ' + response.result.error.message);
+    });
+  },
+
+  // renders the adding Stat form
+  render:function() {
+      return(
+          <div className='row'>
+            <form>
+              <div className="input-field col s6">
+                <input placeholder="Add Source URL..." id="source" type="text" className="validate" onBlur={this.saveInput}></input>
+                <label>Source</label>
+              </div>
+              <div className="input-field col s6">
+                <input placeholder="Add Organization..." id="org" type="text" className="validate" onBlur={this.saveInput}></input>
+                <label>Organization</label>
+              </div>
+              <div className="input-field col s6">
+                <input placeholder="Add Publish Date..." id="published" type="text" className="validate" onBlur={this.saveInput}></input>
+                <label>Publish Date</label>
+              </div>
+              <div className="input-field col s6">
+                <input placeholder="Study or Article?" id="entryType" type="text" className="validate" onBlur={this.saveInput}></input>
+                <label>Entry Type</label>
+              </div>
+              <div className="input-field col s6">
+                <input placeholder="Stat" id="stat" type="text" className="validate" onBlur={this.saveInput}></input>
+                <label>Stat</label>
+              </div>
+              <div className="input-field col s6">
+                <input placeholder="Tags" id="topicTags" type="text" className="validate" onBlur={this.saveInput}></input>
+                <label>Tags</label>
+              </div>
+              <button onClick={this.submit}>Submit</button>
+            </form>
+          </div>
+      )
+  }
+});
+
 // The ReactDOM.render renders components to the dom. It takes 2 args:
 // 1. Component(s) to be rendered and 2. Location to render specified component(s)
-ReactDOM.render(<StatSearch data={test_data} />, document.querySelector('#root'));
+ReactDOM.render(
+  <div>
+    <StatSearch data={test_data} />
+    <AddStat />
+  </div>,
+    document.querySelector('#root')
+);
