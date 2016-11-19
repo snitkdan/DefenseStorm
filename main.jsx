@@ -88,16 +88,19 @@ var StatSearch = React.createClass({
             var beginDate = new Date(beginElements[0], beginElements[1], beginElements[2]);
             console.log("begin Date:");
             console.log(beginDate);
-            stats = stats.filter(function(stat) {
-              var statElements = stat['pub_date'].split("/");
-              var date = new Date(statElements[2], statElements[0], statElements[1]);
-              console.log("Date:");
-              console.log(date);
-              if (date > beginDate)
-                return stat;
-              else
-                return null;
-            });
+            if (beginDate > new Date(2000))
+            {
+              stats = stats.filter(function(stat) {
+                var statElements = stat['pub_date'].split("/");
+                var date = new Date(statElements[2], statElements[0], statElements[1]);
+                console.log("Date:");
+                console.log(date);
+                if (date > beginDate)
+                  return stat;
+                else
+                  return null;
+              });
+            }
           }
           else if (searchCriteria == 'endDate')
           {
