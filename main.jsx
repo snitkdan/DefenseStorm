@@ -1,3 +1,5 @@
+/* sheets.js gets this data from a live sheet, now.
+
 // Each entry has a 'title', 'stat', 'org', and 'pub_date'
 var test_data = [
   {'title': 'Cost of Cyber Crime 2014', 'stat': 'Average annual losses to companies worldwide now exceed $7.7 million, with studied companies losing up to $65 million.', 'org':'Ponemon Institute', 'pub_date': '10/09/2016'},
@@ -7,6 +9,7 @@ var test_data = [
   {'title': 'Cost of Breaches again!', 'stat': 'Two-thirds of respondents identified cyber risk as one of their top five concerns - an increase of 25 points since March 2014', 'org': 'Verizon', 'pub_date': '10/20/2016'},
 
 ]
+*/
 
 /* This is a React component for an individual Stat, which is a row in the "StatTable" component.
    The properties that it gets is "data", which is an individual JS object that has properties
@@ -103,4 +106,4 @@ var StatSearch = React.createClass({
 
 // The ReactDOM.render renders components to the dom. It takes 2 args:
 // 1. Component(s) to be rendered and 2. Location to render specified component(s)
-ReactDOM.render(<StatSearch data={test_data} />, document.querySelector('div'));
+ReactDOM.render(<StatSearch data={test_data} />, document.querySelector('#root'));

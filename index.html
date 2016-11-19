@@ -16,22 +16,30 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.8/css/materialize.css" />
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
-
     <!-- Read in React scripts -->
     <script src="https://unpkg.com/react@15/dist/react.js"></script>
     <script src="https://unpkg.com/react-dom@15/dist/react-dom.js"></script>
 
+    <!-- Our script for interacting with the Google authorization and Sheets APIs -->
+    <script type="text/javascript" src="sheets.js"></script>
+
     <!-- Read in our main.jsx file -->
     <script type="text/jsx" src="main.jsx"></script>
+
+    <!-- Read in Google JavaScript Client library -->
+    <script src="https://apis.google.com/js/client.js?onload=checkAuth"></script>
 
     <!-- Read in Babel Script -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/6.14.0/babel.min.js"></script>
 
   </head>
-
   <body>
+    <div id="authorize-div">
+      <a class="waves-effect waves-light btn-large" style="" id="authorize-button" onclick="handleAuthClick(event)">
+        Sign in to Sheets
+      </a>
+    </div>
     <div id='root'>
-
     </div>
   </body>
 </html>
