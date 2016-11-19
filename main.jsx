@@ -120,7 +120,11 @@ var StatSearch = React.createClass({
           {
             searchTerm = searchTerm.trim();
             stats = stats.filter(function(stat){
-              return stat[searchCriteria].match(searchTerm);
+              var result = stat[searchCriteria].match("/" + searchTerm + "/i");
+              if (var)
+                return stat;
+              else
+                return null;
             });
           }
         }
