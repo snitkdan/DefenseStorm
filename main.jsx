@@ -223,7 +223,7 @@ var AddStat = React.createClass({
       ]
     // Success callback
     }).then(function(response) {
-      alert(response.updates.updatedCells);
+      alert("Updated cell count" : response.result.updates.updatedCells);
     // Error callback
     }, function(response) {
       console.log('Error. Sheets API response: ' + response.result.error.message);
