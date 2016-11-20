@@ -116,9 +116,12 @@ function processSheetsData() {
         var row = range.values[i];
         test_data[i] = {
           'title'     : row[0],
-          'stat'      : row[1],
+          'source'    : row[1],
           'org'       : row[2],
-          'pub_date'  : row[3]
+          'published' : row[3],
+          'entryType' : row[4],
+          'stat'      : row[5],
+          'topicTags' : row[6]
         }
       }
     } else {
