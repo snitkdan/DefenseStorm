@@ -331,7 +331,7 @@ var StatSearch = React.createClass({
           {
             searchTerm = searchTerm.trim();
             stats = stats.filter(function(stat){
-              if (stat[searchCriteria].toLowerCase().includes(searchTerm.toLowerCase()))
+              if (stat[searchCriteria].toLowerCase().includes(searchTerm.toLowerCase())){
                 return stat;
               }
               else{
@@ -520,7 +520,7 @@ var test_data1 = [
 // 1. Component(s) to be rendered and 2. Location to render specified component(s)
 ReactDOM.render(
   <div>
-    <StatSearch data={test_data1} />
+    <StatSearch data={test_data} />
     <AddStat />
   </div>,
     document.querySelector('#root')
