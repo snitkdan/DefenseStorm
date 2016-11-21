@@ -139,8 +139,7 @@ var StatSearch = React.createClass({
           {
             searchTerm = searchTerm.trim();
             stats = stats.filter(function(stat){
-              var result = stat[searchCriteria].match("/" + searchTerm + "/i");
-              if (result)
+              if (stat[searchCriteria].toLowerCase().includes(searchTerm.toLowerCase()))
                 return stat;
               else
                 return null;
@@ -223,7 +222,7 @@ var AddStat = React.createClass({
       ]
     // Success callback
     }).then(function(response) {
-      alert(response.updates.updatedCells);
+      alert("Updated cell count" : response.result.updates.updatedCells);
     // Error callback
     }, function(response) {
       console.log('Error. Sheets API response: ' + response.result.error.message);
