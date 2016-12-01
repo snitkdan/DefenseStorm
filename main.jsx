@@ -151,7 +151,7 @@ var StatTable = React.createClass({
 var StatSearch = React.createClass({
   //Sets the initial searchTerm and searchCriteria
   getInitialState:function(){
-    return ({title:'', org:'', stat:'', beginDate:'', endDate:''});
+    return ({title:'', org:'', stat:'', beginDate:'', endDate:'', topicTags:''});
   },
   componentDidMount:function(){
     /**
@@ -327,6 +327,18 @@ var StatSearch = React.createClass({
                 return null;
             });
           }
+          else if (searchCriteria == 'topicTags') 
+          {
+            searchTerm = searchTerm.trim();
+            stats = stats.filter(function(stat){
+              if (stat[searchCriteria].toLowerCase().includes(searchTerm.toLowerCase())){
+                return stat;
+              }
+              else{
+                return null;
+              }
+            });
+          }
           else
           {
             searchTerm = searchTerm.trim();
@@ -343,6 +355,7 @@ var StatSearch = React.createClass({
       }
 
       return(
+        <div>
           <div className='row'>
             <div className="input-field col s6">
               <input placeholder="Enter a Title" id="title" type="text" className="validate" onChange={this.filter}></input>
@@ -352,20 +365,35 @@ var StatSearch = React.createClass({
               <input placeholder="Enter an Organization" id="org" type="text" className="validate" onChange={this.filter}></input>
               <label>Org Search</label>
             </div>
+          </div>
+          <div className='row'>
             <div className="input-field col s12">
               <input placeholder="Enter a Stat" id="stat" type="text" className="validate" onChange={this.filter}></input>
               <label>Stat Search</label>
             </div>
+          </div>
+          <div className='row'>
             <div className="input-field col s6">
               <input placeholder='begin date' id="beginDate" type="date" onChange={this.filter}></input>
+              <label>Published On or After</label>
             </div>
             <div className="input-field col s6">
               <input placeholder='endDate' id="endDate" type="date" onChange={this.filter}></input>
+              <label>Published On or Before</label>
             </div>
+          </div>
+          <div className='row'>
+            <div className="input-field col s12">
+              <input placeholder='Tags' id="topicTags" type="text" onChange={this.filter}></input>
+              <label>Comma,separated,tags</label>
+            </div>
+          </div>
+          <div className='row'>
             <div className='col s12'>
               <StatTable data={stats}/>
             </div>
           </div>
+        </div>
       )
   }
 });
