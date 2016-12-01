@@ -308,7 +308,7 @@ var StatSearch = React.createClass({
             stats = stats.filter(function(stat) {
               var statElements = stat['published'].split("/");
               var date = new Date(statElements[2], statElements[0], statElements[1]);
-              if (date > beginDate)
+              if (date >= beginDate)
                 return stat;
               else
                 return null;
@@ -321,7 +321,7 @@ var StatSearch = React.createClass({
             stats = stats.filter(function(stat) {
               var statElements = stat['published'].split("/");
               var date = new Date(statElements[2], statElements[0], statElements[1]);
-              if (date < endDate)
+              if (date <= endDate)
                 return stat;
               else
                 return null;
@@ -466,49 +466,49 @@ var AddStat = React.createClass({
 
 var test_data1 = [
   {
-  'title':'Cost of Cyber Crime',
+  'title':'a',
   'org':'Ponemon Institute',
   'published': '10/09/2016',
   'stat': 'Average annual losses to companies worldwide now exceed $7.7 million, with studied companies losing up to $65 million.',
   },
   {
-  'title':'Cost of Cyber Crime',
+  'title':'b',
   'org':'Ponemon Institute',
   'published': '11/09/2016',
   'stat': 'Average annual losses to companies worldwide now exceed $7.7 million, with studied companies losing up to $65 million.',
   },
   {
-  'title':'How Much for this Breach?',
+  'title':'c',
   'org':'Ponemon Institute',
   'published': '10/09/2016',
   'stat': '$7.7 million, with studied companies losing up to $65 million.',
   },
   {
-  'title':'Can you believe it\'s not butter?',
+  'title':'d',
   'org':'Ponemon Institute',
   'published': '10/09/2016',
   'stat': 'Studied companies losing up to $65 million.',
   },
   {
-  'title':'Can you believe it\'s not butter?',
+  'title':'e',
   'org':'Ponemon Institute',
   'published': '9/09/2016',
   'stat': 'Studied companies losing up to $65 million.',
   },
   {
-  'title':'Can you believe it\'s not butter?',
+  'title':'f',
   'org':'Ponemon Institute',
   'published': '10/09/2015',
   'stat': 'Studied companies losing up to $65 million.',
   },
   {
-  'title':'Can you believe it\'s not butter?',
+  'title':'g',
   'org':'Institute',
   'published': '10/09/2015',
   'stat': 'Studied companies losing up to $65 million.',
   },
   {
-  'title':'Can you believe it\'s not butter?',
+  'title':'h',
   'org':'Verizon',
   'published': '10/09/2015',
   'stat': 'Studied companies losing up to $65 million.',
