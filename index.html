@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
-  <head>
+
+<head>
     <meta charset="utf-8">
 
     <title>DefenseStorm</title>
@@ -26,20 +27,24 @@
     <!-- Read in our main.jsx file -->
     <script type="text/jsx" src="main.jsx"></script>
 
+    <!-- Read in our main.css file -->
+    <link rel="stylesheet" href="main.css">
+
     <!-- Read in Google JavaScript Client library -->
     <script src="https://apis.google.com/js/client.js?onload=checkAuth"></script>
 
     <!-- Read in Babel Script -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/6.14.0/babel.min.js"></script>
 
-  </head>
-  <body>
+</head>
+
+<body>
     <div class='container' id="authorize-div">
-      <a class="waves-effect waves-light btn-large" style="" id="authorize-button" onclick="handleAuthClick(event)">
-        Sign in to Sheets
-      </a>
+        <a class="waves-effect waves-light btn-large" id="authorize-button" onclick="handleAuthClick(event)">
+        Authorize
+        </a>
     </div>
-    <div class='container' id='root'>
-    </div>
-  </body>
+    <div class='container' id='root'></div>
+</body>
+
 </html>

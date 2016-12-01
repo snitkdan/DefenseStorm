@@ -23,7 +23,7 @@ var SCOPES = ["https://www.googleapis.com/auth/spreadsheets"];
 var RANGE = 'A2:G1000';
 
 /**
- * For reading a JSON configuration file 
+ * For reading a JSON configuration file
  */
 function readConfig(file, callback) {
     var rawFile = new XMLHttpRequest();
@@ -96,13 +96,12 @@ var test_data = [];
  * Load Sheets API client library
  */
 function loadSheetsApi() {
-  var discoveryUrl =
-      'https://sheets.googleapis.com/$discovery/rest?version=v4';
+  var discoveryUrl ='https://sheets.googleapis.com/$discovery/rest?version=v4';
   gapi.client.load(discoveryUrl).then(processSheetsData);
 }
 
 /**
- * Stuff rows of stats from the spreadsheet into a JSON object
+ * Put rows of stats from the spreadsheet into a JSON object
  */
 function processSheetsData() {
   gapi.client.sheets.spreadsheets.values.get({
