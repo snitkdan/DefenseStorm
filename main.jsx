@@ -129,7 +129,7 @@ var StatTable = React.createClass({
     }
     return(
       <div>
-        <table className='striped'>
+        <table className='pure-table pure-table-bordered pure-table-striped'>
           <thead>
             <tr>
                 <th className='center-align' data-field="title">Title<SortButtons id='title' clickEvent={this.setSort}/></th>
@@ -346,15 +346,15 @@ var StatSearch = React.createClass({
           <div className='row'>
             <div className="input-field col s6">
               <input placeholder="Enter a Title" id="title" type="text" className="validate" onChange={this.filter}></input>
-              <label>Title Search</label>
+              <label id="title_lable">Title Search</label>
             </div>
             <div className="input-field col s6">
               <input placeholder="Enter an Organization" id="org" type="text" className="validate" onChange={this.filter}></input>
-              <label>Org Search</label>
+              <label id="title_lable">Org Search</label>
             </div>
             <div className="input-field col s12">
               <input placeholder="Enter a Stat" id="stat" type="text" className="validate" onChange={this.filter}></input>
-              <label>Stat Search</label>
+              <label id="title_lable">Stat Search</label>
             </div>
             <div className="input-field col s6">
               <input placeholder='begin date' id="beginDate" type="date" onChange={this.filter}></input>
@@ -430,31 +430,31 @@ var AddStat = React.createClass({
             <form onSubmit={this.submit}>
               <div className="input-field col s6">
                 <input placeholder="Add Title..." id="title" type="text" className="validate" onBlur={this.saveInput}></input>
-                <label>Title</label>
+                <label id="title_lable">Title</label>
               </div>
               <div className="input-field col s6">
                 <input placeholder="Add Source URL..." id="source" type="text" className="validate" onBlur={this.saveInput}></input>
-                <label>Source</label>
+                <label id="title_lable">Source</label>
               </div>
               <div className="input-field col s6">
                 <input placeholder="Add Organization..." id="org" type="text" className="validate" onBlur={this.saveInput}></input>
-                <label>Organization</label>
+                <label id="title_lable">Organization</label>
               </div>
               <div className="input-field col s6">
                 <input placeholder="Add Publish Date..." id="published" type="text" className="validate" onBlur={this.saveInput}></input>
-                <label>Publish Date</label>
+                <label id="title_lable">Publish Date</label>
               </div>
               <div className="input-field col s6">
                 <input placeholder="Study or Article?" id="entryType" type="text" className="validate" onBlur={this.saveInput}></input>
-                <label>Entry Type</label>
+                <label id="title_lable">Entry Type</label>
               </div>
               <div className="input-field col s6">
                 <input placeholder="Stat" id="stat" type="text" className="validate" onBlur={this.saveInput}></input>
-                <label>Stat</label>
+                <label id="title_lable">Stat</label>
               </div>
               <div className="input-field col s6">
                 <input placeholder="Tags" id="topicTags" type="text" className="validate" onBlur={this.saveInput}></input>
-                <label>Tags</label>
+                <label id="title_lable">Tags</label>
               </div>
               <button type="submit">Submit</button>
             </form>
