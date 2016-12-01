@@ -40,7 +40,7 @@ var Stat = React.createClass({
         <td>{this.props.data.title}</td>
         <td>
           {this.props.data.stat}<br />
-          {this.props.data.topicTags}
+          Tags: {this.props.data.topicTags}
         </td>
         <td>{this.props.data.org}</td>
         <td>{this.props.data.published}</td>
@@ -170,6 +170,13 @@ var StatSearch = React.createClass({
     this.setState(obj);
     }
   },
+
+  matchTags:function (haystack, arr) {
+    return arr.some(function (v) {
+        return haystack.indexOf(v) >= 0;
+    });
+  },
+
   // renders the StatSearch component.
   render:function() {
       var stats = this.props.data; //passed in value
@@ -208,13 +215,14 @@ var StatSearch = React.createClass({
           else if (searchCriteria == 'topicTags') 
           {
             stats = stats.filter(function(stat){
-              if (stat[searchCriteria].toLowerCase().includes(searchTerm[0])){
+              if (this.matchTags(stat[searchCriteria].toLowerCase().split(','), searchTerm)){
                 return stat;
               }
               else{
                 return null;
               }
-            });
+            }.bind(this));
+              
           }
           else
           {
