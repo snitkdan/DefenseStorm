@@ -38,7 +38,10 @@ var Stat = React.createClass({
     return(
       <tr>
         <td>{this.props.data.title}</td>
-        <td>{this.props.data.stat}</td>
+        <td>
+          {this.props.data.stat}<br />
+          Tags: {this.props.data.topicTags}
+        </td>
         <td>{this.props.data.org}</td>
         <td>{this.props.data.published}</td>
       </tr>
@@ -151,7 +154,7 @@ var StatTable = React.createClass({
 var StatSearch = React.createClass({
   //Sets the initial searchTerm and searchCriteria
   getInitialState:function(){
-    return ({title:'', org:'', stat:'', beginDate:'', endDate:''});
+    return ({title:'', org:'', stat:'', beginDate:'', endDate:'', topicTags:''});
   },
   componentDidMount:function(){
       $('#add_field').hide();
@@ -159,11 +162,25 @@ var StatSearch = React.createClass({
   // Sets the searchTerm and searchCriteria to the event's value and id, respectively.
   // This determines what will be searched and what that search will be on.
   filter:function(event){
+    if (event.target.id == 'topicTags')
+    {
+      this.setState({topicTags : event.target.value.trim().split(',')});
+    }
+    else
+    {
     console.log('in filter');
     var obj = {};
     obj[event.target.id] = event.target.value;
     this.setState(obj);
+    }
   },
+
+  matchTags:function (haystack, arr) {
+    return arr.some(function (v) {
+        return haystack.indexOf(v) >= 0;
+    });
+  },
+
   switch:function(event){
     var id = event.target.id;
     if(id =='search'){
@@ -175,6 +192,7 @@ var StatSearch = React.createClass({
       $('#add_field').show();
     }
   },
+
   // renders the StatSearch component.
   render:function() {
       var stats = this.props.data;
@@ -211,6 +229,18 @@ var StatSearch = React.createClass({
                 return null;
             });
           }
+          else if (searchCriteria == 'topicTags') 
+          {
+            stats = stats.filter(function(stat){
+              if (this.matchTags(stat[searchCriteria].toLowerCase().split(','), searchTerm)){
+                return stat;
+              }
+              else{
+                return null;
+              }
+            }.bind(this));
+              
+          }
           else
           {
             searchTerm = searchTerm.trim();
@@ -238,14 +268,26 @@ var StatSearch = React.createClass({
             <div className="input-field col s6">
               <input placeholder="Enter an Organization" id="org" type="text" className="validate" onChange={this.filter}></input>
             </div>
+          </div>
+          <div className='row'>
             <div className="input-field col s12">
               <input placeholder="Enter a Stat" id="stat" type="text" className="validate" onChange={this.filter}></input>
             </div>
+          </div>
+          <div className='row'>
             <div className="input-field col s6">
               <input placeholder='begin date' id="beginDate" type="date" onChange={this.filter}></input>
+              <label>Published On or After</label>
             </div>
             <div className="input-field col s6">
               <input placeholder='endDate' id="endDate" type="date" onChange={this.filter}></input>
+              <label>Published On or Before</label>
+            </div>
+          </div>
+          <div className='row'>
+            <div className="input-field col s12">
+              <input placeholder='Tags' id="topicTags" type="text" onChange={this.filter}></input>
+              <label>Comma,separated,tags</label>
             </div>
           </div>
           <div className='row' id="add_field">
