@@ -23,7 +23,7 @@ var SCOPES = ["https://www.googleapis.com/auth/spreadsheets"];
 var RANGE = 'A2:G1000';
 
 /**
- * For reading a JSON configuration file 
+ * For reading a JSON configuration file
  */
 function readConfig(file, callback) {
     var rawFile = new XMLHttpRequest();
@@ -66,15 +66,21 @@ function checkAuth() {
  * @param {Object} authResult Authorization result.
  */
 function handleAuthResult(authResult) {
-  var authorizeDiv = document.getElementById('authorize-div');
+  var authorizeDiv = $('#authorize-div');
   if (authResult && !authResult.error) {
     // Hide auth UI, then load client library.
-    authorizeDiv.style.display = 'none';
+    authorizeDiv.remove();
+    $('#image').css('display', 'hidden');
     loadSheetsApi();
   } else {
     // Show auth UI, allowing the user to initiate authorization by
     // clicking authorize button.
-    authorizeDiv.style.display = 'inline';
+    var authButton = $('<a>').attr('class', 'waves-effect waves-light btn-large');
+    authButton.text('Sign in to Sheets');
+    authButton.attr('id', 'authorize-button');
+    authButton.click(handleAuthClick);
+    $('#image').css('display', 'block');
+    authorizeDiv.append(authButton);
   }
 }
 
@@ -83,7 +89,7 @@ function handleAuthResult(authResult) {
  *
  * @param {Event} event Button click event.
  */
-function handleAuthClick(event) {
+var handleAuthClick = function(event) {
   gapi.auth.authorize(
     {client_id: CLIENT_ID, scope: SCOPES, immediate: false},
     handleAuthResult);
@@ -124,6 +130,9 @@ function processSheetsData() {
           'topicTags' : row[6]
         }
       }
+      $('#image').css('display', 'block');
+      $('#root').css('display', 'block');
+      renderTable();
     } else {
       console.log('No data found within the specified range.');
     }

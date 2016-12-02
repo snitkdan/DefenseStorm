@@ -153,148 +153,24 @@ var StatSearch = React.createClass({
   getInitialState:function(){
     return ({title:'', org:'', stat:'', beginDate:'', endDate:''});
   },
-  componentDidMount:function(){
-    /**
-     * This is API key from the Google Developer Console
-     */
-    var CLIENT_ID = null;
+  setProp:function(){
 
-    /**
-     * This is the spreadsheet's ID from its URL
-     */
-    var SPREADSHEET_ID = null;
-
-    /**
-     * SCOPES determine an app's permissions when making API calls involving user data
-     */
-    var SCOPES = ["https://www.googleapis.com/auth/spreadsheets"];
-
-    /**
-     * This is the set of cells that we want returned. E.g. A1:B2 would refer to these cells:
-     * | A1 | B1 |
-     * | A2 | B2 |
-     *
-     * TODO: figure out how to return all non-empty rows instead of hardcoding a large number of rows.
-     */
-    var RANGE = 'A2:D1000';
-
-    /**
-     * For reading a JSON configuration file
-     */
-    function readConfig(file, callback) {
-        var rawFile = new XMLHttpRequest();
-        rawFile.overrideMimeType("application/json");
-        rawFile.open("GET", file, true);
-        rawFile.onreadystatechange = function() {
-            if (rawFile.readyState === 4 && rawFile.status == "200") {
-                callback(rawFile.responseText);
-            }
-        }
-        rawFile.send(null);
-    }
-
-    /**
-     * Set CLIENT_ID and SPREADSHEET_ID based on config file
-     */
-    function setIDsFromConfig(text) {
-      var data = JSON.parse(text);
-      CLIENT_ID = data.client_id;
-      SPREADSHEET_ID = data.sheet_id;
-    }
-
-    readConfig("config.json", setIDsFromConfig);
-
-    /**
-     * Check if current user has authorized this application
-     */
-    function checkAuth() {
-      gapi.auth.authorize(
-        {
-          'client_id': CLIENT_ID,
-          'scope': SCOPES.join(' '),
-          'immediate': true
-        }, handleAuthResult);
-    }
-
-    /**
-     * Handle response from authorization server.
-     *
-     * @param {Object} authResult Authorization result.
-     */
-    function handleAuthResult(authResult) {
-      var authorizeDiv = document.getElementById('authorize-div');
-      if (authResult && !authResult.error) {
-        // Hide auth UI, then load client library.
-        authorizeDiv.style.display = 'none';
-        loadSheetsApi();
-      } else {
-        // Show auth UI, allowing the user to initiate authorization by
-        // clicking authorize button.
-        authorizeDiv.style.display = 'inline';
-      }
-    }
-
-    /**
-     * Initiate auth flow in response to user clicking authorize button.
-     *
-     * @param {Event} event Button click event.
-     */
-    function handleAuthClick(event) {
-      gapi.auth.authorize(
-        {client_id: CLIENT_ID, scope: SCOPES, immediate: false},
-        handleAuthResult);
-      return false;
-    }
-
-    var test_data = [];
-
-    /**
-     * Load Sheets API client library
-     */
-    function loadSheetsApi() {
-      var discoveryUrl =
-          'https://sheets.googleapis.com/$discovery/rest?version=v4';
-      gapi.client.load(discoveryUrl).then(processSheetsData);
-    }
-
-    /**
-     * Stuff rows of stats from the spreadsheet into a JSON object
-     */
-    function processSheetsData() {
-      gapi.client.sheets.spreadsheets.values.get({
-        spreadsheetId: SPREADSHEET_ID,
-        range: RANGE
-      }).then(function(response) {
-        var range = response.result;
-        if (range.values.length > 0) {
-          // This part turns the array of arrays returned by the API into a JSON resembling the hardcoded 'test_data' object we had before.
-          for (i = 0; i < range.values.length; i++) {
-            var row = range.values[i];
-            test_data[i] = {
-              'title'     : row[0],
-              'stat'      : row[1],
-              'org'       : row[2],
-              'pub_date'  : row[3]
-            }
-          }
-        } else {
-          console.log('No data found within the specified range.');
-        }
-      }, function(response) {
-        console.log('Error. Sheets API response: ' + response.result.error.message);
-      });
-    }
   },
   // Sets the searchTerm and searchCriteria to the event's value and id, respectively.
   // This determines what will be searched and what that search will be on.
   filter:function(event){
+    console.log('in filter');
     var obj = {};
     obj[event.target.id] = event.target.value;
     this.setState(obj);
   },
+  componentWillReceiveProps (props){
+      this.props = test_data;
+  },
   // renders the StatSearch component.
   render:function() {
-      var stats = this.props.data; //passed in value
+      var stats = this.props.data;
+      console.log(stats);
 
       for (var searchCriteria in this.state)
       {
@@ -345,16 +221,13 @@ var StatSearch = React.createClass({
       return(
           <div className='row'>
             <div className="input-field col s6">
-              <input placeholder="Enter a Title" id="title" type="text" className="validate" onChange={this.filter}></input>
-              <label id="title_lable">Title Search</label>
+              <input placeholder="Enter a Title" id="title" type="text" className="validate" onLoadStart={this.filter} onChange={this.filter}></input>
             </div>
             <div className="input-field col s6">
               <input placeholder="Enter an Organization" id="org" type="text" className="validate" onChange={this.filter}></input>
-              <label id="title_lable">Org Search</label>
             </div>
             <div className="input-field col s12">
               <input placeholder="Enter a Stat" id="stat" type="text" className="validate" onChange={this.filter}></input>
-              <label id="title_lable">Stat Search</label>
             </div>
             <div className="input-field col s6">
               <input placeholder='begin date' id="beginDate" type="date" onChange={this.filter}></input>
@@ -430,31 +303,24 @@ var AddStat = React.createClass({
             <form onSubmit={this.submit}>
               <div className="input-field col s6">
                 <input placeholder="Add Title..." id="title" type="text" className="validate" onBlur={this.saveInput}></input>
-                <label id="title_lable">Title</label>
               </div>
               <div className="input-field col s6">
                 <input placeholder="Add Source URL..." id="source" type="text" className="validate" onBlur={this.saveInput}></input>
-                <label id="title_lable">Source</label>
               </div>
               <div className="input-field col s6">
                 <input placeholder="Add Organization..." id="org" type="text" className="validate" onBlur={this.saveInput}></input>
-                <label id="title_lable">Organization</label>
               </div>
               <div className="input-field col s6">
                 <input placeholder="Add Publish Date..." id="published" type="text" className="validate" onBlur={this.saveInput}></input>
-                <label id="title_lable">Publish Date</label>
               </div>
               <div className="input-field col s6">
                 <input placeholder="Study or Article?" id="entryType" type="text" className="validate" onBlur={this.saveInput}></input>
-                <label id="title_lable">Entry Type</label>
               </div>
               <div className="input-field col s6">
                 <input placeholder="Stat" id="stat" type="text" className="validate" onBlur={this.saveInput}></input>
-                <label id="title_lable">Stat</label>
               </div>
               <div className="input-field col s6">
                 <input placeholder="Tags" id="topicTags" type="text" className="validate" onBlur={this.saveInput}></input>
-                <label id="title_lable">Tags</label>
               </div>
               <button type="submit">Submit</button>
             </form>
@@ -463,65 +329,14 @@ var AddStat = React.createClass({
   }
 });
 
-
-var test_data1 = [
-  {
-  'title':'a',
-  'org':'Ponemon Institute',
-  'published': '10/09/2016',
-  'stat': 'Average annual losses to companies worldwide now exceed $7.7 million, with studied companies losing up to $65 million.',
-  },
-  {
-  'title':'b',
-  'org':'Ponemon Institute',
-  'published': '11/09/2016',
-  'stat': 'Average annual losses to companies worldwide now exceed $7.7 million, with studied companies losing up to $65 million.',
-  },
-  {
-  'title':'c',
-  'org':'Ponemon Institute',
-  'published': '10/09/2016',
-  'stat': '$7.7 million, with studied companies losing up to $65 million.',
-  },
-  {
-  'title':'d',
-  'org':'Ponemon Institute',
-  'published': '10/09/2016',
-  'stat': 'Studied companies losing up to $65 million.',
-  },
-  {
-  'title':'e',
-  'org':'Ponemon Institute',
-  'published': '9/09/2016',
-  'stat': 'Studied companies losing up to $65 million.',
-  },
-  {
-  'title':'f',
-  'org':'Ponemon Institute',
-  'published': '10/09/2015',
-  'stat': 'Studied companies losing up to $65 million.',
-  },
-  {
-  'title':'g',
-  'org':'Institute',
-  'published': '10/09/2015',
-  'stat': 'Studied companies losing up to $65 million.',
-  },
-  {
-  'title':'h',
-  'org':'Verizon',
-  'published': '10/09/2015',
-  'stat': 'Studied companies losing up to $65 million.',
-  },
-];
-
-
 // The ReactDOM.render renders components to the dom. It takes 2 args:
 // 1. Component(s) to be rendered and 2. Location to render specified component(s)
-ReactDOM.render(
-  <div>
-    <StatSearch data={test_data} />
-    <AddStat />
-  </div>,
-    document.querySelector('#root')
-);
+var renderTable = function(){
+  ReactDOM.render(
+    <div>
+      <StatSearch data={test_data} />
+      <AddStat />
+    </div>,
+      document.querySelector('#root')
+  );
+}

@@ -1,8 +1,9 @@
 #image {
 	width: 30%;
 	height: auto;
-	display: block;
+	display: none;
 	margin: auto;
+	margin-top: 5vh;
 }
 
 body {
@@ -16,4 +17,14 @@ body {
 #title_lable {
 	color: #000000;
 	font-style: bold;
+}
+
+#authorize-div {
+	display: flex;
+	justify-content: center;
+	margin-top: 50vh;
+}
+
+#root {
+	display: none;
 }
