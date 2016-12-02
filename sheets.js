@@ -76,7 +76,7 @@ function handleAuthResult(authResult) {
     // Show auth UI, allowing the user to initiate authorization by
     // clicking authorize button.
     var authButton = $('<a>').attr('class', 'waves-effect waves-light btn-large');
-    authButton.text('Sign in to Sheets');
+    authButton.text('Authorize Google Sheets');
     authButton.attr('id', 'authorize-button');
     authButton.click(handleAuthClick);
     $('#image').css('display', 'block');
