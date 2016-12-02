@@ -315,7 +315,7 @@ var AddStat = React.createClass({
   // renders the adding Stat form
   render:function() {
       return(
-          <div className='row'>
+          <div>
             <form onSubmit={this.submit}>
               <div className="input-field col s6">
                 <input placeholder="Add Title..." id="title" type="text" className="validate" onBlur={this.saveInput}></input>
