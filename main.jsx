@@ -153,8 +153,8 @@ var StatSearch = React.createClass({
   getInitialState:function(){
     return ({title:'', org:'', stat:'', beginDate:'', endDate:''});
   },
-  setProp:function(){
-
+  componentDidMount:function(){
+      $('#add_field').hide();
   },
   // Sets the searchTerm and searchCriteria to the event's value and id, respectively.
   // This determines what will be searched and what that search will be on.
@@ -164,16 +164,15 @@ var StatSearch = React.createClass({
     obj[event.target.id] = event.target.value;
     this.setState(obj);
   },
-  componentWillReceiveProps (props){
-      this.props = test_data;
-  },
   switch:function(event){
     var id = event.target.id;
     if(id =='search'){
-      console.log('Switch to search!');
+      $('#search_field').show();
+      $('#add_field').hide();
     }
     else{
-      console.log('Switch to add!');
+      $('#search_field').hide();
+      $('#add_field').show();
     }
   },
   // renders the StatSearch component.
@@ -227,11 +226,12 @@ var StatSearch = React.createClass({
         }
       }
       return(
-          <div className='row'>
-            <div className='flex'>
-              <button onClick={this.switch} id='search' className="#e0e0e0 grey lighten-2 col s6 btn-large btn-large waves-effect waves-light red"><i className="black-text material-icons">search</i></button>
-              <button onClick={this.switch} id='add'className="#e0e0e0 grey lighten-2 col s6 btn-large btn-large waves-effect waves-light red"><i className="black-text material-icons">add</i></button>
-            </div>
+        <div className='row'>
+          <div className='flex'>
+            <button onClick={this.switch} id='search' className="#e0e0e0 grey lighten-2 col s6 btn-large btn-large waves-effect waves-light red"><i className="black-text material-icons">search</i></button>
+            <button onClick={this.switch} id='add'className="#e0e0e0 grey lighten-2 col s6 btn-large btn-large waves-effect waves-light red"><i className="black-text material-icons">add</i></button>
+          </div>
+          <div className='row' id='search_field'>
             <div className="input-field col s6">
               <input placeholder="Enter a Title" id="title" type="text" className="validate" onLoadStart={this.filter} onChange={this.filter}></input>
             </div>
@@ -247,10 +247,14 @@ var StatSearch = React.createClass({
             <div className="input-field col s6">
               <input placeholder='endDate' id="endDate" type="date" onChange={this.filter}></input>
             </div>
-            <div className='col s12'>
-              <StatTable data={stats}/>
-            </div>
           </div>
+          <div className='row' id="add_field">
+            <AddStat />
+          </div>
+          <div className='col s12'>
+            <StatTable data={stats}/>
+          </div>
+        </div>
       )
   }
 });
@@ -347,7 +351,6 @@ var renderTable = function(){
   ReactDOM.render(
     <div>
       <StatSearch data={test_data} />
-      <AddStat />
     </div>,
       document.querySelector('#root')
   );
