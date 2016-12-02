@@ -132,7 +132,7 @@ var StatTable = React.createClass({
     }
     return(
       <div>
-        <table className='striped'>
+        <table className='pure-table pure-table-bordered pure-table-striped'>
           <thead>
             <tr>
                 <th className='center-align' data-field="title">Title<SortButtons id='title' clickEvent={this.setSort}/></th>
@@ -156,6 +156,9 @@ var StatSearch = React.createClass({
   getInitialState:function(){
     return ({title:'', org:'', stat:'', beginDate:'', endDate:'', topicTags:''});
   },
+  componentDidMount:function(){
+      $('#add_field').hide();
+  },
   // Sets the searchTerm and searchCriteria to the event's value and id, respectively.
   // This determines what will be searched and what that search will be on.
   filter:function(event){
@@ -165,6 +168,7 @@ var StatSearch = React.createClass({
     }
     else
     {
+    console.log('in filter');
     var obj = {};
     obj[event.target.id] = event.target.value;
     this.setState(obj);
@@ -177,9 +181,22 @@ var StatSearch = React.createClass({
     });
   },
 
+  switch:function(event){
+    var id = event.target.id;
+    if(id =='search'){
+      $('#search_field').show();
+      $('#add_field').hide();
+    }
+    else{
+      $('#search_field').hide();
+      $('#add_field').show();
+    }
+  },
+
   // renders the StatSearch component.
   render:function() {
-      var stats = this.props.data; //passed in value
+      var stats = this.props.data;
+      console.log(stats);
 
       for (var searchCriteria in this.state)
       {
@@ -193,7 +210,7 @@ var StatSearch = React.createClass({
             stats = stats.filter(function(stat) {
               var statElements = stat['published'].split("/");
               var date = new Date(statElements[2], statElements[0], statElements[1]);
-              if (date > beginDate)
+              if (date >= beginDate)
                 return stat;
               else
                 return null;
@@ -206,7 +223,7 @@ var StatSearch = React.createClass({
             stats = stats.filter(function(stat) {
               var statElements = stat['published'].split("/");
               var date = new Date(statElements[2], statElements[0], statElements[1]);
-              if (date < endDate)
+              if (date <= endDate)
                 return stat;
               else
                 return null;
@@ -238,23 +255,23 @@ var StatSearch = React.createClass({
           }
         }
       }
-
       return(
-        <div>
-          <div className='row'>
+        <div className='row'>
+          <div className='flex'>
+            <button onClick={this.switch} id='search' className="#e0e0e0 grey lighten-2 col s6 btn-large btn-large waves-effect waves-light red"><i className="black-text material-icons">search</i></button>
+            <button onClick={this.switch} id='add'className="#e0e0e0 grey lighten-2 col s6 btn-large btn-large waves-effect waves-light red"><i className="black-text material-icons">add</i></button>
+          </div>
+          <div className='row' id='search_field'>
             <div className="input-field col s6">
-              <input placeholder="Enter a Title" id="title" type="text" className="validate" onChange={this.filter}></input>
-              <label>Title Search</label>
+              <input placeholder="Enter a Title" id="title" type="text" className="validate" onLoadStart={this.filter} onChange={this.filter}></input>
             </div>
             <div className="input-field col s6">
               <input placeholder="Enter an Organization" id="org" type="text" className="validate" onChange={this.filter}></input>
-              <label>Org Search</label>
             </div>
           </div>
           <div className='row'>
             <div className="input-field col s12">
               <input placeholder="Enter a Stat" id="stat" type="text" className="validate" onChange={this.filter}></input>
-              <label>Stat Search</label>
             </div>
           </div>
           <div className='row'>
@@ -273,10 +290,11 @@ var StatSearch = React.createClass({
               <label>Comma,separated,tags</label>
             </div>
           </div>
-          <div className='row'>
-            <div className='col s12'>
-              <StatTable data={stats}/>
-            </div>
+          <div className='row' id="add_field">
+            <AddStat />
+          </div>
+          <div className='col s12'>
+            <StatTable data={stats}/>
           </div>
         </div>
       )
@@ -339,35 +357,28 @@ var AddStat = React.createClass({
   // renders the adding Stat form
   render:function() {
       return(
-          <div className='row'>
+          <div>
             <form onSubmit={this.submit}>
               <div className="input-field col s6">
                 <input placeholder="Add Title..." id="title" type="text" className="validate" onBlur={this.saveInput}></input>
-                <label>Title</label>
               </div>
               <div className="input-field col s6">
                 <input placeholder="Add Source URL..." id="source" type="text" className="validate" onBlur={this.saveInput}></input>
-                <label>Source</label>
               </div>
               <div className="input-field col s6">
                 <input placeholder="Add Organization..." id="org" type="text" className="validate" onBlur={this.saveInput}></input>
-                <label>Organization</label>
               </div>
               <div className="input-field col s6">
                 <input placeholder="Add Publish Date..." id="published" type="text" className="validate" onBlur={this.saveInput}></input>
-                <label>Publish Date</label>
               </div>
               <div className="input-field col s6">
                 <input placeholder="Study or Article?" id="entryType" type="text" className="validate" onBlur={this.saveInput}></input>
-                <label>Entry Type</label>
               </div>
               <div className="input-field col s6">
                 <input placeholder="Stat" id="stat" type="text" className="validate" onBlur={this.saveInput}></input>
-                <label>Stat</label>
               </div>
               <div className="input-field col s6">
                 <input placeholder="Tags" id="topicTags" type="text" className="validate" onBlur={this.saveInput}></input>
-                <label>Tags</label>
               </div>
               <button type="submit">Submit</button>
             </form>
@@ -376,65 +387,13 @@ var AddStat = React.createClass({
   }
 });
 
-
-var test_data1 = [
-  {
-  'title':'Cost of Cyber Crime',
-  'org':'Ponemon Institute',
-  'published': '10/09/2016',
-  'stat': 'Average annual losses to companies worldwide now exceed $7.7 million, with studied companies losing up to $65 million.',
-  },
-  {
-  'title':'Cost of Cyber Crime',
-  'org':'Ponemon Institute',
-  'published': '11/09/2016',
-  'stat': 'Average annual losses to companies worldwide now exceed $7.7 million, with studied companies losing up to $65 million.',
-  },
-  {
-  'title':'How Much for this Breach?',
-  'org':'Ponemon Institute',
-  'published': '10/09/2016',
-  'stat': '$7.7 million, with studied companies losing up to $65 million.',
-  },
-  {
-  'title':'Can you believe it\'s not butter?',
-  'org':'Ponemon Institute',
-  'published': '10/09/2016',
-  'stat': 'Studied companies losing up to $65 million.',
-  },
-  {
-  'title':'Can you believe it\'s not butter?',
-  'org':'Ponemon Institute',
-  'published': '9/09/2016',
-  'stat': 'Studied companies losing up to $65 million.',
-  },
-  {
-  'title':'Can you believe it\'s not butter?',
-  'org':'Ponemon Institute',
-  'published': '10/09/2015',
-  'stat': 'Studied companies losing up to $65 million.',
-  },
-  {
-  'title':'Can you believe it\'s not butter?',
-  'org':'Institute',
-  'published': '10/09/2015',
-  'stat': 'Studied companies losing up to $65 million.',
-  },
-  {
-  'title':'Can you believe it\'s not butter?',
-  'org':'Verizon',
-  'published': '10/09/2015',
-  'stat': 'Studied companies losing up to $65 million.',
-  },
-];
-
-
 // The ReactDOM.render renders components to the dom. It takes 2 args:
 // 1. Component(s) to be rendered and 2. Location to render specified component(s)
-ReactDOM.render(
-  <div>
-    <StatSearch data={test_data} />
-    <AddStat />
-  </div>,
-    document.querySelector('#root')
-);
+var renderTable = function(){
+  ReactDOM.render(
+    <div>
+      <StatSearch data={test_data} />
+    </div>,
+      document.querySelector('#root')
+  );
+}

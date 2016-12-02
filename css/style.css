@@ -1,0 +1,36 @@
+#image {
+	width: 30%;
+	height: auto;
+	display: none;
+	margin: auto;
+	margin-top: 5vh;
+}
+
+body {
+	background-color: #FFFFFF;
+}
+
+#row {
+	color: #000000;
+}
+
+#title_lable {
+	color: #000000;
+	font-style: bold;
+}
+
+#authorize-div {
+	display: flex;
+	justify-content: center;
+	margin-top: 50vh;
+}
+
+#root {
+	display: none;
+}
+
+.flex {
+	display: flex;
+	justify-content: center;
+	justify-content: space-around;
+}
