@@ -1,0 +1,19 @@
+#image {
+	width: 30%;
+	height: auto;
+	display: block;
+	margin: auto;
+}
+
+body {
+	background-color: #FFFFFF;
+}
+
+#row {
+	color: #000000;
+}
+
+#title_lable {
+	color: #000000;
+	font-style: bold;
+}
