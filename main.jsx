@@ -167,6 +167,15 @@ var StatSearch = React.createClass({
   componentWillReceiveProps (props){
       this.props = test_data;
   },
+  switch:function(event){
+    var id = event.target.id;
+    if(id =='search'){
+      console.log('Switch to search!');
+    }
+    else{
+      console.log('Switch to add!');
+    }
+  },
   // renders the StatSearch component.
   render:function() {
       var stats = this.props.data;
@@ -217,9 +226,12 @@ var StatSearch = React.createClass({
           }
         }
       }
-
       return(
           <div className='row'>
+            <div className='flex'>
+              <button onClick={this.switch} id='search' className="#e0e0e0 grey lighten-2 col s6 btn-large btn-large waves-effect waves-light red"><i className="black-text material-icons">search</i></button>
+              <button onClick={this.switch} id='add'className="#e0e0e0 grey lighten-2 col s6 btn-large btn-large waves-effect waves-light red"><i className="black-text material-icons">add</i></button>
+            </div>
             <div className="input-field col s6">
               <input placeholder="Enter a Title" id="title" type="text" className="validate" onLoadStart={this.filter} onChange={this.filter}></input>
             </div>
