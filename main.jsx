@@ -5,7 +5,7 @@
  *    'source'    : column B
  *    'org'       : column C
  *    'published' : column D
- *    'entryType' : column E
+ *    'lastTouch' : column E
  *    'stat'      : column F
  *    'topicTags' : column G
  *
@@ -18,7 +18,7 @@
  *         'source'     : '',
  *         'org'        : 'Ponemon Institute',
  *         'published'  : '10/09/2016'
- *         'entryType'  : '',
+ *         'lastTouch'  : '',
  *         'stat'       : 'Average annual losses to companies worldwide now
  *                         exceed $7.7 million, with studied companies losing
  *                         up to $65 million.',
@@ -44,6 +44,7 @@ var Stat = React.createClass({
         </td>
         <td>{this.props.data.org}</td>
         <td>{this.props.data.published}</td>
+        <td>{this.props.data.lastTouch}</td>
       </tr>
     )
   }
@@ -81,7 +82,7 @@ Note: (d,i) => is equivalent to .map(function(d,i){}). [In case you haven't gott
 Styling courtesy of materialize.css*/
 var StatTable = React.createClass({
   getInitialState:function(){
-    return ({sortCriteria:'published', order:1});
+    return ({sortCriteria:'lastTouch', order:1});
   },
   setSort:function(event){
     var results = event.currentTarget.id.split('-');
@@ -97,7 +98,7 @@ var StatTable = React.createClass({
     var sorted_Rows = this.props.data.sort(function(a,b){
       a = a[sortCriteria].trim().toLowerCase();
       b = b[sortCriteria].trim().toLowerCase();
-      if(sortCriteria == 'published'){
+      if(sortCriteria == 'published' || sortCriteria == 'lastTouch'){
         a = new Date(a);
         b = new Date(b);
       }
@@ -139,6 +140,7 @@ var StatTable = React.createClass({
                 <th className='center-align' data-field="stat">Stat<SortButtons id='stat' clickEvent={this.setSort}/></th>
                 <th className='center-align' data-field="org">Organization<SortButtons id='org' clickEvent={this.setSort}/></th>
                 <th className='center-align' data-field="published">Date Published<SortButtons id='published' clickEvent={this.setSort}/></th>
+                <th className='center-align' data-field="lastTouch">Last Touch<SortButtons id='lastTouch' clickEvent={this.setSort}/></th>
             </tr>
           </thead>
           <tbody>
@@ -304,13 +306,13 @@ var StatSearch = React.createClass({
 //Contains the Stat-adding feature
 var AddStat = React.createClass({
   // An array storing the submission in the following order:
-  // source,org, published, entryType, stat, topicTags[]
+  // source,org, published, lastTouch, stat, topicTags[]
   submission: {
     title     : '',
     source    : '',
     org       : '',
     published : '',
-    entryType : '',
+    lastTouch : '',
     stat      : '',
     topicTags : ''
   },
@@ -340,18 +342,40 @@ var AddStat = React.createClass({
           this.submission.source,
           this.submission.org,
           this.submission.published,
-          this.submission.entryType,
+          this.currDate(),
           this.submission.stat,
           this.submission.topicTags
         ]
       ]
     // Success callback
     }).then(function(response) {
-      alert("Updated cell count" : response.result.updates.updatedCells);
+      alert("Updated cell count: " + response.result.updates.updatedCells);
     // Error callback
     }, function(response) {
       console.log('Error. Sheets API response: ' + response.result.error.message);
     });
+  },
+
+  // for saving the date the stat was modified
+  // returns the local date
+  // courtesy of http://stackoverflow.com/a/4929629
+  currDate:function() {
+	var today = new Date();
+	var dd = today.getDate();
+	var mm = today.getMonth()+1; //January is 0!
+	var yyyy = today.getFullYear();
+
+	if(dd<10) {
+	    dd='0'+dd
+	} 
+
+	if(mm<10) {
+	    mm='0'+mm
+	} 
+
+	today = mm+'/'+dd+'/'+yyyy;
+	console.log(today);
+	return today;
   },
 
   // renders the adding Stat form
@@ -370,9 +394,6 @@ var AddStat = React.createClass({
               </div>
               <div className="input-field col s6">
                 <input placeholder="Add Publish Date..." id="published" type="text" className="validate" onBlur={this.saveInput}></input>
-              </div>
-              <div className="input-field col s6">
-                <input placeholder="Study or Article?" id="entryType" type="text" className="validate" onBlur={this.saveInput}></input>
               </div>
               <div className="input-field col s6">
                 <input placeholder="Stat" id="stat" type="text" className="validate" onBlur={this.saveInput}></input>
