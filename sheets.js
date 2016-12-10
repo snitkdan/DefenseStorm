@@ -116,18 +116,22 @@ function processSheetsData() {
     range: RANGE
   }).then(function(response) {
     var range = response.result;
+    var row;
     if (range.values.length > 0) {
       // This part turns the array of arrays returned by the API into a JSON resembling the hardcoded 'test_data' object we had before.
       for (i = 0; i < range.values.length; i++) {
-        var row = range.values[i];
-        test_data[i] = {
-          'title'     : row[0],
-          'source'    : row[1],
-          'org'       : row[2],
-          'published' : row[3],
-          'entryType' : row[4],
-          'stat'      : row[5],
-          'topicTags' : row[6]
+        row = range.values[i];
+        // Require columns 0, 2 and 5 which currently correspond to title, org, and stat //
+        if (row[0] && row[2] && row[5]) {
+          test_data[i] = {
+            'title'     : row[0],
+            'source'    : row[1],
+            'org'       : row[2],
+            'published' : row[3],
+            'entryType' : row[4],
+            'stat'      : row[5],
+            'topicTags' : row[6]
+          }
         }
       }
       $('#image').css('display', 'block');
