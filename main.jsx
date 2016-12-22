@@ -258,44 +258,46 @@ var StatSearch = React.createClass({
         }
       }
       return(
+      
         <div className='row'>
-          <div className='flex'>
-            <button onClick={this.switch} id='search' className="#e0e0e0 grey lighten-2 col s6 btn-large btn-large waves-effect waves-light red"><i className="black-text material-icons">search</i></button>
-            <button onClick={this.switch} id='add'className="#e0e0e0 grey lighten-2 col s6 btn-large btn-large waves-effect waves-light red"><i className="black-text material-icons">add</i></button>
-          </div>
-          <div className='row' id='search_field'>
-            <div className="input-field col s6">
-              <input placeholder="Enter a Title" id="title" type="text" className="validate" onLoadStart={this.filter} onChange={this.filter}></input>
+          <div className="left">  
+            <div className='flex'>
+              <button onClick={this.switch} id='search' className="#e0e0e0 grey lighten-2 col s6 btn-large btn-large waves-effect waves-light red"><i className="black-text material-icons">search</i></button>
+              <button onClick={this.switch} id='add' className="#e0e0e0 grey lighten-2 col s6 btn-large btn-large waves-effect waves-light red"><i className="black-text material-icons">add</i></button>
             </div>
-            <div className="input-field col s6">
-              <input placeholder="Enter an Organization" id="org" type="text" className="validate" onChange={this.filter}></input>
+          
+            <div className='row' id='search_field'>
+              <div className="input-field col s6">
+                <input placeholder="Enter a Title" id="title" type="text" className="validate" onLoadStart={this.filter} onChange={this.filter}></input>
+              </div>
+              <div className="input-field col s6">
+                <input placeholder="Enter an Organization" id="org" type="text" className="validate" onChange={this.filter}></input>
+              </div>
+            </div>
+            <div className='row'>
+              <div className="input-field col s12">
+                <input placeholder="Enter a Stat" id="stat" type="text" className="validate" onChange={this.filter}></input>
+              </div>
+            </div>
+            <div className='row'>
+              <div className="input-field col s6">
+                <input placeholder='begin date' id="beginDate" type="date" onChange={this.filter}></input>
+              </div>
+              <div className="input-field col s6">
+                <input placeholder='endDate' id="endDate" type="date" onChange={this.filter}></input>
+              </div>
+            </div>
+            <div className='row'>
+              <div className="input-field col s12">
+                <input placeholder='Comma,Separated,Tags' id="topicTags" type="text" onChange={this.filter}></input>
+              </div>
+            </div>
+          
+            <div className='row' id="add_field">
+              <AddStat />
             </div>
           </div>
-          <div className='row'>
-            <div className="input-field col s12">
-              <input placeholder="Enter a Stat" id="stat" type="text" className="validate" onChange={this.filter}></input>
-            </div>
-          </div>
-          <div className='row'>
-            <div className="input-field col s6">
-              <input placeholder='begin date' id="beginDate" type="date" onChange={this.filter}></input>
-              <label>Published On or After</label>
-            </div>
-            <div className="input-field col s6">
-              <input placeholder='endDate' id="endDate" type="date" onChange={this.filter}></input>
-              <label>Published On or Before</label>
-            </div>
-          </div>
-          <div className='row'>
-            <div className="input-field col s12">
-              <input placeholder='Tags' id="topicTags" type="text" onChange={this.filter}></input>
-              <label>Comma,separated,tags</label>
-            </div>
-          </div>
-          <div className='row' id="add_field">
-            <AddStat />
-          </div>
-          <div className='col s12'>
+          <div className='col s12 offset-s2'>
             <StatTable data={stats}/>
           </div>
         </div>
@@ -383,25 +385,27 @@ var AddStat = React.createClass({
       return(
           <div>
             <form onSubmit={this.submit}>
-              <div className="input-field col s6">
-                <input placeholder="Add Title..." id="title" type="text" className="validate" onBlur={this.saveInput}></input>
+              <div className="left">  
+                <div className="input-field col s6">
+                  <input placeholder="Add Title..." id="title" type="text" className="validate" onBlur={this.saveInput}></input>
+                </div>
+                <div className="input-field col s6">
+                  <input placeholder="Add Source URL..." id="source" type="text" className="validate" onBlur={this.saveInput}></input>
+                </div>
+                <div className="input-field col s6">
+                  <input placeholder="Add Organization..." id="org" type="text" className="validate" onBlur={this.saveInput}></input>
+                </div>
+                <div className="input-field col s6">
+                  <input placeholder="Add Publish Date..." id="published" type="text" className="validate" onBlur={this.saveInput}></input>
+                </div>
+                <div className="input-field col s6">
+                  <input placeholder="Stat" id="stat" type="text" className="validate" onBlur={this.saveInput}></input>
+                </div>
+                <div className="input-field col s6">
+                  <input placeholder="Tags" id="topicTags" type="text" className="validate" onBlur={this.saveInput}></input>
+                </div>
+                <button type="submit">Submit</button>
               </div>
-              <div className="input-field col s6">
-                <input placeholder="Add Source URL..." id="source" type="text" className="validate" onBlur={this.saveInput}></input>
-              </div>
-              <div className="input-field col s6">
-                <input placeholder="Add Organization..." id="org" type="text" className="validate" onBlur={this.saveInput}></input>
-              </div>
-              <div className="input-field col s6">
-                <input placeholder="Add Publish Date..." id="published" type="text" className="validate" onBlur={this.saveInput}></input>
-              </div>
-              <div className="input-field col s6">
-                <input placeholder="Stat" id="stat" type="text" className="validate" onBlur={this.saveInput}></input>
-              </div>
-              <div className="input-field col s6">
-                <input placeholder="Tags" id="topicTags" type="text" className="validate" onBlur={this.saveInput}></input>
-              </div>
-              <button type="submit">Submit</button>
             </form>
           </div>
       )
