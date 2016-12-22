@@ -128,7 +128,7 @@ function processSheetsData() {
             'source'    : row[1],
             'org'       : row[2],
             'published' : row[3],
-            'entryType' : row[4],
+            'lastTouch' : row[4],
             'stat'      : row[5],
             'topicTags' : row[6]
           }
