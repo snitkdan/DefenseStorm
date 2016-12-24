@@ -34,40 +34,44 @@
    The properties that it gets is "data", which is an individual JS object that has properties
   'title', 'stat', 'org', and 'published', all of which get rendered in with <td> tags. */
 var Stat = React.createClass({
-  render:function(){
-    return(
-      <tr>
-        <td>{this.props.data.title}</td>
-        <td>
-          {this.props.data.stat}<br />
-          Tags: {this.props.data.topicTags}
-        </td>
-        <td>{this.props.data.org}</td>
-        <td>{this.props.data.published}</td>
-      </tr>
-    )
-  }
+    render: function() {
+        return (
+            <tr>
+                <td>{this.props.data.title}</td>
+                <td>
+                    {this.props.data.stat}<br/>
+                    Tags: {this.props.data.topicTags}
+                </td>
+                <td>{this.props.data.org}</td>
+                <td>{this.props.data.published}</td>
+                <td>
+                    <button onClick={() => this.props.edit(this.props.data)}>Edit</button>
+                    <button onClick={() => this.props.delete(this.props.data)}>Delete</button>
+                </td>
+            </tr>
+        )
+    }
 });
 
 var SortButtons = React.createClass({
-  render:function(){
-    return(
-      <div>
-        <a id={this.props.id + '-0'} onClick={this.props.clickEvent}>
-          <svg fill="#000000" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
-              <path d="M16.59 8.59L12 13.17 7.41 8.59 6 10l6 6 6-6z"/>
-              <path d="M0 0h24v24H0z" fill="none"/>
-          </svg>
-        </a>
-        <a id={this.props.id + '-1'} onClick={this.props.clickEvent}>
-          <svg fill="#000000" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
-              <path d="M12 8l-6 6 1.41 1.41L12 10.83l4.59 4.58L18 14z"/>
-              <path d="M0 0h24v24H0z" fill="none"/>
-          </svg>
-        </a>
-      </div>
-    )
-  }
+    render: function() {
+        return (
+            <div>
+                <a id={this.props.id + '-0'} onClick={this.props.clickEvent}>
+                    <svg fill="#000000" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M16.59 8.59L12 13.17 7.41 8.59 6 10l6 6 6-6z"/>
+                        <path d="M0 0h24v24H0z" fill="none"/>
+                    </svg>
+                </a>
+                <a id={this.props.id + '-1'} onClick={this.props.clickEvent}>
+                    <svg fill="#000000" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 8l-6 6 1.41 1.41L12 10.83l4.59 4.58L18 14z"/>
+                        <path d="M0 0h24v24H0z" fill="none"/>
+                    </svg>
+                </a>
+            </div>
+        )
+    }
 });
 
 /*This is a React component for the StatTable, which holds the headings
@@ -80,320 +84,364 @@ Note: (d,i) => is equivalent to .map(function(d,i){}). [In case you haven't gott
 
 Styling courtesy of materialize.css*/
 var StatTable = React.createClass({
-  getInitialState:function(){
-    return ({sortCriteria:'published', order:1});
-  },
-  setSort:function(event){
-    var results = event.currentTarget.id.split('-');
-    var sortCriteria = results[0];
-    var order = results[1];
-    this.setState({sortCriteria:sortCriteria, order:order});
+    getInitialState: function() {
+        return ({sortCriteria: 'published', order: 1});
+    },
+    setSort: function(event) {
+        var results = event.currentTarget.id.split('-');
+        var sortCriteria = results[0];
+        var order = results[1];
+        this.setState({sortCriteria: sortCriteria, order: order});
 
-  },
-  sortRows:function(order){
-    var sortCriteria = this.state.sortCriteria;
-    var order = this.state.order;
-    console.log(sortCriteria);
-    var sorted_Rows = this.props.data.sort(function(a,b){
-      a = a[sortCriteria].trim().toLowerCase();
-      b = b[sortCriteria].trim().toLowerCase();
-      if(sortCriteria == 'published'){
-        a = new Date(a);
-        b = new Date(b);
-      }
-      if(order == 0){
-        if(a < b){
-          return -1
+    },
+    sortRows: function(order) {
+        var sortCriteria = this.state.sortCriteria;
+        var order = this.state.order;
+        var sorted_Rows = this.props.data.sort(function(a, b) {
+            a = a[sortCriteria].trim().toLowerCase();
+            b = b[sortCriteria].trim().toLowerCase();
+            if (sortCriteria == 'published') {
+                a = new Date(a);
+                b = new Date(b);
+            }
+            if (order == 0) {
+                if (a < b) {
+                    return -1
+                } else {
+                    if (a > b) {
+                        return 1;
+                    }
+                    return 0;
+                }
+            } else {
+                if (a < b) {
+                    return 1
+                } else {
+                    if (a > b) {
+                        return -1;
+                    }
+                    return 0;
+                }
+            }
+        });
+        return sorted_Rows;
+    },
+    render: function() {
+        if (this.props.data) {
+            this.sortRows();
         }
-        else{
-          if(a > b){
-            return 1;
-          }
-        return 0;
-        }
-      }
-      else{
-        if(a < b){
-          return 1
-        }
-        else{
-          if(a > b){
-            return -1;
-          }
-        return 0;
-        }
-      }
-    });
-    return sorted_Rows;
-  },
-  render:function(){
-    if(this.props.data){
-      this.sortRows();
+        return (
+            <div>
+                <table className='pure-table pure-table-bordered pure-table-striped'>
+                    <thead>
+                        <tr>
+                            <th className='center-align' data-field="title">Title<SortButtons id='title' clickEvent={this.setSort}/></th>
+                            <th className='center-align' data-field="stat">Stat<SortButtons id='stat' clickEvent={this.setSort}/></th>
+                            <th className='center-align' data-field="org">Organization<SortButtons id='org' clickEvent={this.setSort}/></th>
+                            <th className='center-align' data-field="published">Date Published<SortButtons id='published' clickEvent={this.setSort}/></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {this.props.data.map((d, i) => <Stat delete={this.props.delete} edit={this.props.edit} key={'stat-' + i} data={d}/>)}
+                    </tbody>
+                </table>
+            </div>
+        )
     }
-    return(
-      <div>
-        <table className='pure-table pure-table-bordered pure-table-striped'>
-          <thead>
-            <tr>
-                <th className='center-align' data-field="title">Title<SortButtons id='title' clickEvent={this.setSort}/></th>
-                <th className='center-align' data-field="stat">Stat<SortButtons id='stat' clickEvent={this.setSort}/></th>
-                <th className='center-align' data-field="org">Organization<SortButtons id='org' clickEvent={this.setSort}/></th>
-                <th className='center-align' data-field="published">Date Published<SortButtons id='published' clickEvent={this.setSort}/></th>
-            </tr>
-          </thead>
-          <tbody>
-            {this.props.data.map((d,i) => <Stat key={'stat-' + i} data={d}/>)}
-          </tbody>
-        </table>
-      </div>
-    )
-  }
 });
 
 //Contains the search functionality. and rendering of the StatTable.
 var StatSearch = React.createClass({
-  //Sets the initial searchTerm and searchCriteria
-  getInitialState:function(){
-    return ({title:'', org:'', stat:'', beginDate:'', endDate:'', topicTags:''});
-  },
-  componentDidMount:function(){
-      $('#add_field').hide();
-  },
-  // Sets the searchTerm and searchCriteria to the event's value and id, respectively.
-  // This determines what will be searched and what that search will be on.
-  filter:function(event){
-    if (event.target.id == 'topicTags')
-    {
-      this.setState({topicTags : event.target.value.trim().split(',')});
-    }
-    else
-    {
-    console.log('in filter');
-    var obj = {};
-    obj[event.target.id] = event.target.value;
-    this.setState(obj);
-    }
-  },
-
-  matchTags:function (haystack, arr) {
-    return arr.some(function (v) {
-        return haystack.indexOf(v) >= 0;
-    });
-  },
-
-  switch:function(event){
-    var id = event.target.id;
-    if(id =='search'){
-      $('#search_field').show();
-      $('#add_field').hide();
-    }
-    else{
-      $('#search_field').hide();
-      $('#add_field').show();
-    }
-  },
-
-  // renders the StatSearch component.
-  render:function() {
-      var stats = this.props.data;
-      console.log(stats);
-
-      for (var searchCriteria in this.state)
-      {
-        var searchTerm = this.state[searchCriteria];
-        if (searchTerm.length > 0)
-        {
-          if (searchCriteria == 'beginDate')
-          {
-            var beginElements = searchTerm.split("-");
-            var beginDate = new Date(beginElements[0], beginElements[1], beginElements[2]);
-            stats = stats.filter(function(stat) {
-              var statElements = stat['published'].split("/");
-              var date = new Date(statElements[2], statElements[0], statElements[1]);
-              if (date >= beginDate)
-                return stat;
-              else
-                return null;
-            });
-          }
-          else if (searchCriteria == 'endDate')
-          {
-            var endElements = searchTerm.split("-");
-            var endDate = new Date(endElements[0], endElements[1], endElements[2]);
-            stats = stats.filter(function(stat) {
-              var statElements = stat['published'].split("/");
-              var date = new Date(statElements[2], statElements[0], statElements[1]);
-              if (date <= endDate)
-                return stat;
-              else
-                return null;
-            });
-          }
-          else if (searchCriteria == 'topicTags') 
-          {
-            stats = stats.filter(function(stat){
-              if (this.matchTags(stat[searchCriteria].toLowerCase().split(','), searchTerm)){
-                return stat;
-              }
-              else{
-                return null;
-              }
-            }.bind(this));
-              
-          }
-          else
-          {
-            searchTerm = searchTerm.trim();
-            stats = stats.filter(function(stat){
-              if (stat[searchCriteria].toLowerCase().includes(searchTerm.toLowerCase())){
-                return stat;
-              }
-              else{
-                return null;
-              }
-            });
-          }
+    //Sets the initial searchTerm and searchCriteria
+    getInitialState: function() {
+        return ({
+            title: '',
+            org: '',
+            stat: '',
+            beginDate: '',
+            endDate: '',
+            topicTags: ''
+        });
+    },
+    componentDidMount: function() {
+        $('#add_field').hide();
+    },
+    // Sets the searchTerm and searchCriteria to the event's value and id, respectively.
+    // This determines what will be searched and what that search will be on.
+    filter: function(event) {
+        if (event.target.id == 'topicTags') {
+            this.setState({topicTags: event.target.value.trim().split(',')});
+        } else {
+            var obj = {};
+            obj[event.target.id] = event.target.value;
+            this.setState(obj);
         }
-      }
-      return(
-        <div className='row'>
-          <div className='flex'>
-            <button onClick={this.switch} id='search' className="#e0e0e0 grey lighten-2 col s6 btn-large btn-large waves-effect waves-light red"><i className="black-text material-icons">search</i></button>
-            <button onClick={this.switch} id='add'className="#e0e0e0 grey lighten-2 col s6 btn-large btn-large waves-effect waves-light red"><i className="black-text material-icons">add</i></button>
-          </div>
-          <div className='row' id='search_field'>
-            <div className="input-field col s6">
-              <input placeholder="Enter a Title" id="title" type="text" className="validate" onLoadStart={this.filter} onChange={this.filter}></input>
+    },
+
+    matchTags: function(haystack, arr) {
+        return arr.some(function(v) {
+            return haystack.indexOf(v) >= 0;
+        });
+    },
+
+    switch: function(event) {
+        var id = event.target.id;
+        if (id == 'search') {
+            $('#search_field').show();
+            $('#add_field').hide();
+        } else {
+            $('#search_field').hide();
+            $('#add_field').show();
+        }
+    },
+
+    edit: function(data) {
+        this.setState({edit_data: data});
+    },
+    delete: function(data) {
+        console.log(data.rowNum);
+        RANGE = 'A' + data.rowNum + ':G' + data.rowNum;
+        gapi.client.sheets.spreadsheets.values.update({
+            spreadsheetId: SPREADSHEET_ID,
+            range: RANGE,
+            valueInputOption: 'USER_ENTERED',
+            values: [
+                [
+                  '','','','','','',''
+                ]
+            ]
+            // Success callback
+        }).then(function(response) {
+            alert("Deleted row: "  + data.rowNum);
+            // Error callback
+        }, function(response) {
+            console.log('Error. Sheets API response: ' + response.result.error.message);
+        });
+    },
+    // renders the StatSearch component.
+    render: function() {
+        var stats = this.props.data;
+        for (var searchCriteria in this.state) {
+            var searchTerm = this.state[searchCriteria];
+            if (searchTerm.length > 0) {
+                if (searchCriteria == 'beginDate') {
+                    var beginElements = searchTerm.split("-");
+                    var beginDate = new Date(beginElements[0], beginElements[1], beginElements[2]);
+                    stats = stats.filter(function(stat) {
+                        var statElements = stat['published'].split("/");
+                        var date = new Date(statElements[2], statElements[0], statElements[1]);
+                        if (date >= beginDate)
+                            return stat;
+                        else
+                            return null;
+                        }
+                    );
+                } else if (searchCriteria == 'endDate') {
+                    var endElements = searchTerm.split("-");
+                    var endDate = new Date(endElements[0], endElements[1], endElements[2]);
+                    stats = stats.filter(function(stat) {
+                        var statElements = stat['published'].split("/");
+                        var date = new Date(statElements[2], statElements[0], statElements[1]);
+                        if (date <= endDate)
+                            return stat;
+                        else
+                            return null;
+                        }
+                    );
+                } else if (searchCriteria == 'topicTags') {
+                    stats = stats.filter(function(stat) {
+                        if (this.matchTags(stat[searchCriteria].toLowerCase().split(','), searchTerm)) {
+                            return stat;
+                        } else {
+                            return null;
+                        }
+                    }.bind(this));
+
+                } else {
+                    searchTerm = searchTerm.trim();
+                    stats = stats.filter(function(stat) {
+                        if (stat[searchCriteria].toLowerCase().includes(searchTerm.toLowerCase())) {
+                            return stat;
+                        } else {
+                            return null;
+                        }
+                    });
+                }
+            }
+        }
+        return (
+            <div className='row'>
+                <div className='flex'>
+                    <button onClick={this.switch} id='search' className="#e0e0e0 grey lighten-2 col s6 btn-large btn-large waves-effect waves-light red">
+                        <i className="black-text material-icons">search</i>
+                    </button>
+                    <button onClick={this.switch} id='add' className="#e0e0e0 grey lighten-2 col s6 btn-large btn-large waves-effect waves-light red">
+                        <i className="black-text material-icons">add</i>
+                    </button>
+                </div>
+                <div className='row' id='search_field'>
+                    <div className="input-field col s6">
+                        <input placeholder="Enter a Title" id="title" type="text" className="validate" onLoadStart={this.filter} onChange={this.filter}></input>
+                    </div>
+                    <div className="input-field col s6">
+                        <input placeholder="Enter an Organization" id="org" type="text" className="validate" onChange={this.filter}></input>
+                    </div>
+                </div>
+                <div className='row'>
+                    <div className="input-field col s12">
+                        <input placeholder="Enter a Stat" id="stat" type="text" className="validate" onChange={this.filter}></input>
+                    </div>
+                </div>
+                <div className='row'>
+                    <div className="input-field col s6">
+                        <input placeholder='begin date' id="beginDate" type="date" onChange={this.filter}></input>
+                        <label>Published On or After</label>
+                    </div>
+                    <div className="input-field col s6">
+                        <input placeholder='endDate' id="endDate" type="date" onChange={this.filter}></input>
+                        <label>Published On or Before</label>
+                    </div>
+                </div>
+                <div className='row'>
+                    <div className="input-field col s12">
+                        <input placeholder='Tags' id="topicTags" type="text" onChange={this.filter}></input>
+                        <label>Comma,separated,tags</label>
+                    </div>
+                </div>
+                <div className='row' id="add_field">
+                    <AddStat edit_data={this.state.edit_data}/>
+                </div>
+                <div className='col s12'>
+                    <StatTable delete={this.delete} edit={this.edit} data={stats}/>
+                </div>
             </div>
-            <div className="input-field col s6">
-              <input placeholder="Enter an Organization" id="org" type="text" className="validate" onChange={this.filter}></input>
-            </div>
-          </div>
-          <div className='row'>
-            <div className="input-field col s12">
-              <input placeholder="Enter a Stat" id="stat" type="text" className="validate" onChange={this.filter}></input>
-            </div>
-          </div>
-          <div className='row'>
-            <div className="input-field col s6">
-              <input placeholder='begin date' id="beginDate" type="date" onChange={this.filter}></input>
-              <label>Published On or After</label>
-            </div>
-            <div className="input-field col s6">
-              <input placeholder='endDate' id="endDate" type="date" onChange={this.filter}></input>
-              <label>Published On or Before</label>
-            </div>
-          </div>
-          <div className='row'>
-            <div className="input-field col s12">
-              <input placeholder='Tags' id="topicTags" type="text" onChange={this.filter}></input>
-              <label>Comma,separated,tags</label>
-            </div>
-          </div>
-          <div className='row' id="add_field">
-            <AddStat />
-          </div>
-          <div className='col s12'>
-            <StatTable data={stats}/>
-          </div>
-        </div>
-      )
-  }
+        )
+    }
 });
 
 //Contains the Stat-adding feature
 var AddStat = React.createClass({
-  // An array storing the submission in the following order:
-  // source,org, published, entryType, stat, topicTags[]
-  submission: {
-    title     : '',
-    source    : '',
-    org       : '',
-    published : '',
-    entryType : '',
-    stat      : '',
-    topicTags : ''
-  },
+    // An array storing the submission in the following order:
+    // source,org, published, entryType, stat, topicTags[]
+    submission: {
+        title: '',
+        source: '',
+        org: '',
+        published: '',
+        entryType: '',
+        stat: '',
+        topicTags: ''
+    },
 
-  saveInput: function(event){
-    var inputId = event.target.id;
-    this.submission[inputId] = event.target.value;
-    console.log(this.submission[inputId]);
-  },
+    saveInput: function(event) {
+        var inputId = event.target.id;
+        this.submission[inputId] = event.target.value;
+    },
 
-/* parse comma separated tag list into an array
+    /* parse comma separated tag list into an array
   saveTags: function(event) {
     this.submission[event.target.id] = event.target.value.split(', ');
   },
   */
 
-  submit: function(event) {
-    event.preventDefault();
-    gapi.client.sheets.spreadsheets.values.append({
-      spreadsheetId     : SPREADSHEET_ID,
-      range             : RANGE,
-      insertDataOption  : 'INSERT_ROWS',
-      valueInputOption  : 'USER_ENTERED',
-      values            : [
-        [
-          this.submission.title,
-          this.submission.source,
-          this.submission.org,
-          this.submission.published,
-          this.submission.entryType,
-          this.submission.stat,
-          this.submission.topicTags
-        ]
-      ]
-    // Success callback
-    }).then(function(response) {
-      alert("Updated cell count" : response.result.updates.updatedCells);
-    // Error callback
-    }, function(response) {
-      console.log('Error. Sheets API response: ' + response.result.error.message);
-    });
-  },
+    submitAdd: function(event) {
+        event.preventDefault();
+        gapi.client.sheets.spreadsheets.values.append({
+            spreadsheetId: SPREADSHEET_ID,
+            range: RANGE,
+            insertDataOption: 'INSERT_ROWS',
+            valueInputOption: 'USER_ENTERED',
+            values: [
+                [
+                    this.submission.title,
+                    this.submission.source,
+                    this.submission.org,
+                    this.submission.published,
+                    this.submission.entryType,
+                    this.submission.stat,
+                    this.submission.topicTags
+                ]
+            ]
+            // Success callback
+        }).then(function(response) {
+            alert("Updated cell count" : response.result.updates.updatedCells);
+            // Error callback
+        }, function(response) {
+            console.log('Error. Sheets API response: ' + response.result.error.message);
+        });
+    },
+    // renders the adding Stat form
+    render: function() {
+        var add = this.submitAdd;
+        var edit = this.submitEdit;
+        var submit;
 
-  // renders the adding Stat form
-  render:function() {
-      return(
-          <div>
-            <form onSubmit={this.submit}>
-              <div className="input-field col s6">
-                <input placeholder="Add Title..." id="title" type="text" className="validate" onBlur={this.saveInput}></input>
-              </div>
-              <div className="input-field col s6">
-                <input placeholder="Add Source URL..." id="source" type="text" className="validate" onBlur={this.saveInput}></input>
-              </div>
-              <div className="input-field col s6">
-                <input placeholder="Add Organization..." id="org" type="text" className="validate" onBlur={this.saveInput}></input>
-              </div>
-              <div className="input-field col s6">
-                <input placeholder="Add Publish Date..." id="published" type="text" className="validate" onBlur={this.saveInput}></input>
-              </div>
-              <div className="input-field col s6">
-                <input placeholder="Study or Article?" id="entryType" type="text" className="validate" onBlur={this.saveInput}></input>
-              </div>
-              <div className="input-field col s6">
-                <input placeholder="Stat" id="stat" type="text" className="validate" onBlur={this.saveInput}></input>
-              </div>
-              <div className="input-field col s6">
-                <input placeholder="Tags" id="topicTags" type="text" className="validate" onBlur={this.saveInput}></input>
-              </div>
-              <button type="submit">Submit</button>
+        var title,
+            source,
+            org,
+            published,
+            entryType,
+            stat,
+            topicTags,
+            buttonName;
+
+        if (this.props.edit_data) {
+            var data = this.props.edit_data;
+            title = data.title;
+            source = data.source;
+            org = data.org;
+            published = data.published;
+            entryType = data.entryType;
+            stat = data.stat;
+            topicTags = data.topicTags;
+            submit = edit
+            buttonName = 'Update'
+        } else {
+            title = '';
+            source = '';
+            org = '';
+            published = '';
+            entryType = '';
+            stat = '';
+            topicTags = '';
+            submit = add;
+            buttonName = 'Submit'
+        }
+        console.log('re-rendered Add!')
+        return (
+            <form onSubmit={submit}>
+                <div className="input-field col s6">
+                    <input value={title} ref={(input) => this.input = input} placeholder="Add Title..." id="title" type="text" className="validate" onBlur={this.saveInput}></input>
+                </div>
+                <div className="input-field col s6">
+                    <input value={source} ref={(input) => this.input = input} placeholder="Add Source URL..." id="source" type="text" className="validate" onBlur={this.saveInput}></input>
+                </div>
+                <div className="input-field col s6">
+                    <input value={org} ref={(input) => this.input = input} placeholder="Add Organization..." id="org" type="text" className="validate" onBlur={this.saveInput}></input>
+                </div>
+                <div className="input-field col s6">
+                    <input value={published} ref={(input) => this.input = input} placeholder="Add Publish Date..." id="published" type="text" className="validate" onBlur={this.saveInput}></input>
+                </div>
+                <div className="input-field col s6">
+                    <input value={entryType} ref={(input) => this.input = input} placeholder="Study or Article?" id="entryType" type="text" className="validate" onBlur={this.saveInput}></input>
+                </div>
+                <div className="input-field col s6">
+                    <input value={stat} ref={(input) => this.input = input} placeholder="Stat" id="stat" type="text" className="validate" onBlur={this.saveInput}></input>
+                </div>
+                <div className="input-field col s6">
+                    <input value={topicTags} ref={(input) => this.input = input} placeholder="Tags" id="topicTags" type="text" className="validate" onBlur={this.saveInput}></input>
+                </div>
+                <button type="submit">{buttonName}</button>
             </form>
-          </div>
-      )
-  }
+        )
+    }
 });
 
 // The ReactDOM.render renders components to the dom. It takes 2 args:
 // 1. Component(s) to be rendered and 2. Location to render specified component(s)
-var renderTable = function(){
-  ReactDOM.render(
-    <div>
-      <StatSearch data={test_data} />
-    </div>,
-      document.querySelector('#root')
-  );
+var renderTable = function() {
+    ReactDOM.render(
+        <div>
+        <StatSearch data={test_data}/>
+    </div>, document.querySelector('#root'));
 }

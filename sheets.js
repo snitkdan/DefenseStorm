@@ -20,7 +20,7 @@ var SCOPES = ["https://www.googleapis.com/auth/spreadsheets"];
  *
  * TODO: figure out how to return all non-empty rows instead of hardcoding a large number of rows.
  */
-var RANGE = 'A2:G1000';
+var RANGE = 'A2:H1000';
 
 /**
  * For reading a JSON configuration file
@@ -130,7 +130,8 @@ function processSheetsData() {
             'published' : row[3],
             'entryType' : row[4],
             'stat'      : row[5],
-            'topicTags' : row[6]
+            'topicTags' : row[6],
+            'rowNum'    : row[7]
           }
         }
       }
