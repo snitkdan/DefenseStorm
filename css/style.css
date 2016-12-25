@@ -10,6 +10,12 @@ body {
 	background-color: #FFFFFF;
 }
 
+.left {
+    position:fixed;
+    left:10px;
+    width: 25%;
+}
+
 #row {
 	color: #000000;
 }
@@ -34,3 +40,4 @@ body {
 	justify-content: center;
 	justify-content: space-around;
 }
+

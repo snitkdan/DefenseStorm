@@ -5,7 +5,7 @@
  *    'source'    : column B
  *    'org'       : column C
  *    'published' : column D
- *    'entryType' : column E
+ *    'lastTouch' : column E
  *    'stat'      : column F
  *    'topicTags' : column G
  *
@@ -18,7 +18,7 @@
  *         'source'     : '',
  *         'org'        : 'Ponemon Institute',
  *         'published'  : '10/09/2016'
- *         'entryType'  : '',
+ *         'lastTouch'  : '',
  *         'stat'       : 'Average annual losses to companies worldwide now
  *                         exceed $7.7 million, with studied companies losing
  *                         up to $65 million.',
@@ -44,6 +44,7 @@ var Stat = React.createClass({
                 </td>
                 <td>{this.props.data.org}</td>
                 <td>{this.props.data.published}</td>
+                <td>{this.props.data.lastTouch}</td>
                 <td>
                     <button onClick={() => this.props.edit(this.props.data)}>Edit</button>
                     <button onClick={() => this.props.delete(this.props.data)}>Delete</button>
@@ -85,7 +86,7 @@ Note: (d,i) => is equivalent to .map(function(d,i){}). [In case you haven't gott
 Styling courtesy of materialize.css*/
 var StatTable = React.createClass({
     getInitialState: function() {
-        return ({sortCriteria: 'published', order: 1});
+        return ({sortCriteria: 'lastTouch', order: 1});
     },
     setSort: function(event) {
         var results = event.currentTarget.id.split('-');
@@ -139,10 +140,11 @@ var StatTable = React.createClass({
                             <th className='center-align' data-field="stat">Stat<SortButtons id='stat' clickEvent={this.setSort}/></th>
                             <th className='center-align' data-field="org">Organization<SortButtons id='org' clickEvent={this.setSort}/></th>
                             <th className='center-align' data-field="published">Date Published<SortButtons id='published' clickEvent={this.setSort}/></th>
+                            <th className='center-align' data-field="lastTouch">Last Touch<SortButtons id='lastTouch' clickEvent={this.setSort}/></th>
                         </tr>
                     </thead>
                     <tbody>
-                        {this.props.data.map((d, i) => <Stat delete={this.props.delete} edit={this.props.edit} key={'stat-' + i} data={d}/>)}
+                        {this.props.data.map((d, i) => <Stat edit={this.props.edit} delete={this.props.delete} key={'stat-' + i} data={d}/>)}
                     </tbody>
                 </table>
             </div>
@@ -184,9 +186,9 @@ var StatSearch = React.createClass({
         });
     },
 
-    switch: function(event) {
-        var id = event.target.id;
-        if (id == 'search') {
+    switch: function(event, editFlag) {
+        var flag = event != null ? event.target.id : editFlag
+        if (flag == 'search') {
             $('#search_field').show();
             $('#add_field').hide();
         } else {
@@ -196,6 +198,7 @@ var StatSearch = React.createClass({
     },
 
     edit: function(data) {
+        this.switch(null, true);
         this.setState({edit_data: data});
     },
     delete: function(data) {
@@ -207,12 +210,18 @@ var StatSearch = React.createClass({
             valueInputOption: 'USER_ENTERED',
             values: [
                 [
-                  '','','','','','',''
+                    '',
+                    '',
+                    '',
+                    '',
+                    '',
+                    '',
+                    ''
                 ]
             ]
             // Success callback
         }).then(function(response) {
-            alert("Deleted row: "  + data.rowNum);
+            alert("Deleted row: " + data.rowNum);
             // Error callback
         }, function(response) {
             console.log('Error. Sheets API response: ' + response.result.error.message);
@@ -270,48 +279,49 @@ var StatSearch = React.createClass({
             }
         }
         return (
+
             <div className='row'>
-                <div className='flex'>
-                    <button onClick={this.switch} id='search' className="#e0e0e0 grey lighten-2 col s6 btn-large btn-large waves-effect waves-light red">
-                        <i className="black-text material-icons">search</i>
-                    </button>
-                    <button onClick={this.switch} id='add' className="#e0e0e0 grey lighten-2 col s6 btn-large btn-large waves-effect waves-light red">
-                        <i className="black-text material-icons">add</i>
-                    </button>
-                </div>
-                <div className='row' id='search_field'>
-                    <div className="input-field col s6">
-                        <input placeholder="Enter a Title" id="title" type="text" className="validate" onLoadStart={this.filter} onChange={this.filter}></input>
+                <div className="left">
+                    <div className='flex'>
+                        <button onClick={this.switch} id='search' className="#e0e0e0 grey lighten-2 col s6 btn-large btn-large waves-effect waves-light red">
+                            <i className="black-text material-icons">search</i>
+                        </button>
+                        <button onClick={this.switch} id='add' className="#e0e0e0 grey lighten-2 col s6 btn-large btn-large waves-effect waves-light red">
+                            <i className="black-text material-icons">add</i>
+                        </button>
                     </div>
-                    <div className="input-field col s6">
-                        <input placeholder="Enter an Organization" id="org" type="text" className="validate" onChange={this.filter}></input>
+
+                    <div className='row' id='search_field'>
+                        <div className="input-field col s6">
+                            <input placeholder="Enter a Title" id="title" type="text" className="validate" onLoadStart={this.filter} onChange={this.filter}></input>
+                        </div>
+                        <div className="input-field col s6">
+                            <input placeholder="Enter an Organization" id="org" type="text" className="validate" onChange={this.filter}></input>
+                        </div>
+                    </div>
+                    <div className='row'>
+                        <div className="input-field col s12">
+                            <input placeholder="Enter a Stat" id="stat" type="text" className="validate" onChange={this.filter}></input>
+                        </div>
+                    </div>
+                    <div className='row'>
+                        <div className="input-field col s6">
+                            <input placeholder='begin date' id="beginDate" type="date" onChange={this.filter}></input>
+                        </div>
+                        <div className="input-field col s6">
+                            <input placeholder='endDate' id="endDate" type="date" onChange={this.filter}></input>
+                        </div>
+                    </div>
+                    <div className='row'>
+                        <div className="input-field col s12">
+                            <input placeholder='Comma,Separated,Tags' id="topicTags" type="text" onChange={this.filter}></input>
+                        </div>
+                    </div>
+                    <div className='row' id="add_field">
+                        <AddStat edit_data={this.state.edit_data}/>
                     </div>
                 </div>
-                <div className='row'>
-                    <div className="input-field col s12">
-                        <input placeholder="Enter a Stat" id="stat" type="text" className="validate" onChange={this.filter}></input>
-                    </div>
-                </div>
-                <div className='row'>
-                    <div className="input-field col s6">
-                        <input placeholder='begin date' id="beginDate" type="date" onChange={this.filter}></input>
-                        <label>Published On or After</label>
-                    </div>
-                    <div className="input-field col s6">
-                        <input placeholder='endDate' id="endDate" type="date" onChange={this.filter}></input>
-                        <label>Published On or Before</label>
-                    </div>
-                </div>
-                <div className='row'>
-                    <div className="input-field col s12">
-                        <input placeholder='Tags' id="topicTags" type="text" onChange={this.filter}></input>
-                        <label>Comma,separated,tags</label>
-                    </div>
-                </div>
-                <div className='row' id="add_field">
-                    <AddStat edit_data={this.state.edit_data}/>
-                </div>
-                <div className='col s12'>
+                <div className='col s12 offset-s2'>
                     <StatTable delete={this.delete} edit={this.edit} data={stats}/>
                 </div>
             </div>
@@ -322,17 +332,16 @@ var StatSearch = React.createClass({
 //Contains the Stat-adding feature
 var AddStat = React.createClass({
     // An array storing the submission in the following order:
-    // source,org, published, entryType, stat, topicTags[]
+    // source,org, published, lastTouch, stat, topicTags[]
     submission: {
         title: '',
         source: '',
         org: '',
         published: '',
-        entryType: '',
+        lastTouch: '',
         stat: '',
         topicTags: ''
     },
-
     saveInput: function(event) {
         var inputId = event.target.id;
         this.submission[inputId] = event.target.value;
@@ -343,7 +352,6 @@ var AddStat = React.createClass({
     this.submission[event.target.id] = event.target.value.split(', ');
   },
   */
-
     submitAdd: function(event) {
         event.preventDefault();
         gapi.client.sheets.spreadsheets.values.append({
@@ -357,6 +365,7 @@ var AddStat = React.createClass({
                     this.submission.source,
                     this.submission.org,
                     this.submission.published,
+                    this.currDate(),
                     this.submission.entryType,
                     this.submission.stat,
                     this.submission.topicTags
@@ -370,6 +379,29 @@ var AddStat = React.createClass({
             console.log('Error. Sheets API response: ' + response.result.error.message);
         });
     },
+
+    // for saving the date the stat was modified
+    // returns the local date
+    // courtesy of http://stackoverflow.com/a/4929629
+    currDate: function() {
+        var today = new Date();
+        var dd = today.getDate();
+        var mm = today.getMonth() + 1; //January is 0!
+        var yyyy = today.getFullYear();
+
+        if (dd < 10) {
+            dd = '0' + dd
+        }
+
+        if (mm < 10) {
+            mm = '0' + mm
+        }
+
+        today = mm + '/' + dd + '/' + yyyy;
+        console.log(today);
+        return today;
+    },
+
     // renders the adding Stat form
     render: function() {
         var add = this.submitAdd;
@@ -443,5 +475,6 @@ var renderTable = function() {
     ReactDOM.render(
         <div>
         <StatSearch data={test_data}/>
-    </div>, document.querySelector('#root'));
+        </div>,
+    document.querySelector('#root'));
 }
