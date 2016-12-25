@@ -198,7 +198,7 @@ var StatSearch = React.createClass({
     },
 
     edit: function(data) {
-        this.switch(null, true);
+        this.switch (null, true);
         this.setState({edit_data: data});
     },
     delete: function(data) {
@@ -279,7 +279,6 @@ var StatSearch = React.createClass({
             }
         }
         return (
-
             <div className='row'>
                 <div className="left">
                     <div className='flex'>
@@ -331,44 +330,48 @@ var StatSearch = React.createClass({
 
 //Contains the Stat-adding feature
 var AddStat = React.createClass({
-    // An array storing the submission in the following order:
-    // source,org, published, lastTouch, stat, topicTags[]
-    submission: {
-        title: '',
-        source: '',
-        org: '',
-        published: '',
-        lastTouch: '',
-        stat: '',
-        topicTags: ''
-    },
-    saveInput: function(event) {
-        var inputId = event.target.id;
-        this.submission[inputId] = event.target.value;
+
+    getInitialState:function(){
+      return ({title:'', source:'', org:'', published:'', entryType:'', stat:'', topicTags:'', rowNum:'', buttonText:'Add'});
     },
 
+    componentWillReceiveProps:function(nextProps){
+      var data = nextProps.edit_data;
+      console.log(data);
+      this.setState({
+          title: data.title,
+          source: data.source,
+          org: data.org,
+          published: data.published,
+          entryType: data.entryType,
+          stat: data.stat,
+          topicTags: data.topicTags,
+          rowNum:data.rowNum,
+          buttonText:'Edit'
+      })
+    },
     /* parse comma separated tag list into an array
   saveTags: function(event) {
     this.submission[event.target.id] = event.target.value.split(', ');
   },
   */
-    submitAdd: function(event) {
+    submit: function(event) {
         event.preventDefault();
-        gapi.client.sheets.spreadsheets.values.append({
+        var action = this.state.buttonText == 'Add' ? 'append' : 'update'
+        var RANGE = this.state.buttonText == 'Add' ? 'A2:H1000' : 'A' + this.state.rowNum + ':G' + this.state.rowNum;
+        gapi.client.sheets.spreadsheets.values[action]({
             spreadsheetId: SPREADSHEET_ID,
             range: RANGE,
-            insertDataOption: 'INSERT_ROWS',
             valueInputOption: 'USER_ENTERED',
             values: [
                 [
-                    this.submission.title,
-                    this.submission.source,
-                    this.submission.org,
-                    this.submission.published,
-                    this.currDate(),
-                    this.submission.entryType,
-                    this.submission.stat,
-                    this.submission.topicTags
+                    this.state.title,
+                    this.state.source,
+                    this.state.org,
+                    this.state.published,
+                    this.state.entryType,
+                    this.state.stat,
+                    this.state.topicTags
                 ]
             ]
             // Success callback
@@ -402,79 +405,49 @@ var AddStat = React.createClass({
         return today;
     },
 
+    //Handles user input when editing a stat
+    handlChange:function(event){
+      var obj = {};
+      obj[event.target.id] = event.target.value;
+      this.setState(obj);
+    },
+
     // renders the adding Stat form
     render: function() {
-        var add = this.submitAdd;
-        var edit = this.submitEdit;
-        var submit;
-
-        var title,
-            source,
-            org,
-            published,
-            entryType,
-            stat,
-            topicTags,
-            buttonName;
-
-        if (this.props.edit_data) {
-            var data = this.props.edit_data;
-            title = data.title;
-            source = data.source;
-            org = data.org;
-            published = data.published;
-            entryType = data.entryType;
-            stat = data.stat;
-            topicTags = data.topicTags;
-            submit = edit
-            buttonName = 'Update'
-        } else {
-            title = '';
-            source = '';
-            org = '';
-            published = '';
-            entryType = '';
-            stat = '';
-            topicTags = '';
-            submit = add;
-            buttonName = 'Submit'
-        }
-        console.log('re-rendered Add!')
         return (
-            <form onSubmit={submit}>
+            <form onSubmit={this.submit}>
                 <div className="input-field col s6">
-                    <input value={title} ref={(input) => this.input = input} placeholder="Add Title..." id="title" type="text" className="validate" onBlur={this.saveInput}></input>
+                    <input value={this.state.title} onChange={this.handlChange} placeholder="Add Title..." id="title" type="text" className="validate"></input>
                 </div>
                 <div className="input-field col s6">
-                    <input value={source} ref={(input) => this.input = input} placeholder="Add Source URL..." id="source" type="text" className="validate" onBlur={this.saveInput}></input>
+                    <input value={this.state.source} onChange={this.handlChange} placeholder="Add Source URL..." id="source" type="text" className="validate"></input>
                 </div>
                 <div className="input-field col s6">
-                    <input value={org} ref={(input) => this.input = input} placeholder="Add Organization..." id="org" type="text" className="validate" onBlur={this.saveInput}></input>
+                    <input value={this.state.org} onChange={this.handlChange} placeholder="Add Organization..." id="org" type="text" className="validate"></input>
                 </div>
                 <div className="input-field col s6">
-                    <input value={published} ref={(input) => this.input = input} placeholder="Add Publish Date..." id="published" type="text" className="validate" onBlur={this.saveInput}></input>
+                    <input value={this.state.published} onChange={this.handlChange} placeholder="Add Publish Date..." id="published" type="text" className="validate" ></input>
                 </div>
                 <div className="input-field col s6">
-                    <input value={entryType} ref={(input) => this.input = input} placeholder="Study or Article?" id="entryType" type="text" className="validate" onBlur={this.saveInput}></input>
+                    <input value={this.state.entryType} onChange={this.handlChange} placeholder="Study or Article?" id="entryType" type="text" className="validate" ></input>
                 </div>
                 <div className="input-field col s6">
-                    <input value={stat} ref={(input) => this.input = input} placeholder="Stat" id="stat" type="text" className="validate" onBlur={this.saveInput}></input>
+                    <input value={this.state.stat} onChange={this.handlChange} placeholder="Stat" id="stat" type="text" className="validate" ></input>
                 </div>
                 <div className="input-field col s6">
-                    <input value={topicTags} ref={(input) => this.input = input} placeholder="Tags" id="topicTags" type="text" className="validate" onBlur={this.saveInput}></input>
+                    <input value={this.state.topicTags} onChange={this.handlChange} placeholder="Tags" id="topicTags" type="text" className="validate" ></input>
                 </div>
-                <button type="submit">{buttonName}</button>
+                <button id={this.state.buttonText} type="submit">{this.state.buttonText}</button>
             </form>
-        )
-    }
-});
+          )
+      }
+  });
 
 // The ReactDOM.render renders components to the dom. It takes 2 args:
 // 1. Component(s) to be rendered and 2. Location to render specified component(s)
 var renderTable = function() {
-    ReactDOM.render(
-        <div>
-        <StatSearch data={test_data}/>
-        </div>,
-    document.querySelector('#root'));
+  ReactDOM.render(
+      <div>
+      <StatSearch data={test_data}/>
+  </div>, document.querySelector('#root'));
 }
