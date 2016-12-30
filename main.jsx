@@ -34,27 +34,50 @@
    The properties that it gets is "data", which is an individual JS object that has properties
   'title', 'stat', 'org', and 'published', all of which get rendered in with <td> tags. */
 var Stat = React.createClass({
+    getInitialState: function() {
+        return ({
+            isDeleted: false
+        });
+    },
+
+    // Delete from the Google Sheet, and if successful, hide at client-side.
+    // This makes it look as though the stat was deleted until test_data is updated to reflect the Sheet, i.e. by refreshing
+    deleteAndHide: function(event) {
+        this.props.delete(this.props.data).then(
+            function(result) {
+                this.setState({
+                    isDeleted: result
+                });
+            }.bind(this), function(error) {
+                console.log(error);
+            }
+        );
+    },
+
     render: function() {
-        return (
-            <tr>
-                <td>{this.props.data.title}</td>
-                <td>
-                    {this.props.data.stat}<br/>
-                    Tags: {this.props.data.topicTags}
-                </td>
-                <td>{this.props.data.org}</td>
-                <td>{this.props.data.published}</td>
-                <td>{this.props.data.lastTouch}</td>
-                <td className="actionButtons">
-                    <a className="btn-floating btn-small waves-effect waves-light orange" onClick={() => this.props.edit(this.props.data)}>
-                        <i className="material-icons">mode_edit</i>
-                    </a>
-                    <a className="btn-floating btn-small waves-effect waves-light red" onClick={() => this.props.delete(this.props.data)}>
-                        <i className="material-icons">delete</i>
-                    </a>
-                </td>
-            </tr>
-        )
+        if (!this.state.isDeleted) {
+            return (
+                <tr>
+                    <td>{this.props.data.title}</td>
+                    <td>
+                        {this.props.data.stat}<br/>
+                        Tags: {this.props.data.topicTags}
+                    </td>
+                    <td>{this.props.data.org}</td>
+                    <td>{this.props.data.published}</td>
+                    <td>{this.props.data.lastTouch}</td>
+                    <td className="actionButtons">
+                        <a className="btn-floating btn-small waves-effect waves-light orange" onClick={() => this.props.edit(this.props.data)}>
+                            <i className="material-icons">mode_edit</i>
+                        </a>
+                        <a className="btn-floating btn-small waves-effect waves-light red" onClick={this.deleteAndHide}>
+                            <i className="material-icons">delete</i>
+                        </a>
+                    </td>
+                </tr>
+            );
+        }
+        return null;
     }
 });
 
@@ -88,10 +111,12 @@ for each element in the "data" property.
 Note: (d,i) => is equivalent to .map(function(d,i){}). [In case you haven't gotten around to using ES6]
 
 Styling courtesy of materialize.css*/
+
 var StatTable = React.createClass({
     getInitialState: function() {
         return ({sortCriteria: 'lastTouch', order: 1});
     },
+
     setSort: function(event) {
         var results = event.currentTarget.id.split('-');
         var sortCriteria = results[0];
@@ -213,31 +238,42 @@ var StatSearch = React.createClass({
         this.switch (null, true);
         this.setState({edit_data: data});
     },
+
+    // Clear row in Google Sheet and return a Promise so we can hide the row on success */
     delete: function(data) {
-        console.log(data.rowNum);
-        RANGE = 'A' + data.rowNum + ':G' + data.rowNum;
-        gapi.client.sheets.spreadsheets.values.update({
-            spreadsheetId: SPREADSHEET_ID,
-            range: RANGE,
-            valueInputOption: 'USER_ENTERED',
-            values: [
-                [
-                    '',
-                    '',
-                    '',
-                    '',
-                    '',
-                    '',
-                    ''
-                ]
-            ]
-            // Success callback
-        }).then(function(response) {
-            alert("Deleted row: " + data.rowNum);
-            // Error callback
-        }, function(response) {
-            console.log('Error. Sheets API response: ' + response.result.error.message);
-        });
+        return(
+            new Promise(function(resolve, reject){
+                RANGE = 'A' + data.rowNum + ':G' + data.rowNum;
+                gapi.client.sheets.spreadsheets.values.update({
+                    spreadsheetId: SPREADSHEET_ID,
+                    range: RANGE,
+                    valueInputOption: 'USER_ENTERED',
+                    values: [
+                        [
+                            '',
+                            '',
+                            '',
+                            '',
+                            '',
+                            '',
+                            ''
+                        ]
+                    ]
+                    // Success callback
+                }).then(
+                    function(response) {
+                        // Materialize.toast(message, displayLength, className, completeCallback);
+                        Materialize.toast('Deleted stat #' + data.rowNum, 4000);
+                        resolve(true);
+                        // Error callback
+                    }, function(response) {
+                        Materialize.toast('Couldn\'t delete stat #' + data.rowNum + '. <a>(details)</a>', 4000);
+                        reject(response.result.error.message);
+                    }
+                );
+            })
+        );
+
     },
     // renders the StatSearch component.
     render: function() {
@@ -306,39 +342,7 @@ var StatSearch = React.createClass({
                         <AddStat edit_data={this.state.edit_data}/>
                     </div>
                 </div>
-                <div id="searchModal" className="modal">
-                    <div className="modal-content">
-                        <div className='row'>
-                            <div className="input-field col s6">
-                                <input placeholder="Enter a Title" id="title" type="text" className="validate" onLoadStart={this.filter} onChange={this.filter}></input>
-                            </div>
-                            <div className="input-field col s6">
-                                <input placeholder="Enter an Organization" id="org" type="text" className="validate" onChange={this.filter}></input>
-                            </div>
-                        </div>
-                        <div className='row'>
-                            <div className="input-field col s12">
-                                <input placeholder="Enter a Stat" id="stat" type="text" className="validate" onChange={this.filter}></input>
-                            </div>
-                        </div>
-                        <div className='row'>
-                            <div className="input-field col s6">
-                                <input placeholder='begin date' id="beginDate" type="date" onChange={this.filter}></input>
-                            </div>
-                            <div className="input-field col s6">
-                                <input placeholder='endDate' id="endDate" type="date" onChange={this.filter}></input>
-                            </div>
-                        </div>
-                        <div className='row'>
-                            <div className="input-field col s12">
-                                <input placeholder='Comma,Separated,Tags' id="topicTags" type="text" onChange={this.filter}></input>
-                            </div>
-                        </div>
-                    </div>
-                    <div className="modal-footer">
-                        <a href="#!" className="modal-action modal-close waves-effect waves-green btn-flat">Agree</a>
-                    </div>
-                </div>
+                <SearchModal filter={this.filter} />
                 <div className='col s12 offset-s2'>
                     <StatTable delete={this.delete} edit={this.edit} data={stats}/>
                 </div>
@@ -346,6 +350,61 @@ var StatSearch = React.createClass({
         );
     }
 });
+
+//Contains the search functionality
+var SearchModal = React.createClass({
+    //Sets the initial searchTerm and searchCriteria
+    getInitialState: function() {
+        return ({
+            title: '',
+            org: '',
+            stat: '',
+            beginDate: '',
+            endDate: '',
+            topicTags: ''
+        });
+    },
+
+    // renders the StatSearch component.
+    render: function() {
+        return (
+            <div id="searchModal" className="modal">
+                <div className="modal-content">
+                    <div className='row'>
+                        <div className="input-field col s6">
+                            <input placeholder="Enter a Title" id="title" type="text" className="validate" onLoadStart={this.props.filter} onChange={this.props.filter}></input>
+                        </div>
+                        <div className="input-field col s6">
+                            <input placeholder="Enter an Organization" id="org" type="text" className="validate" onChange={this.props.filter}></input>
+                        </div>
+                    </div>
+                    <div className='row'>
+                        <div className="input-field col s12">
+                            <input placeholder="Enter a Stat" id="stat" type="text" className="validate" onChange={this.props.filter}></input>
+                        </div>
+                    </div>
+                    <div className='row'>
+                        <div className="input-field col s6">
+                            <input placeholder='begin date' id="beginDate" type="date" onChange={this.props.filter}></input>
+                        </div>
+                        <div className="input-field col s6">
+                            <input placeholder='endDate' id="endDate" type="date" onChange={this.props.filter}></input>
+                        </div>
+                    </div>
+                    <div className='row'>
+                        <div className="input-field col s12">
+                            <input placeholder='Comma,Separated,Tags' id="topicTags" type="text" onChange={this.props.filter}></input>
+                        </div>
+                    </div>
+                </div>
+                <div className="modal-footer">
+                    <a href="#!" className="modal-action modal-close waves-effect waves-green btn-flat">Agree</a>
+                </div>
+            </div>
+        );
+    }
+});
+
 
 //Contains the Stat-adding feature
 var AddStat = React.createClass({
@@ -356,7 +415,6 @@ var AddStat = React.createClass({
 
     componentWillReceiveProps:function(nextProps){
         var data = nextProps.edit_data;
-
         if (data) {
             this.setState({
                 title: data.title,
