@@ -41,3 +41,27 @@ body {
 	justify-content: space-around;
 }
 
+/* Delete button */
+.btn-floating .btn-small .waves-effect .waves-light .red {
+	top: 4px;
+}
+
+td {
+	border: none !important;
+}
+
+table {
+	border: none !important;
+}
+
+thead {
+	border: none !important;
+}
+
+th.actionButtons {
+	background-color: #FFFFFF !important;
+}
+
+td.actionButtons {
+	background-color: grey !important;
+}

@@ -45,9 +45,13 @@ var Stat = React.createClass({
                 <td>{this.props.data.org}</td>
                 <td>{this.props.data.published}</td>
                 <td>{this.props.data.lastTouch}</td>
-                <td>
-                    <button onClick={() => this.props.edit(this.props.data)}>Edit</button>
-                    <button onClick={() => this.props.delete(this.props.data)}>Delete</button>
+                <td className="actionButtons">
+                    <a className="btn-floating btn-small waves-effect waves-light orange" onClick={() => this.props.edit(this.props.data)}>
+                        <i className="material-icons">mode_edit</i>
+                    </a>
+                    <a className="btn-floating btn-small waves-effect waves-light red" onClick={() => this.props.delete(this.props.data)}>
+                        <i className="material-icons">delete</i>
+                    </a>
                 </td>
             </tr>
         )
@@ -141,6 +145,7 @@ var StatTable = React.createClass({
                             <th className='center-align' data-field="org">Organization<SortButtons id='org' clickEvent={this.setSort}/></th>
                             <th className='center-align' data-field="published">Date Published<SortButtons id='published' clickEvent={this.setSort}/></th>
                             <th className='center-align' data-field="lastTouch">Last Touch<SortButtons id='lastTouch' clickEvent={this.setSort}/></th>
+                            <th className='actionButtons'>{/*this header is intentionally blank*/}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -151,6 +156,7 @@ var StatTable = React.createClass({
         )
     }
 });
+
 
 //Contains the search functionality. and rendering of the StatTable.
 var StatSearch = React.createClass({
@@ -165,6 +171,14 @@ var StatSearch = React.createClass({
             topicTags: ''
         });
     },
+
+    componentWillMount: function() {
+        $(document).ready(function(){
+            // the "href" attribute of .modal-trigger must specify the modal ID that wants to be triggered
+            $('.modal').modal();
+        });
+    },
+
     componentDidMount: function() {
         $('#add_field').hide();
     },
@@ -189,10 +203,8 @@ var StatSearch = React.createClass({
     switch: function(event, editFlag) {
         var flag = event != null ? event.target.id : editFlag
         if (flag == 'search') {
-            $('#search_field').show();
             $('#add_field').hide();
         } else {
-            $('#search_field').hide();
             $('#add_field').show();
         }
     },
@@ -282,49 +294,56 @@ var StatSearch = React.createClass({
             <div className='row'>
                 <div className="left">
                     <div className='flex'>
-                        <button onClick={this.switch} id='search' className="#e0e0e0 grey lighten-2 col s6 btn-large btn-large waves-effect waves-light red">
+                        <button onClick={this.switch} id='search' data-target='searchModal' className="modal-trigger #e0e0e0 grey lighten-2 col s6 btn-large btn-large waves-effect waves-light red">
                             <i className="black-text material-icons">search</i>
                         </button>
                         <button onClick={this.switch} id='add' className="#e0e0e0 grey lighten-2 col s6 btn-large btn-large waves-effect waves-light red">
                             <i className="black-text material-icons">add</i>
                         </button>
                     </div>
-
-                    <div className='row' id='search_field'>
-                        <div className="input-field col s6">
-                            <input placeholder="Enter a Title" id="title" type="text" className="validate" onLoadStart={this.filter} onChange={this.filter}></input>
-                        </div>
-                        <div className="input-field col s6">
-                            <input placeholder="Enter an Organization" id="org" type="text" className="validate" onChange={this.filter}></input>
-                        </div>
-                    </div>
-                    <div className='row'>
-                        <div className="input-field col s12">
-                            <input placeholder="Enter a Stat" id="stat" type="text" className="validate" onChange={this.filter}></input>
-                        </div>
-                    </div>
-                    <div className='row'>
-                        <div className="input-field col s6">
-                            <input placeholder='begin date' id="beginDate" type="date" onChange={this.filter}></input>
-                        </div>
-                        <div className="input-field col s6">
-                            <input placeholder='endDate' id="endDate" type="date" onChange={this.filter}></input>
-                        </div>
-                    </div>
-                    <div className='row'>
-                        <div className="input-field col s12">
-                            <input placeholder='Comma,Separated,Tags' id="topicTags" type="text" onChange={this.filter}></input>
-                        </div>
-                    </div>
+                    
                     <div className='row' id="add_field">
                         <AddStat edit_data={this.state.edit_data}/>
+                    </div>
+                </div>
+                <div id="searchModal" className="modal">
+                    <div className="modal-content">
+                        <div className='row'>
+                            <div className="input-field col s6">
+                                <input placeholder="Enter a Title" id="title" type="text" className="validate" onLoadStart={this.filter} onChange={this.filter}></input>
+                            </div>
+                            <div className="input-field col s6">
+                                <input placeholder="Enter an Organization" id="org" type="text" className="validate" onChange={this.filter}></input>
+                            </div>
+                        </div>
+                        <div className='row'>
+                            <div className="input-field col s12">
+                                <input placeholder="Enter a Stat" id="stat" type="text" className="validate" onChange={this.filter}></input>
+                            </div>
+                        </div>
+                        <div className='row'>
+                            <div className="input-field col s6">
+                                <input placeholder='begin date' id="beginDate" type="date" onChange={this.filter}></input>
+                            </div>
+                            <div className="input-field col s6">
+                                <input placeholder='endDate' id="endDate" type="date" onChange={this.filter}></input>
+                            </div>
+                        </div>
+                        <div className='row'>
+                            <div className="input-field col s12">
+                                <input placeholder='Comma,Separated,Tags' id="topicTags" type="text" onChange={this.filter}></input>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="modal-footer">
+                        <a href="#!" className="modal-action modal-close waves-effect waves-green btn-flat">Agree</a>
                     </div>
                 </div>
                 <div className='col s12 offset-s2'>
                     <StatTable delete={this.delete} edit={this.edit} data={stats}/>
                 </div>
             </div>
-        )
+        );
     }
 });
 
@@ -336,25 +355,24 @@ var AddStat = React.createClass({
     },
 
     componentWillReceiveProps:function(nextProps){
-      var data = nextProps.edit_data;
-      console.log(data);
-      this.setState({
-          title: data.title,
-          source: data.source,
-          org: data.org,
-          published: data.published,
-          entryType: data.entryType,
-          stat: data.stat,
-          topicTags: data.topicTags,
-          rowNum:data.rowNum,
-          buttonText:'Edit'
-      })
+        var data = nextProps.edit_data;
+
+        if (data) {
+            this.setState({
+                title: data.title,
+                source: data.source,
+                org: data.org,
+                published: data.published,
+                entryType: data.entryType,
+                stat: data.stat,
+                topicTags: data.topicTags,
+                rowNum:data.rowNum,
+                buttonText:'Edit'
+            })
+        }
+
     },
-    /* parse comma separated tag list into an array
-  saveTags: function(event) {
-    this.submission[event.target.id] = event.target.value.split(', ');
-  },
-  */
+
     submit: function(event) {
         event.preventDefault();
         var action = this.state.buttonText == 'Add' ? 'append' : 'update'
