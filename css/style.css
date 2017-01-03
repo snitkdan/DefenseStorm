@@ -1,4 +1,4 @@
-#image {
+#logo {
 	width: 30%;
 	height: auto;
 	display: none;
@@ -46,17 +46,6 @@ body {
 	top: 4px;
 }
 
-td {
-	border: none !important;
-}
-
-table {
-	border: none !important;
-}
-
-thead {
-	border: none !important;
-}
 
 th.actionButtons {
 	background-color: #FFFFFF !important;
@@ -64,4 +53,12 @@ th.actionButtons {
 
 td.actionButtons {
 	background-color: grey !important;
+}
+
+.input-field {
+	color: black;
+}
+
+.modal.bottom-sheet {
+    max-height: 30%;
 }

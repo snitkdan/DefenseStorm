@@ -70,7 +70,7 @@ function handleAuthResult(authResult) {
   if (authResult && !authResult.error) {
     // Hide auth UI, then load client library.
     authorizeDiv.remove();
-    $('#image').css('display', 'hidden');
+    $('#logo').css('display', 'hidden');
     loadSheetsApi();
   } else {
     // Show auth UI, allowing the user to initiate authorization by
@@ -79,7 +79,7 @@ function handleAuthResult(authResult) {
     authButton.text('Authorize Google Sheets');
     authButton.attr('id', 'authorize-button');
     authButton.click(handleAuthClick);
-    $('#image').css('display', 'block');
+    $('#logo').css('display', 'block');
     authorizeDiv.append(authButton);
   }
 }
@@ -135,7 +135,7 @@ function processSheetsData() {
           }
         }
       }
-      $('#image').css('display', 'block');
+      $('#logo').css('display', 'block');
       $('#root').css('display', 'block');
       renderTable();
     } else {
