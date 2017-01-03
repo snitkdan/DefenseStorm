@@ -71,7 +71,7 @@ var Stat = React.createClass({
                     <td className="actionButtons">
                         <button data-target='addModal' className="modal-trigger btn-floating btn-small waves-effect waves-light orange" onClick={() => this.props.edit(this.props.data)}>
                             <i className="material-icons">mode_edit</i>
-                        </button>                      
+                        </button>
                         <button className="btn-floating btn-small waves-effect waves-light red" onClick={this.deleteAndHide}>
                             <i className="material-icons">delete</i>
                         </button>
@@ -123,8 +123,10 @@ var StatTable = React.createClass({
         var results = event.currentTarget.id.split('-');
         var sortCriteria = results[0];
         var order = results[1];
-        this.setState({sortCriteria: sortCriteria, order: order});
-
+        console.log('The sortCriteria is: ', event.target.id);
+        var Order = this.state.order == 1 ? 0 : 1;
+        console.log('The order is: ', Order);
+        this.setState({sortCriteria: sortCriteria, order: Order});
     },
     sortRows: function(order) {
         var sortCriteria = this.state.sortCriteria;
@@ -167,11 +169,11 @@ var StatTable = React.createClass({
                 <table className='pure-table pure-table-bordered pure-table-striped'>
                     <thead>
                         <tr>
-                            <th className='center-align' data-field="title">Title<SortButtons id='title' clickEvent={this.setSort}/></th>
-                            <th className='center-align' data-field="stat">Stat<SortButtons id='stat' clickEvent={this.setSort}/></th>
-                            <th className='center-align' data-field="org">Organization<SortButtons id='org' clickEvent={this.setSort}/></th>
-                            <th className='center-align' data-field="published">Date Published<SortButtons id='published' clickEvent={this.setSort}/></th>
-                            <th className='center-align' data-field="lastTouch">Last Touch<SortButtons id='lastTouch' clickEvent={this.setSort}/></th>
+                            <th className='center-align' data-field="title"><a className='t-head' id='title' onClick={this.setSort}> Title</a></th>
+                            <th className='center-align' data-field="stat"><a className='t-head' id='stat' onClick={this.setSort}> Stat</a></th>
+                            <th className='center-align' data-field="org"><a className='t-head' id='org' onClick={this.setSort}>Organization</a></th>
+                            <th className='center-align' data-field="published"><a className='t-head' id='published' onClick={this.setSort}>Date Published</a></th>
+                            <th className='center-align' data-field="lastTouch"><a className='t-head' id='lastTouch' onClick={this.setSort}>Date Added</a></th>
                             <th className='actionButtons'>{/*this header is intentionally blank*/}</th>
                         </tr>
                     </thead>

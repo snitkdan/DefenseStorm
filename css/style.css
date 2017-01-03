@@ -41,6 +41,14 @@ body {
 	justify-content: space-around;
 }
 
+/* Table Headers*/
+.t-head {
+	cursor:pointer;
+	text-decoration: none;
+	color:black;
+}
+
+
 /* Delete button */
 .btn-floating .btn-small .waves-effect .waves-light .red {
 	top: 4px;
