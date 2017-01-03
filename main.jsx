@@ -200,14 +200,16 @@ var StatSearch = React.createClass({
     // Sets the searchTerm and searchCriteria to the event's value and id, respectively.
     // This determines what will be searched and what that search will be on.
     filter: function(event) {
-        if (event.target.id == 'topicTags') {
-            this.setState({topicTags: event.target.value.trim().split(',')});
+        if (event.target.id == 'topicTags' && event.target.value != '') {
+            var tagArray = event.target.value.trim().toLowerCase().split(',');
+            this.setState({topicTags: tagArray});
         } else {
             var obj = {};
             obj[event.target.id] = event.target.value;
             this.setState(obj);
         }
     },
+
 
     matchTags: function(haystack, arr) {
         return arr.some(function(v) {
