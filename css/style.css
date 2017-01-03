@@ -70,3 +70,12 @@ td.actionButtons {
 .modal.bottom-sheet {
     max-height: 30%;
 }
+
+.placeholder {
+	color:black;
+}
+
+::-webkit-input-placeholder {
+    color: black;
+    opacity: 1 !important; /* for older chrome versions. may no longer apply. */
+}
