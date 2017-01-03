@@ -20,7 +20,7 @@ var SCOPES = ["https://www.googleapis.com/auth/spreadsheets"];
  *
  * TODO: figure out how to return all non-empty rows instead of hardcoding a large number of rows.
  */
-var RANGE = 'A2:G1000';
+var RANGE = 'A2:H1000';
 
 /**
  * For reading a JSON configuration file
@@ -70,7 +70,7 @@ function handleAuthResult(authResult) {
   if (authResult && !authResult.error) {
     // Hide auth UI, then load client library.
     authorizeDiv.remove();
-    $('#image').css('display', 'hidden');
+    $('#logo').css('display', 'hidden');
     loadSheetsApi();
   } else {
     // Show auth UI, allowing the user to initiate authorization by
@@ -79,7 +79,7 @@ function handleAuthResult(authResult) {
     authButton.text('Authorize Google Sheets');
     authButton.attr('id', 'authorize-button');
     authButton.click(handleAuthClick);
-    $('#image').css('display', 'block');
+    $('#logo').css('display', 'block');
     authorizeDiv.append(authButton);
   }
 }
@@ -130,11 +130,12 @@ function processSheetsData() {
             'published' : row[3],
             'lastTouch' : row[4],
             'stat'      : row[5],
-            'topicTags' : row[6]
+            'topicTags' : row[6],
+            'rowNum'    : row[7]
           }
         }
       }
-      $('#image').css('display', 'block');
+      $('#logo').css('display', 'block');
       $('#root').css('display', 'block');
       renderTable();
     } else {
