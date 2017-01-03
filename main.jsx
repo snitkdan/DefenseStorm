@@ -62,7 +62,7 @@ var Stat = React.createClass({
                         <a href={this.props.data.source}>{this.props.data.title}</a>
                     </td>
                     <td>
-                        {this.props.data.stat}<br/>
+                        <p>{this.props.data.stat}</p>
                         Tags: {this.props.data.topicTags.split(',').map((d, i) => <div className='chip' key={this.props.row + '-tag-' + i}>{d}</div>)}
                     </td>
                     <td>{this.props.data.org}</td>
@@ -83,27 +83,6 @@ var Stat = React.createClass({
     }
 });
 
-var SortButtons = React.createClass({
-    render: function() {
-        return (
-            <div>
-                <a id={this.props.id + '-0'} onClick={this.props.clickEvent}>
-                    <svg fill="#000000" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M16.59 8.59L12 13.17 7.41 8.59 6 10l6 6 6-6z"/>
-                        <path d="M0 0h24v24H0z" fill="none"/>
-                    </svg>
-                </a>
-                <a id={this.props.id + '-1'} onClick={this.props.clickEvent}>
-                    <svg fill="#000000" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M12 8l-6 6 1.41 1.41L12 10.83l4.59 4.58L18 14z"/>
-                        <path d="M0 0h24v24H0z" fill="none"/>
-                    </svg>
-                </a>
-            </div>
-        )
-    }
-});
-
 /*This is a React component for the StatTable, which holds the headings
 As well as the rest of the individual "Stat" entries.
 Within the <tbody>, each entry in the'data' property that is passed to this component
@@ -120,41 +99,40 @@ var StatTable = React.createClass({
     },
 
     setSort: function(event) {
-        var results = event.currentTarget.id.split('-');
-        var sortCriteria = results[0];
-        var order = results[1];
-        console.log('The sortCriteria is: ', event.target.id);
-        var Order = this.state.order == 1 ? 0 : 1;
-        console.log('The order is: ', Order);
-        this.setState({sortCriteria: sortCriteria, order: Order});
+        this.setState({sortCriteria: event.target.id, order: this.state.order == 1 ? 0 : 1});
     },
     sortRows: function(order) {
         var sortCriteria = this.state.sortCriteria;
         var order = this.state.order;
         var sorted_Rows = this.props.data.sort(function(a, b) {
-            a = a[sortCriteria].trim().toLowerCase();
-            b = b[sortCriteria].trim().toLowerCase();
-            if (sortCriteria == 'published') {
-                a = new Date(a);
-                b = new Date(b);
+            var sortA = a[sortCriteria].trim().toLowerCase();
+            var sortB = b[sortCriteria].trim().toLowerCase();
+            if (sortCriteria == 'published' || sortCriteria =='lastTouch') {
+                sortA = new Date(sortA);
+                sortB = new Date(sortB);
             }
             if (order == 0) {
-                if (a < b) {
+                if (sortA < sortB) {
                     return -1
                 } else {
-                    if (a > b) {
+                    if (sortA > sortB) {
                         return 1;
                     }
-                    return 0;
+                    else {
+                      return a['rowNum'] < b['rowNum'] ? -1 : 1;
+                    }
                 }
-            } else {
-                if (a < b) {
+            }
+            else {
+                if (sortA < sortB) {
                     return 1
                 } else {
-                    if (a > b) {
+                    if (sortA > sortB) {
                         return -1;
                     }
-                    return 0;
+                    else{
+                      return a['rowNum'] < b['rowNum'] ? 1 : -1;
+                    }
                 }
             }
         });

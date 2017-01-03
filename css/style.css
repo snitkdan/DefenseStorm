@@ -71,10 +71,7 @@ td.actionButtons {
     max-height: 30%;
 }
 
-.placeholder {
-	color:black;
-}
-
+/*Placeholder text*/
 ::-webkit-input-placeholder {
     color: black;
     opacity: 1 !important; /* for older chrome versions. may no longer apply. */
