@@ -67,8 +67,32 @@ td.actionButtons {
 	color: black;
 }
 
-.modal.bottom-sheet {
-    max-height: 30%;
+/* Reduce spacing in and around searchModal content to make it more compact */
+.modal.bottom-sheet div.modal-content {
+	padding-bottom: 0px;
+	padding-top: 0px;
+}
+
+.modal.bottom-sheet div.row, .modal.bottom-sheet div.row input, .modal.bottom-sheet div.input-field {
+	margin-bottom: 0px;
+	margin-top: 0px;
+	padding-top: 0px;
+}
+
+div.modal-header {
+	background-color: #202830;
+	padding: 0px;
+	margin: 0px;
+}
+
+div.modal-header h5 {
+	color: #FFFFFF;
+	padding: 10px;
+	margin: 0px;
+}
+
+div.modal-header h5 i.material-icons {
+	right: 0px;
 }
 
 /*Placeholder text*/

@@ -97,6 +97,7 @@ var handleAuthClick = function(event) {
 }
 
 var test_data = [];
+var lastRow = 2;
 
 /**
  * Load Sheets API client library
@@ -135,6 +136,7 @@ function processSheetsData() {
           }
         }
       }
+      window.lastRow = range.values.length + 1;
       $('#logo').css('display', 'block');
       $('#root').css('display', 'block');
       renderTable();
