@@ -99,7 +99,7 @@ var StatTable = React.createClass({
     },
 
     setSort: function(event) {
-        if (event.target.id != this.state.sortCriteria) { 
+        if (event.target.id != this.state.sortCriteria) {
             $('div#statTable table thead tr th#' + this.state.sortCriteria).removeClass('sortBy');
             $('div#statTable table thead tr th#' + event.target.id).addClass('sortBy');
         }
@@ -204,27 +204,40 @@ var StatSearch = React.createClass({
         });
     },
 
+    componentDidMount:function(){
+      $('.datepicker').pickadate({
+          selectMonths: true, // Creates a dropdown to control month
+          selectYears: 15, // Creates a dropdown of 15 years to control year
+          container: 'body',
+      }).on("change", function(){
+        console.log($('.datepicker').val());
+      }.bind(this));
+    },
+
     // Sets the searchTerm and searchCriteria to the event's value and id, respectively.
     // This determines what will be searched and what that search will be on.
     filter: function(event) {
-        if (event.target.id == 'topicTags' && event.target.value != '') {
-            var tagArray = event.target.value.trim().toLowerCase().split(',');
-            this.setState({topicTags: tagArray});
-        } else if (event.target.id == 'clearSearch') {
-            this.setState({
-                title: '',
-                org: '',
-                stat: '',
-                beginDate: '',
-                endDate: '',
-                topicTags: ''              
-            });
-            $('#searchStatForm').trigger('reset');
-        } else {
-            var obj = {};
-            obj[event.target.id] = event.target.value;
-            this.setState(obj);
-        }
+          console.log('in filter!');
+          if (event.target.id == 'topicTags' && event.target.value != '') {
+              var tagArray = event.target.value.trim().toLowerCase().split(',');
+              this.setState({topicTags: tagArray});
+          }
+          else if (event.target.id == 'clearSearch') {
+              this.setState({
+                  title: '',
+                  org: '',
+                  stat: '',
+                  beginDate: '',
+                  endDate: '',
+                  topicTags: ''
+              });
+              $('#searchStatForm').trigger('reset');
+          }
+          else {
+              var obj = {};
+              obj[event.target.id] = event.target.value;
+              this.setState(obj);
+          }
     },
 
     matchTags: function(haystack, arr) {
@@ -278,6 +291,7 @@ var StatSearch = React.createClass({
         var stats = this.props.data;
         for (var searchCriteria in this.state) {
             var searchTerm = this.state[searchCriteria];
+            console.log(searchTerm);
             if (searchTerm.length > 0) {
                 if (searchCriteria == 'beginDate') {
                     var beginElements = searchTerm.split("-");
@@ -354,9 +368,9 @@ var SearchStat = React.createClass({
             <div id="searchModal" className="modal bottom-sheet">
                 <div className="modal-header">
                     <h5 className="modal-header">
-                        Search for an existing stat  
-                        <i className="material-icons right">search</i>                     
-                    </h5>                     
+                        Search for an existing stat
+                        <i className="material-icons right">search</i>
+                    </h5>
                 </div>
                 <div className="modal-content">
                     <form id='searchStatForm'>
@@ -373,13 +387,13 @@ var SearchStat = React.createClass({
                         </div>
                         <div className='row'>
                             <div className="input-field col s3">
-                                <input placeholder='begin date' id="beginDate" type="date" className='datepicker' onChange={this.props.filter}></input>
+                                <input placeholder='Begin Date' id="beginDate" type="date" className='datepicker' onChange={this.props.filter}></input>
                             </div>
                             <div className="input-field col s3">
-                                <input placeholder='endDate' id="endDate" type="date" className='datepicker' onChange={this.props.filter}></input>
+                                <input placeholder='End Date' id="endDate" type="date" className='datepicker' onChange={this.props.filter}></input>
                             </div>
                             <div className="input-field col s6">
-                                <input placeholder='Comma,Separated,Tags' id="topicTags" type="text" onChange={this.props.filter}></input>
+                                <input placeholder='Comma, Separated, Tags' id="topicTags" type="text" onChange={this.props.filter}></input>
                             </div>
                         </div>
                     </form>
@@ -513,9 +527,9 @@ var AddStat = React.createClass({
             <div id="addModal" className="modal bottom-sheet">
                 <div className="modal-header">
                     <h5 className="modal-header">
-                        {this.state.buttonText} a stat 
-                        <i className="material-icons right">{this.state.buttonText.toLowerCase()}</i>                     
-                    </h5>                    
+                        {this.state.buttonText} a stat
+                        <i className="material-icons right">{this.state.buttonText.toLowerCase()}</i>
+                    </h5>
                 </div>
                 <div className="modal-content">
                     <form id="addStatForm">
@@ -530,7 +544,7 @@ var AddStat = React.createClass({
                                 <input value={this.state.org} onChange={this.handlChange} placeholder="Add Organization..." id="org" type="text" className="validate"></input>
                             </div>
                             <div className="input-field col s3">
-                                <input value={this.state.published} onChange={this.handlChange} placeholder="Add Publish Date..." id="published" type="text" className="validate" ></input>
+                                <input placeholder="Add Publish Date..." value={this.state.published} id="beginDate" type="date" className='datepicker' onChange={this.handlChange} ></input>
                             </div>
                         </div>
                         <div className='row'>
@@ -552,7 +566,7 @@ var AddStat = React.createClass({
           )
       }
   });
-/* <a href="#!" className="modal-action modal-close waves-effect waves-green btn-flat">Agree</a> 
+/* <a href="#!" className="modal-action modal-close waves-effect waves-green btn-flat">Agree</a>
                         <div className="modal-footer">
                             <button id={this.state.buttonText} onClick={this.submit}>{this.state.buttonText}</button>
                         </div>*/
