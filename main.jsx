@@ -68,7 +68,7 @@ var Stat = React.createClass({
                     <td>{this.props.data.org}</td>
                     <td>{this.props.data.published}</td>
                     <td>{this.props.data.lastTouch}</td>
-                    <td className="actionButtons">
+                    <td>
                         <button data-target='addModal' className="modal-trigger btn-floating btn-small waves-effect waves-light orange" onClick={() => this.props.edit(this.props.data)}>
                             <i className="material-icons">mode_edit</i>
                         </button>
@@ -99,7 +99,14 @@ var StatTable = React.createClass({
     },
 
     setSort: function(event) {
-        this.setState({sortCriteria: event.target.id, order: this.state.order == 1 ? 0 : 1});
+        if (event.target.id != this.state.sortCriteria) { 
+            $('div#statTable table thead tr th#' + this.state.sortCriteria).removeClass('sortBy');
+            $('div#statTable table thead tr th#' + event.target.id).addClass('sortBy');
+        }
+        this.setState({
+            sortCriteria: event.target.id,
+            order: this.state.order == 1 ? 0 : 1
+        });
     },
     sortRows: function(order) {
         var sortCriteria = this.state.sortCriteria;
@@ -147,12 +154,12 @@ var StatTable = React.createClass({
                 <table className='pure-table pure-table-bordered pure-table-striped'>
                     <thead>
                         <tr>
-                            <th className='center-align' data-field="title"><a className='t-head' id='title' onClick={this.setSort}> Title</a></th>
-                            <th className='center-align' data-field="stat"><a className='t-head' id='stat' onClick={this.setSort}> Stat</a></th>
-                            <th className='center-align' data-field="org"><a className='t-head' id='org' onClick={this.setSort}>Organization</a></th>
-                            <th className='center-align' data-field="published"><a className='t-head' id='published' onClick={this.setSort}>Date Published</a></th>
-                            <th className='center-align' data-field="lastTouch"><a className='t-head' id='lastTouch' onClick={this.setSort}>Date Added</a></th>
-                            <th className='actionButtons'>{/*this header is intentionally blank*/}</th>
+                            <th className='center-align' data-field="title" id='title' onClick={this.setSort}>Title</th>
+                            <th className='center-align' data-field="stat" id='stat' onClick={this.setSort}>Stat</th>
+                            <th className='center-align' data-field="org" id='org' onClick={this.setSort}>Organization</th>
+                            <th className='center-align' data-field="published" id='published' onClick={this.setSort}>Date Published</th>
+                            <th className='center-align sortBy' data-field="lastTouch" id='lastTouch' onClick={this.setSort}>Date Added</th>
+                            <th>test{/*this header is intentionally blank*/}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -163,7 +170,6 @@ var StatTable = React.createClass({
         )
     }
 });
-
 
 //Contains the search functionality. and rendering of the StatTable.
 var StatSearch = React.createClass({
@@ -183,6 +189,7 @@ var StatSearch = React.createClass({
         $(document).ready(function(){
             // the "href" attribute of .modal-trigger must specify the modal ID that wants to be triggered
             $('.modal').modal({
+                opacity: 0,
                 ready: function(modal, trigger) {
                     $('#logo').hide();
                     $('#sidebar').hide();
@@ -203,13 +210,22 @@ var StatSearch = React.createClass({
         if (event.target.id == 'topicTags' && event.target.value != '') {
             var tagArray = event.target.value.trim().toLowerCase().split(',');
             this.setState({topicTags: tagArray});
+        } else if (event.target.id == 'clearSearch') {
+            this.setState({
+                title: '',
+                org: '',
+                stat: '',
+                beginDate: '',
+                endDate: '',
+                topicTags: ''              
+            });
+            $('#searchStatForm').trigger('reset');
         } else {
             var obj = {};
             obj[event.target.id] = event.target.value;
             this.setState(obj);
         }
     },
-
 
     matchTags: function(haystack, arr) {
         return arr.some(function(v) {
@@ -312,10 +328,10 @@ var StatSearch = React.createClass({
             <div className='row'>
                 <div className="left" id='sidebar'>
                     <div className='flex'>
-                        <button onClick={this.switch} id='search' data-target='searchModal' className="modal-trigger #e0e0e0 grey lighten-2 col s6 btn-large btn-large waves-effect waves-light red">
+                        <button id='search' data-target='searchModal' className="modal-trigger #e0e0e0 grey lighten-2 col s6 btn-large btn-large waves-effect waves-light red">
                             <i className="black-text material-icons">search</i>
                         </button>
-                        <button onClick={this.switch} id='add' data-target='addModal' className="modal-trigger #e0e0e0 grey lighten-2 col s6 btn-large btn-large waves-effect waves-light red">
+                        <button id='add' data-target='addModal' className="modal-trigger #e0e0e0 grey lighten-2 col s6 btn-large btn-large waves-effect waves-light red">
                             <i className="black-text material-icons">add</i>
                         </button>
                     </div>
@@ -336,36 +352,41 @@ var SearchStat = React.createClass({
     render: function() {
         return (
             <div id="searchModal" className="modal bottom-sheet">
+                <div className="modal-header">
+                    <h5 className="modal-header">
+                        Search for an existing stat  
+                        <i className="material-icons right">search</i>                     
+                    </h5>                     
+                </div>
                 <div className="modal-content">
-                    <div className='row'>
-                        <div className="input-field col s6">
-                            <input placeholder="Enter a Title" id="title" type="text" className="validate" onLoadStart={this.props.filter} onChange={this.props.filter}></input>
+                    <form id='searchStatForm'>
+                        <div className='row'>
+                            <div className="input-field col s3">
+                                <input placeholder="Enter a Title" id="title" type="text" className="validate" onLoadStart={this.props.filter} onChange={this.props.filter}></input>
+                            </div>
+                            <div className="input-field col s3">
+                                <input placeholder="Enter an Organization" id="org" type="text" className="validate" onChange={this.props.filter}></input>
+                            </div>
+                            <div className="input-field col s6">
+                                <input placeholder="Enter a Stat" id="stat" type="text" className="validate" onChange={this.props.filter}></input>
+                            </div>
                         </div>
-                        <div className="input-field col s6">
-                            <input placeholder="Enter an Organization" id="org" type="text" className="validate" onChange={this.props.filter}></input>
+                        <div className='row'>
+                            <div className="input-field col s3">
+                                <input placeholder='begin date' id="beginDate" type="date" className='datepicker' onChange={this.props.filter}></input>
+                            </div>
+                            <div className="input-field col s3">
+                                <input placeholder='endDate' id="endDate" type="date" className='datepicker' onChange={this.props.filter}></input>
+                            </div>
+                            <div className="input-field col s6">
+                                <input placeholder='Comma,Separated,Tags' id="topicTags" type="text" onChange={this.props.filter}></input>
+                            </div>
                         </div>
-                    </div>
-                    <div className='row'>
-                        <div className="input-field col s12">
-                            <input placeholder="Enter a Stat" id="stat" type="text" className="validate" onChange={this.props.filter}></input>
-                        </div>
-                    </div>
-                    <div className='row'>
-                        <div className="input-field col s6">
-                            <input placeholder='begin date' id="beginDate" type="date" className='datepicker' onChange={this.props.filter}></input>
-                        </div>
-                        <div className="input-field col s6">
-                            <input placeholder='endDate' id="endDate" type="date" className='datepicker' onChange={this.props.filter}></input>
-                        </div>
-                    </div>
-                    <div className='row'>
-                        <div className="input-field col s12">
-                            <input placeholder='Comma,Separated,Tags' id="topicTags" type="text" onChange={this.props.filter}></input>
-                        </div>
-                    </div>
+                    </form>
                 </div>
                 <div className="modal-footer">
-                    <a href="#!" className="modal-action modal-close waves-effect waves-green btn-flat">Agree</a>
+                    <a href="#!" className="modal-action modal-close waves-effect waves-green btn-flat">Close</a>
+                    <a href="#!" onClick={this.props.filter} id='clearSearch' className="waves-effect waves-green btn-flat">Clear</a>
                 </div>
             </div>
         );
@@ -400,13 +421,11 @@ var AddStat = React.createClass({
 
     submit: function(event) {
         event.preventDefault();
-        var action = this.state.buttonText == 'Add' ? 'append' : 'update'
-        var RANGE = this.state.buttonText == 'Add' ? 'A2:H1000' : 'A' + this.state.rowNum + ':G' + this.state.rowNum;
-        gapi.client.sheets.spreadsheets.values[action]({
-            spreadsheetId: SPREADSHEET_ID,
-            range: RANGE,
-            valueInputOption: 'USER_ENTERED',
-            values: [
+        console.log(this.state);
+        var RANGE;
+        var action;
+        var values =
+            [
                 [
                     this.state.title,
                     this.state.source,
@@ -416,13 +435,30 @@ var AddStat = React.createClass({
                     this.state.stat,
                     this.state.topicTags
                 ]
-            ]
+            ];
+
+        if (this.state.buttonText == 'Add') {
+            values[0].push(window.lastRow + 1);
+            RANGE = 'A2:H1000';
+            action = 'append';
+        } else {
+            RANGE = 'A' + this.state.rowNum + ':G' + this.state.rowNum;
+            action = 'update';
+        }
+
+        gapi.client.sheets.spreadsheets.values[action]({
+            spreadsheetId: SPREADSHEET_ID,
+            range: RANGE,
+            valueInputOption: 'USER_ENTERED',
+            values: values
             // Success callback
         }).then(function(response) {
-            alert("Updated cell count" : response.result.updates.updatedCells);
-            this.clear();
+            console.log("Updated cell count" : response.result.updates.updatedCells);
+            if (this.state.buttonText == 'Add') {
+                window.lastRow++;
+            }
             // Error callback
-        }, function(response) {
+        }.bind(this), function(response) {
             console.log('Error. Sheets API response: ' + response.result.error.message);
         });
     },
@@ -475,39 +511,51 @@ var AddStat = React.createClass({
     render: function() {
         return (
             <div id="addModal" className="modal bottom-sheet">
+                <div className="modal-header">
+                    <h5 className="modal-header">
+                        {this.state.buttonText} a stat 
+                        <i className="material-icons right">{this.state.buttonText.toLowerCase()}</i>                     
+                    </h5>                    
+                </div>
                 <div className="modal-content">
                     <form id="addStatForm">
-                        <div className="input-field col s6">
-                            <input value={this.state.title} onChange={this.handlChange} placeholder="Add Title..." id="title" type="text" className="validate"></input>
+                        <div className='row'>
+                            <div className="input-field col s3">
+                                <input value={this.state.title} onChange={this.handlChange} placeholder="Add Title..." id="title" type="text" className="validate"></input>
+                            </div>
+                            <div className="input-field col s3">
+                                <input value={this.state.source} onChange={this.handlChange} placeholder="Add Source URL..." id="source" type="text" className="validate"></input>
+                            </div>
+                            <div className="input-field col s3">
+                                <input value={this.state.org} onChange={this.handlChange} placeholder="Add Organization..." id="org" type="text" className="validate"></input>
+                            </div>
+                            <div className="input-field col s3">
+                                <input value={this.state.published} onChange={this.handlChange} placeholder="Add Publish Date..." id="published" type="text" className="validate" ></input>
+                            </div>
                         </div>
-                        <div className="input-field col s6">
-                            <input value={this.state.source} onChange={this.handlChange} placeholder="Add Source URL..." id="source" type="text" className="validate"></input>
-                        </div>
-                        <div className="input-field col s6">
-                            <input value={this.state.org} onChange={this.handlChange} placeholder="Add Organization..." id="org" type="text" className="validate"></input>
-                        </div>
-                        <div className="input-field col s6">
-                            <input value={this.state.published} onChange={this.handlChange} placeholder="Add Publish Date..." id="published" type="text" className="validate" ></input>
-                        </div>
-                        <div className="input-field col s6">
-                            <input value={this.state.entryType} onChange={this.handlChange} placeholder="Study or Article?" id="entryType" type="text" className="validate" ></input>
-                        </div>
-                        <div className="input-field col s6">
-                            <input value={this.state.stat} onChange={this.handlChange} placeholder="Stat" id="stat" type="text" className="validate" ></input>
-                        </div>
-                        <div className="input-field col s6">
-                            <input value={this.state.topicTags} onChange={this.handlChange} placeholder="Tags" id="topicTags" type="text" className="validate" ></input>
-                        </div>
-                        <div className="modal-footer">
-                            <button id={this.state.buttonText} onClick={this.submit}>{this.state.buttonText}</button>
+                        <div className='row'>
+                            <div className="input-field col s6">
+                                <input value={this.state.stat} onChange={this.handlChange} placeholder="Stat" id="stat" type="text" className="validate" ></input>
+                            </div>
+                            <div className="input-field col s6">
+                                <input value={this.state.topicTags} onChange={this.handlChange} placeholder="Tags" id="topicTags" type="text" className="validate" ></input>
+                            </div>
                         </div>
                     </form>
+                </div>
+                <div className="modal-footer">
+                    <a href="#!" id={this.state.buttonText} onClick={this.submit} className="waves-effect waves-green btn-flat">{this.state.buttonText}</a>
+                    <a href="#!" className="modal-action modal-close waves-effect waves-green btn-flat">Close</a>
+                    <a href="#!" onClick={this.clear} className="waves-effect waves-green btn-flat">Clear</a>
                 </div>
             </div>
           )
       }
   });
-/* <a href="#!" className="modal-action modal-close waves-effect waves-green btn-flat">Agree</a> */
+/* <a href="#!" className="modal-action modal-close waves-effect waves-green btn-flat">Agree</a> 
+                        <div className="modal-footer">
+                            <button id={this.state.buttonText} onClick={this.submit}>{this.state.buttonText}</button>
+                        </div>*/
 
 // The ReactDOM.render renders components to the dom. It takes 2 args:
 // 1. Component(s) to be rendered and 2. Location to render specified component(s)
