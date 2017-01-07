@@ -433,7 +433,7 @@ var AddStat = React.createClass({
                     this.state.published,
                     this.state.entryType,
                     this.state.stat,
-                    this.state.topicTags,
+                    this.state.topicTags
                 ]
             ];
 
