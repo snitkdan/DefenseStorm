@@ -12,7 +12,7 @@ body {
 
 .left {
     position:fixed;
-    left:10px;
+    left: 0.66em;
     width: 25%;
 }
 
@@ -41,30 +41,58 @@ body {
 	justify-content: space-around;
 }
 
-/* Table Headers*/
-.t-head {
+
+.input-field {
+	color: black;
+}
+
+/* Delete button */
+div#statTable tbody tr td:last-child {
+	padding-left: 0.33em;
+}
+div#statTable tbody tr td:last-child button:first-child {
+	margin-bottom: 0.13em;
+}
+
+div#statTable tbody tr td:last-child button:last-child {
+	margin-top: 0.13em;
+}
+
+/* Table Headers. Indicate that header is clickable, except the last (invisible) cell*/
+div#statTable table thead tr th:not(:last-child) {
 	cursor:pointer;
 	text-decoration: none;
 	color:black;
 }
 
-
-/* Delete button */
-.btn-floating .btn-small .waves-effect .waves-light .red {
-	top: 4px;
+th.sortBy {
+	background-color: blue;
 }
 
+/* The below is for hiding the table cells in which the edit/delete buttons are rendered.
+** The excessive specificity of the selectors ensures we override Materialize's styles.
+*/
 
-th.actionButtons {
-	background-color: #FFFFFF !important;
+/* Remove the borders surrounding the table, the thead, and individual non-header cells */
+div#statTable table,
+div#statTable thead {
+	border: none;
 }
 
-td.actionButtons {
-	background-color: grey !important;
+/* Reinstate all borders on header cells */
+div#statTable table thead tr th,
+div#statTable table tbody tr td {
+	border: 1px solid #cbcbcb;
 }
 
-.input-field {
-	color: black;
+/* Remove all but the left border on the rightmost header cell */
+div#statTable table thead tr th:last-child {
+	display: none;
+}
+
+div#statTable table tbody tr td:last-child {
+	border:none;
+	background-color: transparent;
 }
 
 /* Reduce spacing in and around searchModal content to make it more compact */
@@ -73,7 +101,9 @@ td.actionButtons {
 	padding-top: 0px;
 }
 
-.modal.bottom-sheet div.row, .modal.bottom-sheet div.row input, .modal.bottom-sheet div.input-field {
+.modal.bottom-sheet div.row,
+.modal.bottom-sheet div.row input,
+.modal.bottom-sheet div.input-field {
 	margin-bottom: 0px;
 	margin-top: 0px;
 	padding-top: 0px;
@@ -87,7 +117,7 @@ div.modal-header {
 
 div.modal-header h5 {
 	color: #FFFFFF;
-	padding: 10px;
+	padding: 0.66em;
 	margin: 0px;
 }
 

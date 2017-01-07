@@ -68,7 +68,7 @@ var Stat = React.createClass({
                     <td>{this.props.data.org}</td>
                     <td>{this.props.data.published}</td>
                     <td>{this.props.data.lastTouch}</td>
-                    <td className="actionButtons">
+                    <td>
                         <button data-target='addModal' className="modal-trigger btn-floating btn-small waves-effect waves-light orange" onClick={() => this.props.edit(this.props.data)}>
                             <i className="material-icons">mode_edit</i>
                         </button>
@@ -99,7 +99,14 @@ var StatTable = React.createClass({
     },
 
     setSort: function(event) {
-        this.setState({sortCriteria: event.target.id, order: this.state.order == 1 ? 0 : 1});
+        if (event.target.id != this.state.sortCriteria) { 
+            $('div#statTable table thead tr th#' + this.state.sortCriteria).removeClass('sortBy');
+            $('div#statTable table thead tr th#' + event.target.id).addClass('sortBy');
+        }
+        this.setState({
+            sortCriteria: event.target.id,
+            order: this.state.order == 1 ? 0 : 1
+        });
     },
     sortRows: function(order) {
         var sortCriteria = this.state.sortCriteria;
@@ -147,12 +154,12 @@ var StatTable = React.createClass({
                 <table className='pure-table pure-table-bordered pure-table-striped'>
                     <thead>
                         <tr>
-                            <th className='center-align' data-field="title"><a className='t-head' id='title' onClick={this.setSort}> Title</a></th>
-                            <th className='center-align' data-field="stat"><a className='t-head' id='stat' onClick={this.setSort}> Stat</a></th>
-                            <th className='center-align' data-field="org"><a className='t-head' id='org' onClick={this.setSort}>Organization</a></th>
-                            <th className='center-align' data-field="published"><a className='t-head' id='published' onClick={this.setSort}>Date Published</a></th>
-                            <th className='center-align' data-field="lastTouch"><a className='t-head' id='lastTouch' onClick={this.setSort}>Date Added</a></th>
-                            <th className='actionButtons'>{/*this header is intentionally blank*/}</th>
+                            <th className='center-align' data-field="title" id='title' onClick={this.setSort}>Title</th>
+                            <th className='center-align' data-field="stat" id='stat' onClick={this.setSort}>Stat</th>
+                            <th className='center-align' data-field="org" id='org' onClick={this.setSort}>Organization</th>
+                            <th className='center-align' data-field="published" id='published' onClick={this.setSort}>Date Published</th>
+                            <th className='center-align sortBy' data-field="lastTouch" id='lastTouch' onClick={this.setSort}>Date Added</th>
+                            <th>test{/*this header is intentionally blank*/}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -163,7 +170,6 @@ var StatTable = React.createClass({
         )
     }
 });
-
 
 //Contains the search functionality. and rendering of the StatTable.
 var StatSearch = React.createClass({
