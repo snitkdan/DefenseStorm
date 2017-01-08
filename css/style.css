@@ -158,3 +158,10 @@ div#statBatchPreviewModal div.modal-content {
 	overflow: auto;
 }
 
+label {
+	color:black;
+}
+
+.row:after {
+	clear:none;
+}
