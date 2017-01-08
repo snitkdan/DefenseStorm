@@ -437,11 +437,8 @@ var AddStat = React.createClass({
     },
 
     componentDidMount: function() {
-        if (this.state.buttonText == 'Add') {
-            $('#saveStatButton').show();
-        } else {
-            $('#saveStatButton').hide();
-        }
+        $('body').css('overflow', 'default');
+        $('body').css('width', 'initial');
     },
 
  submit: function() {
@@ -597,6 +594,7 @@ var AddStat = React.createClass({
                     <a href="#!" onClick={this.clear} className="waves-effect waves-green btn-flat">Reset</a>
                     <a href="#!" className="modal-action modal-close waves-effect waves-green btn-flat">Close</a>
                 </div>
+                <StatBatchPreviewModal statsToAdd={this.state.statsToAdd} currStat={this.currStat} />
             </div>
           )
       }
@@ -621,7 +619,7 @@ var AddStatHeader = React.createClass({
             return (
                 <h5 className="modal-header">
                     Add a stat (
-                        <a href='#!'>{this.props.data.currStat} in batch</a>
+                        <a href='#statBatchPreviewModal'>{this.props.data.currStat} in batch</a>
                     )
                     <i className="material-icons right">add</i>                     
                 </h5>    
@@ -634,6 +632,30 @@ var AddStatHeader = React.createClass({
                 </h5>    
             );
         }
+    }
+});
+
+var StatBatchPreviewModal = React.createClass({
+    render: function() {
+        return(
+            <div id="statBatchPreviewModal" className="modal">
+                <div className="modal-content">
+                    <table className='pure-table pure-table-bordered pure-table-striped'>
+                        <thead>
+                            <tr>
+                                <th className='center-align'>Title</th>
+                                <th className='center-align'>Stat</th>
+                                <th className='center-align'>Organization</th>
+                                <th className='center-align'>Date Published</th>
+                            </tr>
+                        </thead>                    
+                        <tbody>
+                            {this.props.statsToAdd.map((d, i) => <Stat edit={null} delete={null} key={'preview-' + i} data={d}/>)}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        );
     }
 });
 
