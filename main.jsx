@@ -53,11 +53,10 @@ var Stat = React.createClass({
             }
         );
     },
-
     render: function() {
         if (!this.state.isDeleted) {
             return (
-                <tr>
+                <tr id={'Stat-' + this.props.id}>
                     <td>
                         <a href={this.props.data.source}>{this.props.data.title}</a>
                     </td>
@@ -99,7 +98,7 @@ var StatTable = React.createClass({
     },
 
     setSort: function(event) {
-        if (event.target.id != this.state.sortCriteria) { 
+        if (event.target.id != this.state.sortCriteria) {
             $('div#statTable table thead tr th#' + this.state.sortCriteria).removeClass('sortBy');
             $('div#statTable table thead tr th#' + event.target.id).addClass('sortBy');
         }
@@ -163,7 +162,7 @@ var StatTable = React.createClass({
                         </tr>
                     </thead>
                     <tbody>
-                        {this.props.data.map((d, i) => <Stat edit={this.props.edit} delete={this.props.delete} key={'stat-' + i} data={d}/>)}
+                        {this.props.data.map((d, i) => <Stat edit={this.props.edit} delete={this.props.delete} key={'stat-' + i} id={i} data={d}/>)}
                     </tbody>
                 </table>
             </div>
@@ -217,7 +216,7 @@ var StatSearch = React.createClass({
                 stat: '',
                 beginDate: '',
                 endDate: '',
-                topicTags: ''              
+                topicTags: ''
             });
             $('#searchStatForm').trigger('reset');
         } else {
@@ -336,7 +335,7 @@ var StatSearch = React.createClass({
                         </button>
                     </div>
                 </div>
-                <AddStat edit_data={this.state.edit_data} />
+                <AddStat delete = {this.delete} edit={this.edit} edit_data={this.state.edit_data} />
                 <SearchStat filter={this.filter} />
                 <div id='statTable' className='col s12 offset-s2'>
                     <StatTable delete={this.delete} edit={this.edit} data={stats}/>
@@ -354,9 +353,9 @@ var SearchStat = React.createClass({
             <div id="searchModal" className="modal bottom-sheet">
                 <div className="modal-header">
                     <h5 className="modal-header">
-                        Search for an existing stat  
-                        <i className="material-icons right">search</i>                     
-                    </h5>                     
+                        Search for an existing stat
+                        <i className="material-icons right">search</i>
+                    </h5>
                 </div>
                 <div className="modal-content">
                     <form id='searchStatForm'>
@@ -371,16 +370,22 @@ var SearchStat = React.createClass({
                                 <input placeholder="Enter a Stat" id="stat" type="text" className="validate" onChange={this.props.filter}></input>
                             </div>
                         </div>
+                        <br></br>
                         <div className='row'>
                             <div className="input-field col s3">
-                                <input placeholder='begin date' id="beginDate" type="date" className='datepicker' onChange={this.props.filter}></input>
+                                <input placeholder='begin date' id="beginDate" type="date" onChange={this.props.filter}></input>
                             </div>
+                            <br></br>
                             <div className="input-field col s3">
-                                <input placeholder='endDate' id="endDate" type="date" className='datepicker' onChange={this.props.filter}></input>
+                                <input placeholder='end date' id="endDate" type="date"  onChange={this.props.filter}></input>
                             </div>
                             <div className="input-field col s6">
                                 <input placeholder='Comma,Separated,Tags' id="topicTags" type="text" onChange={this.props.filter}></input>
                             </div>
+                        </div>
+                        <div className='row'>
+                            <label className='col s3'>Begin Date</label>
+                            <label className='col s3'>End Date</label>
                         </div>
                     </form>
                 </div>
@@ -441,7 +446,7 @@ var AddStat = React.createClass({
         $('body').css('width', 'initial');
     },
 
- submit: function() {
+    submit: function() {
         var RANGE;
         var action;
         var statsToAdd = this.state.statsToAdd;
@@ -490,13 +495,20 @@ var AddStat = React.createClass({
             range: RANGE,
             valueInputOption: 'USER_ENTERED',
             values: values
-            // Success callback
+        // Success callback
         }).then(function(response) {
             console.log("Updated cell count" : response.result.updates.updatedCells);
             if (this.state.buttonText == 'Add') {
                 window.lastRow = window.lastRow + statsToAdd.length;
             }
-            // Error callback
+            //props: id,source,title,stat, topicTags, row, org, published, lastTouch
+            for (var i = 0; i < statsToAdd.length; i++) {
+              //console.log(statsToAdd[i]);
+              var newStat = <Stat edit={this.props.edit} delete={this.props.delete} key={'stat-' + 0} id={0} data={statsToAdd[i]}/>;
+              $('table').prepend(newStat);
+            }
+            //console.log(newStat);
+        // Error callback
         }.bind(this), function(response) {
             console.log('Error. Sheets API response: ' + response.result.error.message);
         });
@@ -522,7 +534,7 @@ var AddStat = React.createClass({
     },
 
     //Handles user input when editing a stat
-    handlChange:function(event){
+    handleChange:function(event){
         var updatedArr = this.state.statsToAdd.slice();
         updatedArr[this.state.currStat][event.target.id] = event.target.value;
         this.setState({
@@ -560,31 +572,31 @@ var AddStat = React.createClass({
         return (
             <div id="addModal" className="modal bottom-sheet">
                 <div className="modal-header">
-                    <AddStatHeader data={this.state} />                
+                    <AddStatHeader data={this.state} />
                 </div>
                 <div className="modal-content">
                     <form id="addStatForm">
                         <div className='row'>
                             <div className="input-field col s3">
-                                <input value={this.state.statsToAdd[this.state.currStat]["title"]} onChange={this.handlChange} placeholder="Add Title..." id='title' type="text" className="validate"></input>
+                                <input value={this.state.statsToAdd[this.state.currStat]["title"]} onChange={this.handleChange} placeholder="Add Title..." id='title' type="text" className="validate"></input>
                             </div>
                             <div className="input-field col s3">
-                                <input value={this.state.statsToAdd[this.state.currStat]["source"]} onChange={this.handlChange} placeholder="Add Source URL..." id='source' type="text" className="validate"></input>
+                                <input value={this.state.statsToAdd[this.state.currStat]["source"]} onChange={this.handleChange} placeholder="Add Source URL..." id='source' type="text" className="validate"></input>
                             </div>
                             <div className="input-field col s3">
-                                <input value={this.state.statsToAdd[this.state.currStat]["org"]} onChange={this.handlChange} placeholder="Add Organization..." id='org' type="text" className="validate"></input>
+                                <input value={this.state.statsToAdd[this.state.currStat]["org"]} onChange={this.handleChange} placeholder="Add Organization..." id='org' type="text" className="validate"></input>
                             </div>
                             <div className="input-field col s3">
-                                <input value={this.state.statsToAdd[this.state.currStat]["published"]} onChange={this.handlChange} placeholder="Add Publish Date..." id='published' type="text" className="validate" ></input>
+                                <input value={this.state.statsToAdd[this.state.currStat]["published"]} onChange={this.handleChange} placeholder="Add Publish Date..." id='published' type="date" className="validate" ></input>
                             </div>
                         </div>
                         <div className='row'>
                             <div className="input-field col s5">
-                                <input value={this.state.statsToAdd[this.state.currStat]["stat"]} onChange={this.handlChange} placeholder="Stat" id='stat' type="text" className="validate" ></input>
+                                <input value={this.state.statsToAdd[this.state.currStat]["stat"]} onChange={this.handleChange} placeholder="Stat" id='stat' type="text" className="validate" ></input>
                             </div>
                             <SaveStatButton buttonText={this.state.buttonText} saveStat={this.saveStat} />
                             <div className="input-field col s6">
-                                <input value={this.state.statsToAdd[this.state.currStat]["topictags"]} onChange={this.handlChange} placeholder="Tags" id='topicTags' type="text" className="validate" ></input>
+                                <input value={this.state.statsToAdd[this.state.currStat]["topictags"]} onChange={this.handleChange} placeholder="Tags" id='topicTags' type="text" className="validate" ></input>
                             </div>
                         </div>
                     </form>
@@ -606,7 +618,7 @@ var SaveStatButton = React.createClass({
             return (
                 <a href="#!" id="saveStatButton" onClick={this.props.saveStat} className="waves-effect waves-green btn-flat col s1">
                     <i className="material-icons">add</i>
-                </a>  
+                </a>
             );
         }
         return null;
@@ -621,15 +633,15 @@ var AddStatHeader = React.createClass({
                     Add a stat (
                         <a href='#statBatchPreviewModal'>{this.props.data.currStat} in batch</a>
                     )
-                    <i className="material-icons right">add</i>                     
-                </h5>    
+                    <i className="material-icons right">add</i>
+                </h5>
             );
         } else {
             return (
                 <h5 className="modal-header">
                     Edit a stat
-                    <i className="material-icons right">edit</i>                     
-                </h5>    
+                    <i className="material-icons right">edit</i>
+                </h5>
             );
         }
     }
@@ -648,7 +660,7 @@ var StatBatchPreviewModal = React.createClass({
                                 <th className='center-align'>Organization</th>
                                 <th className='center-align'>Date Published</th>
                             </tr>
-                        </thead>                    
+                        </thead>
                         <tbody>
                             {this.props.statsToAdd.map((d, i) => <Stat edit={null} delete={null} key={'preview-' + i} data={d}/>)}
                         </tbody>
