@@ -447,36 +447,51 @@ var AddStat = React.createClass({
         var statsToAdd = this.state.statsToAdd;
         var values = [[]];
 
-        // Add row numbers to the data if we are adding a new stat
-        if (this.state.buttonText == 'Add') {
+        // Format values[][] properly based on whether we are adding a single stat, multiple, or editing
+        // We are adding multiple stats
+        if (this.state.buttonText == 'Add' && this.state.currStat > 0) {
             for (var i = 0; i < this.state.currStat; i++) {
-                console.log(this.state.statsToAdd[i]);
-                if (statsToAdd[i]["stat"] != '') {
-                    values[i] = [
-                        statsToAdd[i]["title"],
-                        statsToAdd[i]["source"],
-                        statsToAdd[i]["org"],
-                        statsToAdd[i]["published"],
-                        window.currDate,
-                        statsToAdd[i]["stat"],
-                        statsToAdd[i]["topictags"],
-                        (window.lastRow + i + 1)
-                    ];
-                }
+                values[i] = [
+                    statsToAdd[i]["title"],
+                    statsToAdd[i]["source"],
+                    statsToAdd[i]["org"],
+                    statsToAdd[i]["published"],
+                    window.currDate(),
+                    statsToAdd[i]["stat"],
+                    statsToAdd[i]["topictags"],
+                    (window.lastRow + i + 1)
+                ];
             }
             RANGE = 'A' + window.lastRow + ':H' + (window.lastRow + statsToAdd.length);
             console.log('range: ' + RANGE);
             console.log('statsToAdd.length: ' + statsToAdd.length);
             console.log('window.lastRow: ' + window.lastRow);
             action = 'append';
-        // Else we are editing a single stat
+        // We are adding a single stat
+        } else if (this.state.buttonText == 'Add' && this.state.currStat == 0) {
+            values[0] = [
+                statsToAdd[0]["title"],
+                statsToAdd[0]["source"],
+                statsToAdd[0]["org"],
+                statsToAdd[0]["published"],
+                window.currDate(),
+                statsToAdd[0]["stat"],
+                statsToAdd[0]["topictags"],
+                (window.lastRow + 1)
+            ];
+            RANGE = 'A' + (window.lastRow + 1) + ':H' + (window.lastRow + 1);
+            console.log('range: ' + RANGE);
+            console.log('statsToAdd.length: ' + statsToAdd.length);
+            console.log('window.lastRow: ' + window.lastRow);
+            action = 'append';
+        // We are editing a single stat
         } else {
             values[0] = [
                     statsToAdd[0]["title"],
                     statsToAdd[0]["source"],
                     statsToAdd[0]["org"],
                     statsToAdd[0]["published"],
-                    window.currDate,
+                    window.currDate(),
                     statsToAdd[0]["stat"],
                     statsToAdd[0]["topictags"],
                     statsToAdd[0]["rowNum"]
@@ -492,13 +507,15 @@ var AddStat = React.createClass({
             values: values
             // Success callback
         }).then(function(response) {
-            console.log("Updated cell count" : response.result.updates.updatedCells);
+            window.response = response;
+            console.log("Updated row count: " + response.result.updates.updatedRows);
             if (this.state.buttonText == 'Add') {
-                window.lastRow = window.lastRow + statsToAdd.length;
+                window.lastRow = window.lastRow + response.result.updates.updatedRows;
             }
             // Error callback
         }.bind(this), function(response) {
-            console.log('Error. Sheets API response: ' + response.result.error.message);
+            window.response = response;
+            console.log('Error, code 400: ' + response.result.error.message);
         });
     },
 
@@ -662,8 +679,5 @@ var StatBatchPreviewModal = React.createClass({
 // The ReactDOM.render renders components to the dom. It takes 2 args:
 // 1. Component(s) to be rendered and 2. Location to render specified component(s)
 var renderTable = function() {
-  ReactDOM.render(
-      <div>
-      <StatSearch data={test_data}/>
-  </div>, document.querySelector('#root'));
+  ReactDOM.render(<StatSearch data={test_data}/>, document.querySelector('#root'));
 }
