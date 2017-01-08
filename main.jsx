@@ -398,51 +398,93 @@ var SearchStat = React.createClass({
 var AddStat = React.createClass({
 
     getInitialState:function(){
-      return ({title:'', source:'', org:'', published:'', entryType:'', stat:'', topicTags:'', rowNum:'', buttonText:'Add'});
+        return ({
+            statsToAdd: [
+                {
+                    title:'',
+                    source:'',
+                    org:'',
+                    published:'',
+                    stat:'',
+                    topicTags:'',
+                    rowNum:''
+                }
+            ],
+            buttonText:'Add',
+            currStat: 0
+        });
     },
 
     componentWillReceiveProps:function(nextProps){
         var data = nextProps.edit_data;
         if (data) {
             this.setState({
-                title: data.title,
-                source: data.source,
-                org: data.org,
-                published: data.published,
-                entryType: data.entryType,
-                stat: data.stat,
-                topicTags: data.topicTags,
-                rowNum:data.rowNum,
-                buttonText:'Edit'
-            })
+                statsToAdd: [
+                    {
+                        title: data.title,
+                        source: data.source,
+                        org: data.org,
+                        published: data.published,
+                        stat: data.stat,
+                        topicTags: data.topicTags,
+                        rowNum:data.rowNum
+                    }
+                ],
+                buttonText:'Edit',
+                currStat: 0
+            });
         }
-
     },
 
-    submit: function(event) {
-        event.preventDefault();
-        console.log(this.state);
+    componentDidMount: function() {
+        if (this.state.buttonText == 'Add') {
+            $('#saveStatButton').show();
+        } else {
+            $('#saveStatButton').hide();
+        }
+    },
+
+ submit: function() {
         var RANGE;
         var action;
-        var values =
-            [
-                [
-                    this.state.title,
-                    this.state.source,
-                    this.state.org,
-                    this.state.published,
-                    this.state.entryType,
-                    this.state.stat,
-                    this.state.topicTags,
-                ]
-            ];
+        var statsToAdd = this.state.statsToAdd;
+        var values = [[]];
 
+        // Add row numbers to the data if we are adding a new stat
         if (this.state.buttonText == 'Add') {
-            values[0].push(window.lastRow + 1);
-            RANGE = 'A2:H1000';
+            for (var i = 0; i < this.state.currStat; i++) {
+                console.log(this.state.statsToAdd[i]);
+                if (statsToAdd[i]["stat"] != '') {
+                    values[i] = [
+                        statsToAdd[i]["title"],
+                        statsToAdd[i]["source"],
+                        statsToAdd[i]["org"],
+                        statsToAdd[i]["published"],
+                        window.currDate,
+                        statsToAdd[i]["stat"],
+                        statsToAdd[i]["topictags"],
+                        (window.lastRow + i + 1)
+                    ];
+                }
+            }
+            RANGE = 'A' + window.lastRow + ':H' + (window.lastRow + statsToAdd.length);
+            console.log('range: ' + RANGE);
+            console.log('statsToAdd.length: ' + statsToAdd.length);
+            console.log('window.lastRow: ' + window.lastRow);
             action = 'append';
+        // Else we are editing a single stat
         } else {
-            RANGE = 'A' + this.state.rowNum + ':G' + this.state.rowNum;
+            values[0] = [
+                    statsToAdd[0]["title"],
+                    statsToAdd[0]["source"],
+                    statsToAdd[0]["org"],
+                    statsToAdd[0]["published"],
+                    window.currDate,
+                    statsToAdd[0]["stat"],
+                    statsToAdd[0]["topictags"],
+                    statsToAdd[0]["rowNum"]
+            ];
+            RANGE = 'A' + statsToAdd[0]["rowNum"] + ':H' + statsToAdd[0]["rowNum"];
             action = 'update';
         }
 
@@ -455,7 +497,7 @@ var AddStat = React.createClass({
         }).then(function(response) {
             console.log("Updated cell count" : response.result.updates.updatedCells);
             if (this.state.buttonText == 'Add') {
-                window.lastRow++;
+                window.lastRow = window.lastRow + statsToAdd.length;
             }
             // Error callback
         }.bind(this), function(response) {
@@ -465,46 +507,55 @@ var AddStat = React.createClass({
 
     clear: function() {
         this.setState({
-            title       : '',
-            source      : '',
-            org         : '',
-            published   : '',
-            entryType   : '',
-            stat        : '',
-            topicTags   : '',
-            rowNum      : '',
-            buttonText  : 'Add'
+            statsToAdd  :   [
+                    {
+                        title       :   '',
+                        source      :   '',
+                        org         :   '',
+                        published   :   '',
+                        stat        :   '',
+                        topicTags   :   '',
+                        rowNum      :   ''
+                    }
+                ],
+            buttonText  :   'Add',
+            currStat    :   0
         });
         $('#addStatForm').trigger('reset');
     },
 
-    // for saving the date the stat was modified
-    // returns the local date
-    // courtesy of http://stackoverflow.com/a/4929629
-    currDate: function() {
-        var today = new Date();
-        var dd = today.getDate();
-        var mm = today.getMonth() + 1; //January is 0!
-        var yyyy = today.getFullYear();
-
-        if (dd < 10) {
-            dd = '0' + dd
-        }
-
-        if (mm < 10) {
-            mm = '0' + mm
-        }
-
-        today = mm + '/' + dd + '/' + yyyy;
-        console.log(today);
-        return today;
+    //Handles user input when editing a stat
+    handlChange:function(event){
+        var updatedArr = this.state.statsToAdd.slice();
+        updatedArr[this.state.currStat][event.target.id] = event.target.value;
+        this.setState({
+            statsToAdd: updatedArr
+        });
     },
 
     //Handles user input when editing a stat
-    handlChange:function(event){
-      var obj = {};
-      obj[event.target.id] = event.target.value;
-      this.setState(obj);
+    saveStat:function(event){
+        if (this.state.buttonText == 'Add') {
+            var updatedArr = this.state.statsToAdd.slice();
+            var nextStat = this.state.currStat + 1;
+            updatedArr[nextStat] = {
+                title       :   this.state.statsToAdd[this.state.currStat]['title'],
+                source      :   this.state.statsToAdd[this.state.currStat]['source'],
+                org         :   this.state.statsToAdd[this.state.currStat]['org'],
+                published   :   this.state.statsToAdd[this.state.currStat]['published'],
+                stat        :   '',
+                topicTags   :   this.state.statsToAdd[this.state.currStat]['topicTags'],
+                rowNum      :   ''
+            };
+            this.setState({
+                statsToAdd: updatedArr,
+                currStat: nextStat
+            });
+
+            for (var i = 0; i < this.state.statsToAdd.length; i++) {
+                console.log("saveStat result: " + this.state.statsToAdd[i]['stat']);
+            }
+        }
     },
 
     // renders the adding Stat form
@@ -512,50 +563,79 @@ var AddStat = React.createClass({
         return (
             <div id="addModal" className="modal bottom-sheet">
                 <div className="modal-header">
-                    <h5 className="modal-header">
-                        {this.state.buttonText} a stat 
-                        <i className="material-icons right">{this.state.buttonText.toLowerCase()}</i>                     
-                    </h5>                    
+                    <AddStatHeader data={this.state} />                
                 </div>
                 <div className="modal-content">
                     <form id="addStatForm">
                         <div className='row'>
                             <div className="input-field col s3">
-                                <input value={this.state.title} onChange={this.handlChange} placeholder="Add Title..." id="title" type="text" className="validate"></input>
+                                <input value={this.state.statsToAdd[this.state.currStat]["title"]} onChange={this.handlChange} placeholder="Add Title..." id='title' type="text" className="validate"></input>
                             </div>
                             <div className="input-field col s3">
-                                <input value={this.state.source} onChange={this.handlChange} placeholder="Add Source URL..." id="source" type="text" className="validate"></input>
+                                <input value={this.state.statsToAdd[this.state.currStat]["source"]} onChange={this.handlChange} placeholder="Add Source URL..." id='source' type="text" className="validate"></input>
                             </div>
                             <div className="input-field col s3">
-                                <input value={this.state.org} onChange={this.handlChange} placeholder="Add Organization..." id="org" type="text" className="validate"></input>
+                                <input value={this.state.statsToAdd[this.state.currStat]["org"]} onChange={this.handlChange} placeholder="Add Organization..." id='org' type="text" className="validate"></input>
                             </div>
                             <div className="input-field col s3">
-                                <input value={this.state.published} onChange={this.handlChange} placeholder="Add Publish Date..." id="published" type="text" className="validate" ></input>
+                                <input value={this.state.statsToAdd[this.state.currStat]["published"]} onChange={this.handlChange} placeholder="Add Publish Date..." id='published' type="text" className="validate" ></input>
                             </div>
                         </div>
                         <div className='row'>
-                            <div className="input-field col s6">
-                                <input value={this.state.stat} onChange={this.handlChange} placeholder="Stat" id="stat" type="text" className="validate" ></input>
+                            <div className="input-field col s5">
+                                <input value={this.state.statsToAdd[this.state.currStat]["stat"]} onChange={this.handlChange} placeholder="Stat" id='stat' type="text" className="validate" ></input>
                             </div>
+                            <SaveStatButton buttonText={this.state.buttonText} saveStat={this.saveStat} />
                             <div className="input-field col s6">
-                                <input value={this.state.topicTags} onChange={this.handlChange} placeholder="Tags" id="topicTags" type="text" className="validate" ></input>
+                                <input value={this.state.statsToAdd[this.state.currStat]["topictags"]} onChange={this.handlChange} placeholder="Tags" id='topicTags' type="text" className="validate" ></input>
                             </div>
                         </div>
                     </form>
                 </div>
                 <div className="modal-footer">
                     <a href="#!" id={this.state.buttonText} onClick={this.submit} className="waves-effect waves-green btn-flat">{this.state.buttonText}</a>
+                    <a href="#!" onClick={this.clear} className="waves-effect waves-green btn-flat">Reset</a>
                     <a href="#!" className="modal-action modal-close waves-effect waves-green btn-flat">Close</a>
-                    <a href="#!" onClick={this.clear} className="waves-effect waves-green btn-flat">Clear</a>
                 </div>
             </div>
           )
       }
   });
-/* <a href="#!" className="modal-action modal-close waves-effect waves-green btn-flat">Agree</a> 
-                        <div className="modal-footer">
-                            <button id={this.state.buttonText} onClick={this.submit}>{this.state.buttonText}</button>
-                        </div>*/
+
+var SaveStatButton = React.createClass({
+    render: function() {
+        if (this.props.buttonText == 'Add') {
+            return (
+                <a href="#!" id="saveStatButton" onClick={this.props.saveStat} className="waves-effect waves-green btn-flat col s1">
+                    <i className="material-icons">add</i>
+                </a>  
+            );
+        }
+        return null;
+    }
+});
+
+var AddStatHeader = React.createClass({
+    render: function() {
+        if (this.props.data.buttonText == 'Add') {
+            return (
+                <h5 className="modal-header">
+                    Add a stat (
+                        <a href='#!'>{this.props.data.currStat} in batch</a>
+                    )
+                    <i className="material-icons right">add</i>                     
+                </h5>    
+            );
+        } else {
+            return (
+                <h5 className="modal-header">
+                    Edit a stat
+                    <i className="material-icons right">edit</i>                     
+                </h5>    
+            );
+        }
+    }
+});
 
 // The ReactDOM.render renders components to the dom. It takes 2 args:
 // 1. Component(s) to be rendered and 2. Location to render specified component(s)
