@@ -92,12 +92,12 @@ function handleAuthResult(authResult) {
   if (authResult && !authResult.error) {
     // Hide auth UI, then load client library.
     authorizeDiv.remove();
-    $('#auth-logo').css('display', 'hidden');
+    $('#auth-logo').css('display', 'none');
     loadSheetsApi();
   } else {
     // Show auth UI, allowing the user to initiate authorization by
     // clicking authorize button.
-    var authButton = $('<a>').attr('class', 'waves-effect waves-light btn-large authButton');
+    var authButton = $('<a>').attr('class', 'waves-effect waves-light btn-large');
     authButton.text('Authorize Google Sheets');
     authButton.attr('id', 'authorize-button');
     authButton.click(handleAuthClick);
