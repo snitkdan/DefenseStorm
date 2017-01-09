@@ -5,6 +5,17 @@
 	padding-top: .25em;
 }
 
+#auth-logo {
+	width: 30%;
+	height: 30%;
+	margin: auto;
+	margin-top: 10%;
+}
+
+#authorize-button {
+	margin-top: 5%;
+}
+
 body {
 	background-color: #FFFFFF;
 }
@@ -27,7 +38,6 @@ body {
 #authorize-div {
 	display: flex;
 	justify-content: center;
-	margin-top: 50vh;
 }
 
 #root {
