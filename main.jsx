@@ -112,6 +112,14 @@ var StatTable = React.createClass({
         var order = this.state.order;
         window.sortRowsData = this.props.data;
         var sorted_Rows = this.props.data.sort(function(a, b) {
+            if (a[sortCriterion] == undefined) {
+                console.log("a: " + JSON.stringify(a));
+                console.log(sortCriterion);
+            }
+            if (b[sortCriterion] == undefined) {
+                console.log("b: " + JSON.stringify(b));
+                console.log(sortCriterion);
+            }
             var sortA = a[sortCriterion].trim().toLowerCase();
             var sortB = b[sortCriterion].trim().toLowerCase();
             if (sortCriterion == 'published' || sortCriterion =='lastTouch') {
@@ -261,7 +269,6 @@ var StatSearch = React.createClass({
     },
 
     insertStats: function(newStats) {
-        window.thisStateStatsPush = this.state.stats;
         this.setState({
             stats: this.state.stats.concat(newStats)
         });
@@ -488,6 +495,9 @@ var AddStat = React.createClass({
         // Format values and other headers properly based on whether we are adding a single stat, multiple, or editing
         // We are adding multiple stats
         if (this.state.buttonText == 'Add' && this.state.currStat > 0) {
+            // If the user hits the '+' button to add another stat to the batch, but then leaves it blank, there is a trailing
+            // empty element in statsToAdd. Here we remove it
+            statsToAdd = statsToAdd.slice(0, this.state.currStat);
             for (var i = 0; i < this.state.currStat; i++) {
                 statsToAdd[i]['lastTouch'] = window.currDate();
                 values[i] = [
@@ -535,14 +545,14 @@ var AddStat = React.createClass({
             values: values
         // Success callback
         }).then(function(response) {
-            window.response = response;
             if (this.state.buttonText == 'Add') {
                 window.lastRow = window.lastRow + response.result.updates.updatedRows;
             }
+            console.log("range: " + RANGE);
+            console.log("statsToAdd:" + JSON.stringify(statsToAdd));
             this.props.insertStats(statsToAdd);
         // Error callback
         }.bind(this), function(response) {
-            window.response = response;
             console.log('Error, code 400: ' + response.result.error.message);
         });
     },
@@ -575,7 +585,7 @@ var AddStat = React.createClass({
         });
     },
 
-    //Handles user input when editing a stat
+    //For saving multiple stats for batch submission
     saveStat:function(event){
         if (this.state.buttonText == 'Add') {
             var updatedArr = this.state.statsToAdd.slice();
