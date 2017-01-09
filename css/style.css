@@ -85,7 +85,7 @@ div#statTable table tbody tr td {
 	border: 1px solid #cbcbcb;
 }
 
-/* Remove all but the left border on the rightmost header cell */
+/* Hide the rightmost header cell entirely */
 div#statTable table thead tr th:last-child {
 	display: none;
 }
@@ -95,7 +95,7 @@ div#statTable table tbody tr td:last-child {
 	background-color: transparent;
 }
 
-/* Reduce spacing in and around searchModal content to make it more compact */
+/* Reduce spacing in and around searchModal and addModal content to make it more compact */
 .modal.bottom-sheet div.modal-content {
 	padding-bottom: 0px;
 	padding-top: 0px;
@@ -129,4 +129,39 @@ div.modal-header h5 i.material-icons {
 ::-webkit-input-placeholder {
     color: black;
     opacity: 1 !important; /* for older chrome versions. may no longer apply. */
+}
+
+/* Override the overflow style applied by the bottom-sheet modals, which prevent scrolling */
+body {
+	overflow: auto;
+	width: initial;
+}
+
+/* Batch-adding preview modal */
+div#statBatchPreviewModal div.modal-content table tbody tr {
+	height: 15vh;
+}
+
+/* Hide the last 'stat' in the batch, which is blank by design and will not be submitted */
+div#statBatchPreviewModal div.modal-content table tbody tr:last-child {
+	display: none !important;
+}
+
+/* Hide the action button cell and the rowNum cell in the preview */
+div#statBatchPreviewModal div.modal-content table tbody tr td:nth-last-child(-n + 2) {
+	display: none !important;
+}
+
+/* Table of stats to be added */
+div#statBatchPreviewModal div.modal-content {
+	padding: 1em;
+	overflow: auto;
+}
+
+label {
+	color:black;
+}
+
+.row:after {
+	clear:none;
 }

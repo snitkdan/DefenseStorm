@@ -53,7 +53,6 @@ var Stat = React.createClass({
             }
         );
     },
-
     render: function() {
         if (!this.state.isDeleted) {
             return (
@@ -92,29 +91,38 @@ for each element in the "data" property.
 Note: (d,i) => is equivalent to .map(function(d,i){}). [In case you haven't gotten around to using ES6]
 
 Styling courtesy of materialize.css*/
-
+var sortRowsData;
 var StatTable = React.createClass({
     getInitialState: function() {
-        return ({sortCriteria: 'lastTouch', order: 1});
+        return ({sortCriterion: 'lastTouch', order: 1});
     },
 
     setSort: function(event) {
-        if (event.target.id != this.state.sortCriteria) {
-            $('div#statTable table thead tr th#' + this.state.sortCriteria).removeClass('sortBy');
+        if (event.target.id != this.state.sortCriterion) {
+            $('div#statTable table thead tr th#' + this.state.sortCriterion).removeClass('sortBy');
             $('div#statTable table thead tr th#' + event.target.id).addClass('sortBy');
         }
         this.setState({
-            sortCriteria: event.target.id,
+            sortCriterion: event.target.id,
             order: this.state.order == 1 ? 0 : 1
         });
     },
     sortRows: function(order) {
-        var sortCriteria = this.state.sortCriteria;
+        var sortCriterion = this.state.sortCriterion;
         var order = this.state.order;
+        window.sortRowsData = this.props.data;
         var sorted_Rows = this.props.data.sort(function(a, b) {
-            var sortA = a[sortCriteria].trim().toLowerCase();
-            var sortB = b[sortCriteria].trim().toLowerCase();
-            if (sortCriteria == 'published' || sortCriteria =='lastTouch') {
+            if (a[sortCriterion] == undefined) {
+                console.log("a: " + JSON.stringify(a));
+                console.log(sortCriterion);
+            }
+            if (b[sortCriterion] == undefined) {
+                console.log("b: " + JSON.stringify(b));
+                console.log(sortCriterion);
+            }
+            var sortA = a[sortCriterion].trim().toLowerCase();
+            var sortB = b[sortCriterion].trim().toLowerCase();
+            if (sortCriterion == 'published' || sortCriterion =='lastTouch') {
                 sortA = new Date(sortA);
                 sortB = new Date(sortB);
             }
@@ -173,15 +181,18 @@ var StatTable = React.createClass({
 
 //Contains the search functionality. and rendering of the StatTable.
 var StatSearch = React.createClass({
-    //Sets the initial searchTerm and searchCriteria
+    //Sets the initial search term and criteria
     getInitialState: function() {
         return ({
-            title: '',
-            org: '',
-            stat: '',
-            beginDate: '',
-            endDate: '',
-            topicTags: ''
+            searchCriteria: {
+                title: '',
+                org: '',
+                stat: '',
+                beginDate: '',
+                endDate: '',
+                topicTags: '',
+            },
+            stats: this.props.data
         });
     },
 
@@ -204,40 +215,47 @@ var StatSearch = React.createClass({
         });
     },
 
-    componentDidMount:function(){
-      $('.datepicker').pickadate({
-          selectMonths: true, // Creates a dropdown to control month
-          selectYears: 15, // Creates a dropdown of 15 years to control year
-          container: 'body',
-      }).on("change", function(){
-        console.log($('.datepicker').val());
-      }.bind(this));
-    },
-
-    // Sets the searchTerm and searchCriteria to the event's value and id, respectively.
+    // Sets the searchTerm and searchCriterion to the event's value and id, respectively.
     // This determines what will be searched and what that search will be on.
     filter: function(event) {
-          console.log('in filter!');
-          if (event.target.id == 'topicTags' && event.target.value != '') {
-              var tagArray = event.target.value.trim().toLowerCase().split(',');
-              this.setState({topicTags: tagArray});
-          }
-          else if (event.target.id == 'clearSearch') {
-              this.setState({
-                  title: '',
-                  org: '',
-                  stat: '',
-                  beginDate: '',
-                  endDate: '',
-                  topicTags: ''
-              });
-              $('#searchStatForm').trigger('reset');
-          }
-          else {
-              var obj = {};
-              obj[event.target.id] = event.target.value;
-              this.setState(obj);
-          }
+        if (event.target.id == 'topicTags' && event.target.value != '') {
+            var tagArray = event.target.value.trim().toLowerCase().split(',');
+            this.setState({
+                searchCriteria: {
+                    title: this.state.searchCriteria.title,
+                    org: this.state.searchCriteria.org,
+                    stat: this.state.searchCriteria.stat,
+                    beginDate: this.state.searchCriteria.beginDate,
+                    endDate: this.state.searchCriteria.endDate,
+                    topicTags: tagArray
+                }
+            });
+        } else if (event.target.id == 'clearSearch') {
+            this.setState({
+                searchCriteria: {
+                    title: '',
+                    org: '',
+                    stat: '',
+                    beginDate: '',
+                    endDate: '',
+                    topicTags: ''
+                }
+            });
+            $('#searchStatForm').trigger('reset');
+        } else {
+            var newSearchCriteria = {
+                title: this.state.searchCriteria.title,
+                org: this.state.searchCriteria.org,
+                stat: this.state.searchCriteria.stat,
+                beginDate: this.state.searchCriteria.beginDate,
+                endDate: this.state.searchCriteria.endDate,
+                topicTags: this.state.searchCriteria.topicTags
+            };
+            newSearchCriteria[event.target.id] = event.target.value;
+            this.setState({
+                searchCriteria: newSearchCriteria
+            });
+        }
     },
 
     matchTags: function(haystack, arr) {
@@ -248,6 +266,12 @@ var StatSearch = React.createClass({
 
     edit: function(data) {
         this.setState({edit_data: data});
+    },
+
+    insertStats: function(newStats) {
+        this.setState({
+            stats: this.state.stats.concat(newStats)
+        });
     },
 
     // Clear row in Google Sheet and return a Promise so we can hide the row on success */
@@ -288,12 +312,12 @@ var StatSearch = React.createClass({
     },
     // renders the StatSearch component.
     render: function() {
-        var stats = this.props.data;
-        for (var searchCriteria in this.state) {
-            var searchTerm = this.state[searchCriteria];
-            console.log(searchTerm);
+        var stats = this.state.stats;
+        for (var searchCriterion in this.state.searchCriteria) {
+            var searchTerm = this.state.searchCriteria[searchCriterion];
+
             if (searchTerm.length > 0) {
-                if (searchCriteria == 'beginDate') {
+                if (searchCriterion == 'beginDate') {
                     var beginElements = searchTerm.split("-");
                     var beginDate = new Date(beginElements[0], beginElements[1], beginElements[2]);
                     stats = stats.filter(function(stat) {
@@ -305,7 +329,7 @@ var StatSearch = React.createClass({
                             return null;
                         }
                     );
-                } else if (searchCriteria == 'endDate') {
+                } else if (searchCriterion == 'endDate') {
                     var endElements = searchTerm.split("-");
                     var endDate = new Date(endElements[0], endElements[1], endElements[2]);
                     stats = stats.filter(function(stat) {
@@ -317,9 +341,9 @@ var StatSearch = React.createClass({
                             return null;
                         }
                     );
-                } else if (searchCriteria == 'topicTags') {
+                } else if (searchCriterion == 'topicTags') {
                     stats = stats.filter(function(stat) {
-                        if (this.matchTags(stat[searchCriteria].toLowerCase().split(','), searchTerm)) {
+                        if (this.matchTags(stat[searchCriterion].toLowerCase().split(','), searchTerm)) {
                             return stat;
                         } else {
                             return null;
@@ -329,7 +353,7 @@ var StatSearch = React.createClass({
                 } else {
                     searchTerm = searchTerm.trim();
                     stats = stats.filter(function(stat) {
-                        if (stat[searchCriteria].toLowerCase().includes(searchTerm.toLowerCase())) {
+                        if (stat[searchCriterion].toLowerCase().includes(searchTerm.toLowerCase())) {
                             return stat;
                         } else {
                             return null;
@@ -350,7 +374,7 @@ var StatSearch = React.createClass({
                         </button>
                     </div>
                 </div>
-                <AddStat edit_data={this.state.edit_data} />
+                <AddStat edit_data={this.state.edit_data} insertStats={this.insertStats} />
                 <SearchStat filter={this.filter} />
                 <div id='statTable' className='col s12 offset-s2'>
                     <StatTable delete={this.delete} edit={this.edit} data={stats}/>
@@ -359,6 +383,8 @@ var StatSearch = React.createClass({
         );
     }
 });
+
+var thisStateStatsPush;
 
 //Contains the search functionality
 var SearchStat = React.createClass({
@@ -385,16 +411,22 @@ var SearchStat = React.createClass({
                                 <input placeholder="Enter a Stat" id="stat" type="text" className="validate" onChange={this.props.filter}></input>
                             </div>
                         </div>
+                        <br></br>
                         <div className='row'>
                             <div className="input-field col s3">
-                                <input placeholder='Begin Date' id="beginDate" type="date" className='datepicker' onChange={this.props.filter}></input>
+                                <input placeholder='Begin Date' id="beginDate" type="date" onChange={this.props.filter}></input>
                             </div>
+                            <br></br>
                             <div className="input-field col s3">
-                                <input placeholder='End Date' id="endDate" type="date" className='datepicker' onChange={this.props.filter}></input>
+                                <input placeholder='End Date' id="endDate" type="date"  onChange={this.props.filter}></input>
                             </div>
                             <div className="input-field col s6">
                                 <input placeholder='Comma, Separated, Tags' id="topicTags" type="text" onChange={this.props.filter}></input>
                             </div>
+                        </div>
+                        <div className='row'>
+                            <label className='col s3'>Begin Date</label>
+                            <label className='col s3'>End Date</label>
                         </div>
                     </form>
                 </div>
@@ -412,52 +444,100 @@ var SearchStat = React.createClass({
 var AddStat = React.createClass({
 
     getInitialState:function(){
-      return ({title:'', source:'', org:'', published:'', entryType:'', stat:'', topicTags:'', rowNum:'', buttonText:'Add'});
+        return ({
+            statsToAdd: [
+                {
+                    title:'',
+                    source:'',
+                    org:'',
+                    published:'',
+                    stat:'',
+                    topicTags:'',
+                    rowNum:''
+                }
+            ],
+            buttonText:'Add',
+            currStat: 0
+        });
     },
 
     componentWillReceiveProps:function(nextProps){
         var data = nextProps.edit_data;
         if (data) {
             this.setState({
-                title: data.title,
-                source: data.source,
-                org: data.org,
-                published: data.published,
-                entryType: data.entryType,
-                stat: data.stat,
-                topicTags: data.topicTags,
-                rowNum:data.rowNum,
-                buttonText:'Edit'
-            })
+                statsToAdd: [
+                    {
+                        title: data.title,
+                        source: data.source,
+                        org: data.org,
+                        published: data.published,
+                        stat: data.stat,
+                        topicTags: data.topicTags,
+                        rowNum:data.rowNum
+                    }
+                ],
+                buttonText:'Edit',
+                currStat: 0
+            });
         }
-
     },
 
-    submit: function(event) {
-        event.preventDefault();
-        console.log(this.state);
+    componentDidMount: function() {
+        $('body').css('overflow', 'default');
+        $('body').css('width', 'initial');
+    },
+
+    submit: function() {
         var RANGE;
         var action;
-        var values =
-            [
-                [
-                    this.state.title,
-                    this.state.source,
-                    this.state.org,
-                    this.state.published,
-                    this.state.entryType,
-                    this.state.stat,
-                    this.state.topicTags
-                ]
-            ];
 
-        if (this.state.buttonText == 'Add') {
-            values[0].push(window.lastRow + 1);
-            RANGE = 'A2:H1000';
+        var statsToAdd = this.state.statsToAdd;
+        var values = [[]];
+
+        // Format values and other headers properly based on whether we are adding a single stat, multiple, or editing
+        // We are adding multiple stats
+        if (this.state.buttonText == 'Add' && this.state.currStat > 0) {
+            // If the user hits the '+' button to add another stat to the batch, but then leaves it blank, there is a trailing
+            // empty element in statsToAdd. Here we remove it
+            statsToAdd = statsToAdd.slice(0, this.state.currStat);
+            for (var i = 0; i < this.state.currStat; i++) {
+                statsToAdd[i]['lastTouch'] = window.currDate();
+                values[i] = [
+                    statsToAdd[i]["title"],
+                    statsToAdd[i]["source"],
+                    statsToAdd[i]["org"],
+                    statsToAdd[i]["published"],
+                    statsToAdd[i]['lastTouch'],
+                    statsToAdd[i]["stat"],
+                    statsToAdd[i]["topictags"],
+                    (window.lastRow + i + 1)
+                ];
+            }
+            RANGE = 'A' + window.lastRow + ':H' + (window.lastRow + statsToAdd.length);
             action = 'append';
+        // We are editing or adding a single stat
         } else {
-            RANGE = 'A' + this.state.rowNum + ':G' + this.state.rowNum;
-            action = 'update';
+            statsToAdd[0]['lastTouch'] = window.currDate();
+            values[0] = [
+                    statsToAdd[0]["title"],
+                    statsToAdd[0]["source"],
+                    statsToAdd[0]["org"],
+                    statsToAdd[0]["published"],
+                    statsToAdd[0]['lastTouch'],
+                    statsToAdd[0]["stat"],
+                    statsToAdd[0]["topictags"],
+            ];
+            // New stats need a row number
+            if (this.state.buttonText == 'Add' && this.state.currStat == 0) {
+                RANGE = 'A' + (window.lastRow + 1) + ':H' + (window.lastRow + 1);
+                action = 'append';
+                values[0].push(window.lastRow + 1);
+            // Existing stats use their existing row number
+            } else {
+                RANGE = 'A' + statsToAdd[0]["rowNum"] + ':H' + statsToAdd[0]["rowNum"];
+                action = 'update';
+                values[0].push(statsToAdd[0]["rowNum"]);         
+            }
         }
 
         gapi.client.sheets.spreadsheets.values[action]({
@@ -465,60 +545,67 @@ var AddStat = React.createClass({
             range: RANGE,
             valueInputOption: 'USER_ENTERED',
             values: values
-            // Success callback
+        // Success callback
         }).then(function(response) {
-            console.log("Updated cell count" : response.result.updates.updatedCells);
             if (this.state.buttonText == 'Add') {
-                window.lastRow++;
+                window.lastRow = window.lastRow + response.result.updates.updatedRows;
             }
-            // Error callback
+            console.log("range: " + RANGE);
+            console.log("statsToAdd:" + JSON.stringify(statsToAdd));
+            this.props.insertStats(statsToAdd);
+        // Error callback
         }.bind(this), function(response) {
-            console.log('Error. Sheets API response: ' + response.result.error.message);
+            console.log('Error, code 400: ' + response.result.error.message);
         });
     },
 
     clear: function() {
         this.setState({
-            title       : '',
-            source      : '',
-            org         : '',
-            published   : '',
-            entryType   : '',
-            stat        : '',
-            topicTags   : '',
-            rowNum      : '',
-            buttonText  : 'Add'
+            statsToAdd  :   [
+                    {
+                        title       :   '',
+                        source      :   '',
+                        org         :   '',
+                        published   :   '',
+                        stat        :   '',
+                        topicTags   :   '',
+                        rowNum      :   ''
+                    }
+                ],
+            buttonText  :   'Add',
+            currStat    :   0
         });
         $('#addStatForm').trigger('reset');
     },
 
-    // for saving the date the stat was modified
-    // returns the local date
-    // courtesy of http://stackoverflow.com/a/4929629
-    currDate: function() {
-        var today = new Date();
-        var dd = today.getDate();
-        var mm = today.getMonth() + 1; //January is 0!
-        var yyyy = today.getFullYear();
-
-        if (dd < 10) {
-            dd = '0' + dd
-        }
-
-        if (mm < 10) {
-            mm = '0' + mm
-        }
-
-        today = mm + '/' + dd + '/' + yyyy;
-        console.log(today);
-        return today;
+    //Handles user input when editing a stat
+    handleChange:function(event){
+        var updatedArr = this.state.statsToAdd.slice();
+        updatedArr[this.state.currStat][event.target.id] = event.target.value;
+        this.setState({
+            statsToAdd: updatedArr
+        });
     },
 
-    //Handles user input when editing a stat
-    handlChange:function(event){
-      var obj = {};
-      obj[event.target.id] = event.target.value;
-      this.setState(obj);
+    //For saving multiple stats for batch submission
+    saveStat:function(event){
+        if (this.state.buttonText == 'Add') {
+            var updatedArr = this.state.statsToAdd.slice();
+            var nextStat = this.state.currStat + 1;
+            updatedArr[nextStat] = {
+                title       :   this.state.statsToAdd[this.state.currStat]['title'],
+                source      :   this.state.statsToAdd[this.state.currStat]['source'],
+                org         :   this.state.statsToAdd[this.state.currStat]['org'],
+                published   :   this.state.statsToAdd[this.state.currStat]['published'],
+                stat        :   '',
+                topicTags   :   this.state.statsToAdd[this.state.currStat]['topicTags'],
+                rowNum      :   ''
+            };
+            this.setState({
+                statsToAdd: updatedArr,
+                currStat: nextStat
+            });
+        }
     },
 
     // renders the adding Stat form
@@ -526,56 +613,107 @@ var AddStat = React.createClass({
         return (
             <div id="addModal" className="modal bottom-sheet">
                 <div className="modal-header">
-                    <h5 className="modal-header">
-                        {this.state.buttonText} a stat
-                        <i className="material-icons right">{this.state.buttonText.toLowerCase()}</i>
-                    </h5>
+                    <AddStatHeader data={this.state} />
                 </div>
                 <div className="modal-content">
                     <form id="addStatForm">
                         <div className='row'>
                             <div className="input-field col s3">
-                                <input value={this.state.title} onChange={this.handlChange} placeholder="Add Title..." id="title" type="text" className="validate"></input>
+                                <input value={this.state.statsToAdd[this.state.currStat]["title"]} onChange={this.handleChange} placeholder="Add Title..." id='title' type="text" className="validate"></input>
                             </div>
                             <div className="input-field col s3">
-                                <input value={this.state.source} onChange={this.handlChange} placeholder="Add Source URL..." id="source" type="text" className="validate"></input>
+                                <input value={this.state.statsToAdd[this.state.currStat]["source"]} onChange={this.handleChange} placeholder="Add Source URL..." id='source' type="text" className="validate"></input>
                             </div>
                             <div className="input-field col s3">
-                                <input value={this.state.org} onChange={this.handlChange} placeholder="Add Organization..." id="org" type="text" className="validate"></input>
+                                <input value={this.state.statsToAdd[this.state.currStat]["org"]} onChange={this.handleChange} placeholder="Add Organization..." id='org' type="text" className="validate"></input>
                             </div>
                             <div className="input-field col s3">
-                                <input placeholder="Add Publish Date..." value={this.state.published} id="beginDate" type="date" className='datepicker' onChange={this.handlChange} ></input>
+                                <input value={this.state.statsToAdd[this.state.currStat]["published"]} onChange={this.handleChange} placeholder="Add Publish Date..." id='published' type="date" className="validate" ></input>
                             </div>
                         </div>
                         <div className='row'>
-                            <div className="input-field col s6">
-                                <input value={this.state.stat} onChange={this.handlChange} placeholder="Stat" id="stat" type="text" className="validate" ></input>
+                            <div className="input-field col s5">
+                                <input value={this.state.statsToAdd[this.state.currStat]["stat"]} onChange={this.handleChange} placeholder="Stat" id='stat' type="text" className="validate" ></input>
                             </div>
+                            <SaveStatButton buttonText={this.state.buttonText} saveStat={this.saveStat} />
                             <div className="input-field col s6">
-                                <input value={this.state.topicTags} onChange={this.handlChange} placeholder="Tags" id="topicTags" type="text" className="validate" ></input>
+                                <input value={this.state.statsToAdd[this.state.currStat]["topictags"]} onChange={this.handleChange} placeholder="Tags" id='topicTags' type="text" className="validate" ></input>
                             </div>
                         </div>
                     </form>
                 </div>
                 <div className="modal-footer">
                     <a href="#!" id={this.state.buttonText} onClick={this.submit} className="waves-effect waves-green btn-flat">{this.state.buttonText}</a>
+                    <a href="#!" onClick={this.clear} className="waves-effect waves-green btn-flat">Reset</a>
                     <a href="#!" className="modal-action modal-close waves-effect waves-green btn-flat">Close</a>
-                    <a href="#!" onClick={this.clear} className="waves-effect waves-green btn-flat">Clear</a>
                 </div>
+                <StatBatchPreviewModal statsToAdd={this.state.statsToAdd} currStat={this.currStat} />
             </div>
           )
       }
   });
-/* <a href="#!" className="modal-action modal-close waves-effect waves-green btn-flat">Agree</a>
-                        <div className="modal-footer">
-                            <button id={this.state.buttonText} onClick={this.submit}>{this.state.buttonText}</button>
-                        </div>*/
+
+var SaveStatButton = React.createClass({
+    render: function() {
+        if (this.props.buttonText == 'Add') {
+            return (
+                <a href="#!" id="saveStatButton" onClick={this.props.saveStat} className="waves-effect waves-green btn-flat col s1">
+                    <i className="material-icons">add</i>
+                </a>
+            );
+        }
+        return null;
+    }
+});
+
+var AddStatHeader = React.createClass({
+    render: function() {
+        if (this.props.data.buttonText == 'Add') {
+            return (
+                <h5 className="modal-header">
+                    Add a stat (
+                        <a href='#statBatchPreviewModal'>{this.props.data.currStat} in batch</a>
+                    )
+                    <i className="material-icons right">add</i>
+                </h5>
+            );
+        } else {
+            return (
+                <h5 className="modal-header">
+                    Edit a stat
+                    <i className="material-icons right">edit</i>
+                </h5>
+            );
+        }
+    }
+});
+
+var StatBatchPreviewModal = React.createClass({
+    render: function() {
+        return(
+            <div id="statBatchPreviewModal" className="modal">
+                <div className="modal-content">
+                    <table className='pure-table pure-table-bordered pure-table-striped'>
+                        <thead>
+                            <tr>
+                                <th className='center-align'>Title</th>
+                                <th className='center-align'>Stat</th>
+                                <th className='center-align'>Organization</th>
+                                <th className='center-align'>Date Published</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {this.props.statsToAdd.map((d, i) => <Stat edit={null} delete={null} key={'preview-' + i} data={d}/>)}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        );
+    }
+});
 
 // The ReactDOM.render renders components to the dom. It takes 2 args:
 // 1. Component(s) to be rendered and 2. Location to render specified component(s)
 var renderTable = function() {
-  ReactDOM.render(
-      <div>
-      <StatSearch data={test_data}/>
-  </div>, document.querySelector('#root'));
+  ReactDOM.render(<StatSearch data={test_data}/>, document.querySelector('#root'));
 }
