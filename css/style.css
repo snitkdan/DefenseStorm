@@ -1,6 +1,8 @@
 #logo {
-	width: 300px;
+	width: 250px;
 	height: auto;
+	padding-left: 1em;
+	padding-top: .25em;
 }
 
 body {
@@ -61,13 +63,24 @@ div#statTable tbody tr td:last-child button:last-child {
 div#statTable table thead tr th:not(:last-child) {
 	cursor:pointer;
 	text-decoration: none;
+}
+
+div#statTable table thead tr th {
+	background-color: #202830;
+	color:white;
+}
+
+div#statTable table thead tr th.sortBy {
+	background-color: #2F9ACD;
 	color:black;
 }
 
-th.sortBy {
-	background-color: #2F9ACD;
+div#statTable {
+	width: 90%;
+	margin:auto;
+	margin-top: 3.35em;
+	margin-bottom: 6.7em;
 }
-
 /* The below is for hiding the table cells in which the edit/delete buttons are rendered.
 ** The excessive specificity of the selectors ensures we override Materialize's styles.
 */
@@ -79,10 +92,14 @@ div#statTable thead {
 }
 
 /* Reinstate all borders on header cells */
-div#statTable table thead tr th,
+div#statTable table thead tr th {
+	border: 1px solid white;
+}
+
 div#statTable table tbody tr td {
 	border: 1px solid #cbcbcb;
 }
+
 
 /* Hide the rightmost header cell entirely */
 div#statTable table thead tr th:last-child {
@@ -162,4 +179,12 @@ label {
 .row:after {
 	clear:none;
 	display: none;
+}
+
+div.navbar-fixed nav {
+	background-color: #FFFFFF;
+}
+
+a#saveStatButton {
+	background-color: #B3C44B;
 }

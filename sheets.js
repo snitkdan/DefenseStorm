@@ -144,8 +144,8 @@ function processSheetsData() {
       // This part turns the array of arrays returned by the API into a JSON resembling the hardcoded 'test_data' object we had before.
       for (i = 0; i < range.values.length; i++) {
         row = range.values[i];
-        // Require columns 0, 2 and 5 which currently correspond to title, org, and stat //
-        if (row[0] && row[2] && row[5]) {
+        // Check that the row is not blank 
+        if (!(row[0] == '' && row[1] == '' && row[2] == '' && row[3] == '' && row[4] == '' && row[5] == '' && row[6] == '')) {
           test_data[i] = {
             'title'     : row[0],
             'source'    : row[1],
