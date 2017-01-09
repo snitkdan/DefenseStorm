@@ -56,7 +56,7 @@ var Stat = React.createClass({
     render: function() {
         if (!this.state.isDeleted) {
             return (
-                <tr id={'Stat-' + this.props.id}>
+                <tr>
                     <td>
                         <a href={this.props.data.source}>{this.props.data.title}</a>
                     </td>
@@ -91,29 +91,30 @@ for each element in the "data" property.
 Note: (d,i) => is equivalent to .map(function(d,i){}). [In case you haven't gotten around to using ES6]
 
 Styling courtesy of materialize.css*/
-
+var sortRowsData;
 var StatTable = React.createClass({
     getInitialState: function() {
-        return ({sortCriteria: 'lastTouch', order: 1});
+        return ({sortCriterion: 'lastTouch', order: 1});
     },
 
     setSort: function(event) {
-        if (event.target.id != this.state.sortCriteria) {
-            $('div#statTable table thead tr th#' + this.state.sortCriteria).removeClass('sortBy');
+        if (event.target.id != this.state.sortCriterion) {
+            $('div#statTable table thead tr th#' + this.state.sortCriterion).removeClass('sortBy');
             $('div#statTable table thead tr th#' + event.target.id).addClass('sortBy');
         }
         this.setState({
-            sortCriteria: event.target.id,
+            sortCriterion: event.target.id,
             order: this.state.order == 1 ? 0 : 1
         });
     },
     sortRows: function(order) {
-        var sortCriteria = this.state.sortCriteria;
+        var sortCriterion = this.state.sortCriterion;
         var order = this.state.order;
+        window.sortRowsData = this.props.data;
         var sorted_Rows = this.props.data.sort(function(a, b) {
-            var sortA = a[sortCriteria].trim().toLowerCase();
-            var sortB = b[sortCriteria].trim().toLowerCase();
-            if (sortCriteria == 'published' || sortCriteria =='lastTouch') {
+            var sortA = a[sortCriterion].trim().toLowerCase();
+            var sortB = b[sortCriterion].trim().toLowerCase();
+            if (sortCriterion == 'published' || sortCriterion =='lastTouch') {
                 sortA = new Date(sortA);
                 sortB = new Date(sortB);
             }
@@ -162,7 +163,7 @@ var StatTable = React.createClass({
                         </tr>
                     </thead>
                     <tbody>
-                        {this.props.data.map((d, i) => <Stat edit={this.props.edit} delete={this.props.delete} key={'stat-' + i} id={i} data={d}/>)}
+                        {this.props.data.map((d, i) => <Stat edit={this.props.edit} delete={this.props.delete} key={'stat-' + i} data={d}/>)}
                     </tbody>
                 </table>
             </div>
@@ -172,15 +173,18 @@ var StatTable = React.createClass({
 
 //Contains the search functionality. and rendering of the StatTable.
 var StatSearch = React.createClass({
-    //Sets the initial searchTerm and searchCriteria
+    //Sets the initial search term and criteria
     getInitialState: function() {
         return ({
-            title: '',
-            org: '',
-            stat: '',
-            beginDate: '',
-            endDate: '',
-            topicTags: ''
+            searchCriteria: {
+                title: '',
+                org: '',
+                stat: '',
+                beginDate: '',
+                endDate: '',
+                topicTags: '',
+            },
+            stats: this.props.data
         });
     },
 
@@ -203,26 +207,46 @@ var StatSearch = React.createClass({
         });
     },
 
-    // Sets the searchTerm and searchCriteria to the event's value and id, respectively.
+    // Sets the searchTerm and searchCriterion to the event's value and id, respectively.
     // This determines what will be searched and what that search will be on.
     filter: function(event) {
         if (event.target.id == 'topicTags' && event.target.value != '') {
             var tagArray = event.target.value.trim().toLowerCase().split(',');
-            this.setState({topicTags: tagArray});
+            this.setState({
+                searchCriteria: {
+                    title: this.state.searchCriteria.title,
+                    org: this.state.searchCriteria.org,
+                    stat: this.state.searchCriteria.stat,
+                    beginDate: this.state.searchCriteria.beginDate,
+                    endDate: this.state.searchCriteria.endDate,
+                    topicTags: tagArray
+                }
+            });
         } else if (event.target.id == 'clearSearch') {
             this.setState({
-                title: '',
-                org: '',
-                stat: '',
-                beginDate: '',
-                endDate: '',
-                topicTags: ''
+                searchCriteria: {
+                    title: '',
+                    org: '',
+                    stat: '',
+                    beginDate: '',
+                    endDate: '',
+                    topicTags: ''
+                }
             });
             $('#searchStatForm').trigger('reset');
         } else {
-            var obj = {};
-            obj[event.target.id] = event.target.value;
-            this.setState(obj);
+            var newSearchCriteria = {
+                title: this.state.searchCriteria.title,
+                org: this.state.searchCriteria.org,
+                stat: this.state.searchCriteria.stat,
+                beginDate: this.state.searchCriteria.beginDate,
+                endDate: this.state.searchCriteria.endDate,
+                topicTags: this.state.searchCriteria.topicTags
+            };
+            newSearchCriteria[event.target.id] = event.target.value;
+            this.setState({
+                searchCriteria: newSearchCriteria
+            });
         }
     },
 
@@ -234,6 +258,13 @@ var StatSearch = React.createClass({
 
     edit: function(data) {
         this.setState({edit_data: data});
+    },
+
+    insertStats: function(newStats) {
+        window.thisStateStatsPush = this.state.stats;
+        this.setState({
+            stats: this.state.stats.concat(newStats)
+        });
     },
 
     // Clear row in Google Sheet and return a Promise so we can hide the row on success */
@@ -274,11 +305,11 @@ var StatSearch = React.createClass({
     },
     // renders the StatSearch component.
     render: function() {
-        var stats = this.props.data;
-        for (var searchCriteria in this.state) {
-            var searchTerm = this.state[searchCriteria];
+        var stats = this.state.stats;
+        for (var searchCriterion in this.state.searchCriteria) {
+            var searchTerm = this.state.searchCriteria[searchCriterion];
             if (searchTerm.length > 0) {
-                if (searchCriteria == 'beginDate') {
+                if (searchCriterion == 'beginDate') {
                     var beginElements = searchTerm.split("-");
                     var beginDate = new Date(beginElements[0], beginElements[1], beginElements[2]);
                     stats = stats.filter(function(stat) {
@@ -290,7 +321,7 @@ var StatSearch = React.createClass({
                             return null;
                         }
                     );
-                } else if (searchCriteria == 'endDate') {
+                } else if (searchCriterion == 'endDate') {
                     var endElements = searchTerm.split("-");
                     var endDate = new Date(endElements[0], endElements[1], endElements[2]);
                     stats = stats.filter(function(stat) {
@@ -302,9 +333,9 @@ var StatSearch = React.createClass({
                             return null;
                         }
                     );
-                } else if (searchCriteria == 'topicTags') {
+                } else if (searchCriterion == 'topicTags') {
                     stats = stats.filter(function(stat) {
-                        if (this.matchTags(stat[searchCriteria].toLowerCase().split(','), searchTerm)) {
+                        if (this.matchTags(stat[searchCriterion].toLowerCase().split(','), searchTerm)) {
                             return stat;
                         } else {
                             return null;
@@ -314,7 +345,7 @@ var StatSearch = React.createClass({
                 } else {
                     searchTerm = searchTerm.trim();
                     stats = stats.filter(function(stat) {
-                        if (stat[searchCriteria].toLowerCase().includes(searchTerm.toLowerCase())) {
+                        if (stat[searchCriterion].toLowerCase().includes(searchTerm.toLowerCase())) {
                             return stat;
                         } else {
                             return null;
@@ -335,7 +366,7 @@ var StatSearch = React.createClass({
                         </button>
                     </div>
                 </div>
-                <AddStat delete = {this.delete} edit={this.edit} edit_data={this.state.edit_data} />
+                <AddStat edit_data={this.state.edit_data} insertStats={this.insertStats} />
                 <SearchStat filter={this.filter} />
                 <div id='statTable' className='col s12 offset-s2'>
                     <StatTable delete={this.delete} edit={this.edit} data={stats}/>
@@ -344,6 +375,8 @@ var StatSearch = React.createClass({
         );
     }
 });
+
+var thisStateStatsPush;
 
 //Contains the search functionality
 var SearchStat = React.createClass({
@@ -452,57 +485,47 @@ var AddStat = React.createClass({
         var statsToAdd = this.state.statsToAdd;
         var values = [[]];
 
-        // Format values[][] properly based on whether we are adding a single stat, multiple, or editing
+        // Format values and other headers properly based on whether we are adding a single stat, multiple, or editing
         // We are adding multiple stats
         if (this.state.buttonText == 'Add' && this.state.currStat > 0) {
             for (var i = 0; i < this.state.currStat; i++) {
+                statsToAdd[i]['lastTouch'] = window.currDate();
                 values[i] = [
                     statsToAdd[i]["title"],
                     statsToAdd[i]["source"],
                     statsToAdd[i]["org"],
                     statsToAdd[i]["published"],
-                    window.currDate(),
+                    statsToAdd[i]['lastTouch'],
                     statsToAdd[i]["stat"],
                     statsToAdd[i]["topictags"],
                     (window.lastRow + i + 1)
                 ];
             }
             RANGE = 'A' + window.lastRow + ':H' + (window.lastRow + statsToAdd.length);
-            console.log('range: ' + RANGE);
-            console.log('statsToAdd.length: ' + statsToAdd.length);
-            console.log('window.lastRow: ' + window.lastRow);
             action = 'append';
-        // We are adding a single stat
-        } else if (this.state.buttonText == 'Add' && this.state.currStat == 0) {
-            values[0] = [
-                statsToAdd[0]["title"],
-                statsToAdd[0]["source"],
-                statsToAdd[0]["org"],
-                statsToAdd[0]["published"],
-                window.currDate(),
-                statsToAdd[0]["stat"],
-                statsToAdd[0]["topictags"],
-                (window.lastRow + 1)
-            ];
-            RANGE = 'A' + (window.lastRow + 1) + ':H' + (window.lastRow + 1);
-            console.log('range: ' + RANGE);
-            console.log('statsToAdd.length: ' + statsToAdd.length);
-            console.log('window.lastRow: ' + window.lastRow);
-            action = 'append';
-        // We are editing a single stat
+        // We are editing or adding a single stat
         } else {
+            statsToAdd[0]['lastTouch'] = window.currDate();
             values[0] = [
                     statsToAdd[0]["title"],
                     statsToAdd[0]["source"],
                     statsToAdd[0]["org"],
                     statsToAdd[0]["published"],
-                    window.currDate(),
+                    statsToAdd[0]['lastTouch'],
                     statsToAdd[0]["stat"],
                     statsToAdd[0]["topictags"],
-                    statsToAdd[0]["rowNum"]
             ];
-            RANGE = 'A' + statsToAdd[0]["rowNum"] + ':H' + statsToAdd[0]["rowNum"];
-            action = 'update';
+            // New stats need a row number
+            if (this.state.buttonText == 'Add' && this.state.currStat == 0) {
+                RANGE = 'A' + (window.lastRow + 1) + ':H' + (window.lastRow + 1);
+                action = 'append';
+                values[0].push(window.lastRow + 1);
+            // Existing stats use their existing row number
+            } else {
+                RANGE = 'A' + statsToAdd[0]["rowNum"] + ':H' + statsToAdd[0]["rowNum"];
+                action = 'update';
+                values[0].push(statsToAdd[0]["rowNum"]);         
+            }
         }
 
         gapi.client.sheets.spreadsheets.values[action]({
@@ -513,17 +536,10 @@ var AddStat = React.createClass({
         // Success callback
         }).then(function(response) {
             window.response = response;
-            console.log("Updated row count: " + response.result.updates.updatedRows);
             if (this.state.buttonText == 'Add') {
                 window.lastRow = window.lastRow + response.result.updates.updatedRows;
             }
-            //props: id,source,title,stat, topicTags, row, org, published, lastTouch
-            for (var i = 0; i < statsToAdd.length; i++) {
-              //console.log(statsToAdd[i]);
-              var newStat = <Stat edit={this.props.edit} delete={this.props.delete} key={'stat-' + 0} id={0} data={statsToAdd[i]}/>;
-              $('table').prepend(newStat);
-            }
-            //console.log(newStat);
+            this.props.insertStats(statsToAdd);
         // Error callback
         }.bind(this), function(response) {
             window.response = response;
@@ -577,10 +593,6 @@ var AddStat = React.createClass({
                 statsToAdd: updatedArr,
                 currStat: nextStat
             });
-
-            for (var i = 0; i < this.state.statsToAdd.length; i++) {
-                console.log("saveStat result: " + this.state.statsToAdd[i]['stat']);
-            }
         }
     },
 
