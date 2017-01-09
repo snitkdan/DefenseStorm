@@ -201,13 +201,9 @@ var StatSearch = React.createClass({
                 opacity: 0,
                 ready: function(modal, trigger) {
                     $('#logo').hide();
-                    $('#sidebar').hide();
-                    $('#statTable').removeClass('offset-s2');
                 },
                 complete: function() {
                     $('#logo').show();
-                    $('#sidebar').show();
-                    $('#statTable').addClass('offset-s2');
                 }
             });
         });
@@ -361,24 +357,34 @@ var StatSearch = React.createClass({
                 }
             }
         }
+
         return (
             <div>
-                <div className='row'>
-                    <div className="left" id='sidebar'>
-                        <div className='flex'>
-                            <button id='search' data-target='searchModal' className="modal-trigger #e0e0e0 grey lighten-2 col s6 btn-large btn-large waves-effect waves-light red">
-                                <i className="black-text material-icons">search</i>
-                            </button>
-                            <button id='add' data-target='addModal' className="modal-trigger #e0e0e0 grey lighten-2 col s6 btn-large btn-large waves-effect waves-light red">
-                                <i className="black-text material-icons">add</i>
-                            </button>
+                <div className="navbar-fixed">
+                    <nav>
+                        <div className="nav-wrapper">
+                            <a href="#!" className="brand-logo valign-wrapper">
+                                <img id='logo' className="valign" src='imgs/DefenseStorm_horz_bk.png' alt='DefenseStorm logo' />
+                            </a>
+                            <ul className="right">
+                                <li>
+                                    <a id='search' href='#searchModal' className="modal-trigger">
+                                        <i className="black-text material-icons">search</i>
+                                    </a>                            
+                                </li>
+                                <li>
+                                    <a id='add' data-target='addModal' className="modal-trigger">
+                                        <i className="black-text material-icons">add</i>
+                                    </a>
+                                </li>
+                            </ul>
                         </div>
-                    </div>
-                    <AddStat edit_data={this.state.edit_data} insertStats={this.insertStats} />
-                    <SearchStat filter={this.filter} />
-                    <div id='statTable' className='col s12 offset-s2'>
-                        <StatTable delete={this.delete} edit={this.edit} data={stats}/>
-                    </div>
+                    </nav>
+                </div>                
+                <AddStat edit_data={this.state.edit_data} insertStats={this.insertStats}/>
+                <SearchStat filter={this.filter} />
+                <div id='statTable' className='col s12'>
+                    <StatTable delete={this.delete} edit={this.edit} data={stats}/>
                 </div>
             </div>
         );

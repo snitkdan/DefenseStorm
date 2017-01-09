@@ -1,9 +1,6 @@
 #logo {
-	width: 30%;
+	width: 300px;
 	height: auto;
-	display: none;
-	margin: auto;
-	margin-top: 5vh;
 }
 
 body {
@@ -97,7 +94,8 @@ div#statTable table tbody tr td:last-child {
 	background-color: transparent;
 }
 
-/* Reduce spacing in and around searchModal and addModal content to make it more compact */
+
+/* Reduce spacing in and around modal content to make it more compact */
 .modal.bottom-sheet div.modal-content {
 	padding-bottom: 0px;
 	padding-top: 0px;
@@ -111,6 +109,7 @@ div#statTable table tbody tr td:last-child {
 	padding-top: 0px;
 }
 
+/* Modal headers */
 div.modal-header {
 	background-color: #202830;
 	padding: 0px;
@@ -121,10 +120,6 @@ div.modal-header h5 {
 	color: #FFFFFF;
 	padding: 0.66em;
 	margin: 0px;
-}
-
-div.modal-header h5 i.material-icons {
-	right: 0px;
 }
 
 /*Placeholder text*/
