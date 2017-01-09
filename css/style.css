@@ -52,10 +52,12 @@ div#statTable tbody tr td:last-child {
 }
 div#statTable tbody tr td:last-child button:first-child {
 	margin-bottom: 0.13em;
+	background-color: #F9BA09;
 }
 
 div#statTable tbody tr td:last-child button:last-child {
 	margin-top: 0.13em;
+	background-color: #DD1A29;
 }
 
 /* Table Headers. Indicate that header is clickable, except the last (invisible) cell*/
@@ -66,7 +68,7 @@ div#statTable table thead tr th:not(:last-child) {
 }
 
 th.sortBy {
-	background-color: blue;
+	background-color: #2F9ACD;
 }
 
 /* The below is for hiding the table cells in which the edit/delete buttons are rendered.
@@ -133,8 +135,8 @@ div.modal-header h5 i.material-icons {
 
 /* Override the overflow style applied by the bottom-sheet modals, which prevent scrolling */
 body {
-	overflow: auto;
-	width: initial;
+	overflow: auto !important;
+	width: initial !important;
 }
 
 /* Batch-adding preview modal */

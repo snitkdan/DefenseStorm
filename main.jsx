@@ -68,10 +68,10 @@ var Stat = React.createClass({
                     <td>{this.props.data.published}</td>
                     <td>{this.props.data.lastTouch}</td>
                     <td>
-                        <button data-target='addModal' className="modal-trigger btn-floating btn-small waves-effect waves-light orange" onClick={() => this.props.edit(this.props.data)}>
+                        <button data-target='addModal' className="modal-trigger btn-floating btn-small waves-effect waves-light" onClick={() => this.props.edit(this.props.data)}>
                             <i className="material-icons">mode_edit</i>
                         </button>
-                        <button className="btn-floating btn-small waves-effect waves-light red" onClick={this.deleteAndHide}>
+                        <button className="btn-floating btn-small waves-effect waves-light" onClick={this.deleteAndHide}>
                             <i className="material-icons">delete</i>
                         </button>
                     </td>
@@ -91,7 +91,6 @@ for each element in the "data" property.
 Note: (d,i) => is equivalent to .map(function(d,i){}). [In case you haven't gotten around to using ES6]
 
 Styling courtesy of materialize.css*/
-var sortRowsData;
 var StatTable = React.createClass({
     getInitialState: function() {
         return ({sortCriterion: 'lastTouch', order: 1});
@@ -110,7 +109,6 @@ var StatTable = React.createClass({
     sortRows: function(order) {
         var sortCriterion = this.state.sortCriterion;
         var order = this.state.order;
-        window.sortRowsData = this.props.data;
         var sorted_Rows = this.props.data.sort(function(a, b) {
             if (a[sortCriterion] == undefined) {
                 console.log("a: " + JSON.stringify(a));
@@ -280,7 +278,7 @@ var StatSearch = React.createClass({
             new Promise(function(resolve, reject){
                 RANGE = 'A' + data.rowNum + ':G' + data.rowNum;
                 gapi.client.sheets.spreadsheets.values.update({
-                    spreadsheetId: SPREADSHEET_ID,
+                    spreadsheetId: 'g',
                     range: RANGE,
                     valueInputOption: 'USER_ENTERED',
                     values: [
@@ -302,7 +300,8 @@ var StatSearch = React.createClass({
                         resolve(true);
                         // Error callback
                     }, function(response) {
-                        Materialize.toast('Couldn\'t delete stat #' + data.rowNum + '. <a>(details)</a>', 4000);
+                        Materialize.toast('Couldn\'t delete stat #' + data.rowNum, 4000);
+                        console.log("Couldn't delete stat: " + response.result.error.message);
                         reject(response.result.error.message);
                     }
                 );
@@ -363,28 +362,28 @@ var StatSearch = React.createClass({
             }
         }
         return (
-            <div className='row'>
-                <div className="left" id='sidebar'>
-                    <div className='flex'>
-                        <button id='search' data-target='searchModal' className="modal-trigger #e0e0e0 grey lighten-2 col s6 btn-large btn-large waves-effect waves-light red">
-                            <i className="black-text material-icons">search</i>
-                        </button>
-                        <button id='add' data-target='addModal' className="modal-trigger #e0e0e0 grey lighten-2 col s6 btn-large btn-large waves-effect waves-light red">
-                            <i className="black-text material-icons">add</i>
-                        </button>
+            <div>
+                <div className='row'>
+                    <div className="left" id='sidebar'>
+                        <div className='flex'>
+                            <button id='search' data-target='searchModal' className="modal-trigger #e0e0e0 grey lighten-2 col s6 btn-large btn-large waves-effect waves-light red">
+                                <i className="black-text material-icons">search</i>
+                            </button>
+                            <button id='add' data-target='addModal' className="modal-trigger #e0e0e0 grey lighten-2 col s6 btn-large btn-large waves-effect waves-light red">
+                                <i className="black-text material-icons">add</i>
+                            </button>
+                        </div>
                     </div>
-                </div>
-                <AddStat edit_data={this.state.edit_data} insertStats={this.insertStats} />
-                <SearchStat filter={this.filter} />
-                <div id='statTable' className='col s12 offset-s2'>
-                    <StatTable delete={this.delete} edit={this.edit} data={stats}/>
+                    <AddStat edit_data={this.state.edit_data} insertStats={this.insertStats} />
+                    <SearchStat filter={this.filter} />
+                    <div id='statTable' className='col s12 offset-s2'>
+                        <StatTable delete={this.delete} edit={this.edit} data={stats}/>
+                    </div>
                 </div>
             </div>
         );
     }
 });
-
-var thisStateStatsPush;
 
 //Contains the search functionality
 var SearchStat = React.createClass({
@@ -402,26 +401,26 @@ var SearchStat = React.createClass({
                     <form id='searchStatForm'>
                         <div className='row'>
                             <div className="input-field col s3">
-                                <input placeholder="Enter a Title" id="title" type="text" className="validate" onLoadStart={this.props.filter} onChange={this.props.filter}></input>
+                                <input placeholder="Search on Title" id="title" type="text" className="validate" onLoadStart={this.props.filter} onChange={this.props.filter}></input>
                             </div>
                             <div className="input-field col s3">
-                                <input placeholder="Enter an Organization" id="org" type="text" className="validate" onChange={this.props.filter}></input>
+                                <input placeholder="Search on Organization" id="org" type="text" className="validate" onChange={this.props.filter}></input>
                             </div>
                             <div className="input-field col s6">
-                                <input placeholder="Enter a Stat" id="stat" type="text" className="validate" onChange={this.props.filter}></input>
+                                <input placeholder="Search on Stat" id="stat" type="text" className="validate" onChange={this.props.filter}></input>
                             </div>
                         </div>
                         <br></br>
                         <div className='row'>
                             <div className="input-field col s3">
-                                <input placeholder='Begin Date' id="beginDate" type="date" onChange={this.props.filter}></input>
+                                <input placeholder='Published On or After' id="beginDate" type="date" onChange={this.props.filter}></input>
                             </div>
                             <br></br>
                             <div className="input-field col s3">
-                                <input placeholder='End Date' id="endDate" type="date"  onChange={this.props.filter}></input>
+                                <input placeholder='Published On or Before' id="endDate" type="date"  onChange={this.props.filter}></input>
                             </div>
                             <div className="input-field col s6">
-                                <input placeholder='Comma, Separated, Tags' id="topicTags" type="text" onChange={this.props.filter}></input>
+                                <input placeholder='Comma,separated,tags' id="topicTags" type="text" onChange={this.props.filter}></input>
                             </div>
                         </div>
                         <div className='row'>
@@ -587,6 +586,12 @@ var AddStat = React.createClass({
         });
     },
 
+    triggerSaveStat:function(event) {
+        if (event.key == 'Enter') {
+            this.saveStat(event);
+        }
+    },
+
     //For saving multiple stats for batch submission
     saveStat:function(event){
         if (this.state.buttonText == 'Add') {
@@ -633,11 +638,11 @@ var AddStat = React.createClass({
                         </div>
                         <div className='row'>
                             <div className="input-field col s5">
-                                <input value={this.state.statsToAdd[this.state.currStat]["stat"]} onChange={this.handleChange} placeholder="Stat" id='stat' type="text" className="validate" ></input>
+                                <input value={this.state.statsToAdd[this.state.currStat]["stat"]} onChange={this.handleChange} onKeyDown={this.triggerSaveStat} placeholder="Add Stat..." id='stat' type="text" className="validate" ></input>
                             </div>
                             <SaveStatButton buttonText={this.state.buttonText} saveStat={this.saveStat} />
                             <div className="input-field col s6">
-                                <input value={this.state.statsToAdd[this.state.currStat]["topictags"]} onChange={this.handleChange} placeholder="Tags" id='topicTags' type="text" className="validate" ></input>
+                                <input value={this.state.statsToAdd[this.state.currStat]["topictags"]} onChange={this.handleChange} placeholder="Comma,separated,tags" id='topicTags' type="text" className="validate" ></input>
                             </div>
                         </div>
                     </form>
