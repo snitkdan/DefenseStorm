@@ -536,7 +536,7 @@ var AddStat = React.createClass({
             } else {
                 RANGE = 'A' + statsToAdd[0]["rowNum"] + ':H' + statsToAdd[0]["rowNum"];
                 action = 'update';
-                values[0].push(statsToAdd[0]["rowNum"]);         
+                values[0].push(statsToAdd[0]["rowNum"]);
             }
         }
 

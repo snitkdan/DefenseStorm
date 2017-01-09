@@ -66,7 +66,7 @@ div#statTable table thead tr th:not(:last-child) {
 }
 
 th.sortBy {
-	background-color: blue;
+	background-color: #B3c44B;
 }
 
 /* The below is for hiding the table cells in which the edit/delete buttons are rendered.
@@ -164,4 +164,5 @@ label {
 
 .row:after {
 	clear:none;
+	display: none;
 }
