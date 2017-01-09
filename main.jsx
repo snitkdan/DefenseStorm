@@ -282,7 +282,7 @@ var StatSearch = React.createClass({
             new Promise(function(resolve, reject){
                 RANGE = 'A' + data.rowNum + ':G' + data.rowNum;
                 gapi.client.sheets.spreadsheets.values.update({
-                    spreadsheetId: 'g',
+                    spreadsheetId: SPREADSHEET_ID,
                     range: RANGE,
                     valueInputOption: 'USER_ENTERED',
                     values: [
@@ -517,6 +517,7 @@ var AddStat = React.createClass({
     },
 
     submit: function() {
+        $('a#Add, a#Edit').addClass('disabled');
         var RANGE;
         var action;
 
@@ -580,8 +581,10 @@ var AddStat = React.createClass({
                 window.lastRow = window.lastRow + response.result.updates.updatedRows;
                 this.props.insertStats(statsToAdd);
                 Materialize.toast('Successfully added ' + response.result.updates.updatedRows + ' rows', 4000);
+                $('a#Add').removeClass('disabled');
             } else {
                 Materialize.toast('Successfully edited stat #' + statsToAdd[0].rowNum, 4000);
+                $('a#Edit').removeClass('disabled');
             }
             this.clear();
         // Error callback
@@ -592,6 +595,7 @@ var AddStat = React.createClass({
                 Materialize.toast('Could not edit stat #' + statsToAdd[0].rowNum, 4000);
             }
             console.log('Error: ' + response.result.error.message);
+            $('a#Add, a#Edit').removeClass('disabled');
         });
     },
 
@@ -623,15 +627,14 @@ var AddStat = React.createClass({
         });
     },
 
-    triggerSaveStat:function(event) {
+    handleEnterKey:function(event) {
         if (event.key == 'Enter') {
-            this.saveStat(event);
-        }
-    },
-
-    triggerSubmit:function(event) {
-        if (event.key == 'Enter') {
-            this.submit(event);
+            if (event.target.id == 'stat') {
+                $('a#saveStatButton')[0].click();
+            }
+            if (event.target.id == 'topicTags') {
+                $('a#Add, a#Edit')[0].click();
+            }
         }
     },
 
@@ -681,10 +684,10 @@ var AddStat = React.createClass({
                         </div>
                         <div className='row'>
                             <div className="input-field col s7">
-                                <input value={this.state.statsToAdd[this.state.currStat]["stat"]} onChange={this.handleChange} onKeyDown={this.triggerSaveStat} placeholder="Add Stat..." id='stat' type="text" className="validate" ></input>
+                                <input value={this.state.statsToAdd[this.state.currStat]["stat"]} onChange={this.handleChange} onKeyDown={this.handleEnterKey} placeholder="Add Stat..." id='stat' type="text" className="validate" ></input>
                             </div>
                             <div className="input-field col s5">
-                                <input value={this.state.statsToAdd[this.state.currStat]["topictags"]} onChange={this.handleChange} onKeyDown={this.triggerSubmit} placeholder="Comma,separated,tags" id='topicTags' type="text" className="validate" ></input>
+                                <input value={this.state.statsToAdd[this.state.currStat]["topictags"]} onChange={this.handleChange} onKeyDown={this.handleEnterKey} placeholder="Comma,separated,tags" id='topicTags' type="text" className="validate" ></input>
                             </div>
                         </div>
                     </form>
