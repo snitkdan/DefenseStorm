@@ -166,4 +166,5 @@ label {
 
 .row:after {
 	clear:none;
+	display: none;
 }
