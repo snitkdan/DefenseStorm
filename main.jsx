@@ -315,6 +315,7 @@ var StatSearch = React.createClass({
         var stats = this.state.stats;
         for (var searchCriterion in this.state.searchCriteria) {
             var searchTerm = this.state.searchCriteria[searchCriterion];
+
             if (searchTerm.length > 0) {
                 if (searchCriterion == 'beginDate') {
                     var beginElements = searchTerm.split("-");
@@ -413,14 +414,14 @@ var SearchStat = React.createClass({
                         <br></br>
                         <div className='row'>
                             <div className="input-field col s3">
-                                <input placeholder='begin date' id="beginDate" type="date" onChange={this.props.filter}></input>
+                                <input placeholder='Begin Date' id="beginDate" type="date" onChange={this.props.filter}></input>
                             </div>
                             <br></br>
                             <div className="input-field col s3">
-                                <input placeholder='end date' id="endDate" type="date"  onChange={this.props.filter}></input>
+                                <input placeholder='End Date' id="endDate" type="date"  onChange={this.props.filter}></input>
                             </div>
                             <div className="input-field col s6">
-                                <input placeholder='Comma,Separated,Tags' id="topicTags" type="text" onChange={this.props.filter}></input>
+                                <input placeholder='Comma, Separated, Tags' id="topicTags" type="text" onChange={this.props.filter}></input>
                             </div>
                         </div>
                         <div className='row'>
@@ -489,6 +490,7 @@ var AddStat = React.createClass({
     submit: function() {
         var RANGE;
         var action;
+
         var statsToAdd = this.state.statsToAdd;
         var values = [[]];
 
