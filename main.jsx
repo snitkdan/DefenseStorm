@@ -581,10 +581,10 @@ var AddStat = React.createClass({
                 window.lastRow = window.lastRow + response.result.updates.updatedRows;
                 this.props.insertStats(statsToAdd);
                 Materialize.toast('Successfully added ' + response.result.updates.updatedRows + ' rows', 4000);
-                $('a#Add').removeClass('disabled');
+                $('a#Add, a#Edit').removeClass('disabled');
             } else {
                 Materialize.toast('Successfully edited stat #' + statsToAdd[0].rowNum, 4000);
-                $('a#Edit').removeClass('disabled');
+                $('a#Add, a#Edit').removeClass('disabled');
             }
             this.clear();
         // Error callback
