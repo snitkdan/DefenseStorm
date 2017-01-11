@@ -216,7 +216,25 @@ var StatSearch = React.createClass({
     // Sets the searchTerm and searchCriterion to the event's value and id, respectively.
     // This determines what will be searched and what that search will be on.
     filter: function(event) {
-        if (event.target.id == 'topicTags' && event.target.value != '') {
+        if ($(event.target).hasClass('quick-filter')) {
+            if ($(event.target).hasClass('year-filter')) {
+                var newBeginDate = '01/01/' + $(event.target).attr('data-year');
+                var newEndDate = '12/31/' + $(event.target).attr('data-year');
+                console.log(newBeginDate);
+                console.log(newEndDate);
+                this.setState({
+                    searchCriteria: {
+                        title: this.state.searchCriteria.title,
+                        org: this.state.searchCriteria.org,
+                        stat: this.state.searchCriteria.stat,
+                        beginDate: newBeginDate,
+                        endDate: newEndDate,
+                        topicTags: this.state.searchCriteria.topicTags
+                    }
+                });
+                console.log(this.state.searchCriteria);
+            }
+        } else if (event.target.id == 'topicTags' && event.target.value != '') {
             var tagArray = event.target.value.trim().toLowerCase().split(',');
             this.setState({
                 searchCriteria: {
@@ -278,7 +296,7 @@ var StatSearch = React.createClass({
             new Promise(function(resolve, reject){
                 RANGE = 'A' + data.rowNum + ':G' + data.rowNum;
                 gapi.client.sheets.spreadsheets.values.update({
-                    spreadsheetId: 'g',
+                    spreadsheetId: SPREADSHEET_ID,
                     range: RANGE,
                     valueInputOption: 'USER_ENTERED',
                     values: [
@@ -314,14 +332,15 @@ var StatSearch = React.createClass({
         var stats = this.state.stats;
         for (var searchCriterion in this.state.searchCriteria) {
             var searchTerm = this.state.searchCriteria[searchCriterion];
-
+            console.log(searchTerm + ' in filter');
+            console.log(this.state.searchCriteria);
             if (searchTerm.length > 0) {
                 if (searchCriterion == 'beginDate') {
-                    var beginElements = searchTerm.split("-");
-                    var beginDate = new Date(beginElements[0], beginElements[1], beginElements[2]);
+                    var beginElements = searchTerm.split("/");
+                    var beginDate = new Date(searchTerm);
                     stats = stats.filter(function(stat) {
                         var statElements = stat['published'].split("/");
-                        var date = new Date(statElements[2], statElements[0], statElements[1]);
+                        var date = new Date(stat['published']);
                         if (date >= beginDate)
                             return stat;
                         else
@@ -329,11 +348,11 @@ var StatSearch = React.createClass({
                         }
                     );
                 } else if (searchCriterion == 'endDate') {
-                    var endElements = searchTerm.split("-");
-                    var endDate = new Date(endElements[0], endElements[1], endElements[2]);
+                    var endElements = searchTerm.split("/");
+                    var endDate = new Date(searchTerm);
                     stats = stats.filter(function(stat) {
                         var statElements = stat['published'].split("/");
-                        var date = new Date(statElements[2], statElements[0], statElements[1]);
+                        var date = new Date(stat['published']);
                         if (date <= endDate)
                             return stat;
                         else
@@ -375,13 +394,20 @@ var StatSearch = React.createClass({
                         </div>
                     </div>
                     <AddStat edit_data={this.state.edit_data} insertStats={this.insertStats} />
-                    <SearchStat filter={this.filter} />
+                    <SearchStat filter={this.filter} data-active-filters={this.state.searchCriteria} />
+                    {window.quickFilterYears.map((d, i) => <QuickFilter filter={this.filter} key={i} data={d}/>)}
                     <div id='statTable' className='col s12 offset-s2'>
                         <StatTable delete={this.delete} edit={this.edit} data={stats}/>
                     </div>
                 </div>
             </div>
         );
+    }
+});
+
+var QuickFilter = React.createClass({
+    render: function() {
+        return(<div className="chip quick-filter year-filter" data-year={this.props.data} onClick={this.props.filter}>{this.props.data}</div>);
     }
 });
 
@@ -492,6 +518,7 @@ var AddStat = React.createClass({
         var action;
 
         var statsToAdd = this.state.statsToAdd;
+        var publishedYears = [];
         var values = [[]];
 
         // Format values and other headers properly based on whether we are adding a single stat, multiple, or editing
@@ -512,6 +539,12 @@ var AddStat = React.createClass({
                     statsToAdd[i]["topictags"],
                     (window.lastRow + i + 1)
                 ];
+                if (statsToAdd[i]["published"] != '') {
+                    var publishedYear = statsToAdd[i]["published"].split('/')[2];
+                    if (!publishedYears.includes(publishedYear)) {
+                        publishedYears.push(publishedYear);
+                    }
+                }
             }
             RANGE = 'A' + window.lastRow + ':H' + (window.lastRow + statsToAdd.length);
             action = 'append';
@@ -527,6 +560,12 @@ var AddStat = React.createClass({
                     statsToAdd[0]["stat"],
                     statsToAdd[0]["topictags"],
             ];
+            if (statsToAdd[0]["published"] != '') {
+                var publishedYear = statsToAdd[0]["published"].split('/')[2];
+                if (!publishedYears.includes(publishedYear)) {
+                    publishedYears.push(publishedYear);
+                }
+            }
             // New stats need a row number
             if (this.state.buttonText == 'Add' && this.state.currStat == 0) {
                 RANGE = 'A' + (window.lastRow + 1) + ':H' + (window.lastRow + 1);
@@ -553,6 +592,11 @@ var AddStat = React.createClass({
             console.log("range: " + RANGE);
             console.log("statsToAdd:" + JSON.stringify(statsToAdd));
             this.props.insertStats(statsToAdd);
+            for (var publishedYear in publishedYears) {
+                if (!window.quickFilterYears.includes(publishedYear)) {
+                 window.quickFilterYears.push(publishedYear);
+                }
+            }
         // Error callback
         }.bind(this), function(response) {
             console.log('Error, code 400: ' + response.result.error.message);
