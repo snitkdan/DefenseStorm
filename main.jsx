@@ -579,13 +579,25 @@ var AddStat = React.createClass({
 
     //Handles user input when editing a stat
     handleChange:function(event){
+/*        this.showTipIfInvalid(event.target.id, event.target.value);
+*/
         var updatedArr = this.state.statsToAdd.slice();
         updatedArr[this.state.currStat][event.target.id] = event.target.value;
         this.setState({
             statsToAdd: updatedArr
         });
     },
-
+/*
+    showTipIfInvalid:function(id, value) {
+        if (id == 'source') {
+            if (window.hasProtocol(value)) {
+                $('form#addStatForm label[for="source"]').attr('data-error', 'wrong');
+            } else {
+                $('form#addStatForm label[for="source"]').removeAttr('data-error');
+            }
+        }
+    },
+*/
     triggerSaveStat:function(event) {
         if (event.key == 'Enter') {
             this.saveStat(event);
@@ -624,25 +636,31 @@ var AddStat = React.createClass({
                     <form id="addStatForm">
                         <div className='row'>
                             <div className="input-field col s3">
-                                <input value={this.state.statsToAdd[this.state.currStat]["title"]} onChange={this.handleChange} placeholder="Add Title..." id='title' type="text" className="validate"></input>
+                                <input value={this.state.statsToAdd[this.state.currStat]["title"]} onChange={this.handleChange} placeholder="Title of Report" id='title' type="text" className="validate"></input>
+                                <label htmlFor='title' data-error='wrong' className="active">Title of study or report</label>
                             </div>
                             <div className="input-field col s3">
-                                <input value={this.state.statsToAdd[this.state.currStat]["source"]} onChange={this.handleChange} placeholder="Add Source URL..." id='source' type="text" className="validate"></input>
+                                <input value={this.state.statsToAdd[this.state.currStat]["source"]} onChange={this.handleChange} placeholder="http://www.example.com" id='source' type="url" className="validate"></input>
+                                <label htmlFor='source' data-error='Invalid URL. Did you include "http://"?' className="active">Source URL</label>
                             </div>
                             <div className="input-field col s3">
-                                <input value={this.state.statsToAdd[this.state.currStat]["org"]} onChange={this.handleChange} placeholder="Add Organization..." id='org' type="text" className="validate"></input>
+                                <input value={this.state.statsToAdd[this.state.currStat]["org"]} onChange={this.handleChange} placeholder="E.g. Ponemon, Verizon, etc." id='org' type="text" className="validate"></input>
+                                <label htmlFor='org' data-error='wrong' className="active">Authoring organization</label>
                             </div>
                             <div className="input-field col s3">
-                                <input value={this.state.statsToAdd[this.state.currStat]["published"]} onChange={this.handleChange} placeholder="Add Publish Date..." id='published' type="date" className="validate" ></input>
+                                <input value={this.state.statsToAdd[this.state.currStat]["published"]} onChange={this.handleChange} placeholder="mm/dd/yyyy" id='published' type="date" className="validate" ></input>
+                                <label htmlFor='published' data-error='wrong' className="active">Date published</label>
                             </div>
                         </div>
                         <div className='row'>
                             <div className="input-field col s5">
-                                <input value={this.state.statsToAdd[this.state.currStat]["stat"]} onChange={this.handleChange} onKeyDown={this.triggerSaveStat} placeholder="Add Stat..." id='stat' type="text" className="validate" ></input>
+                                <textarea value={this.state.statsToAdd[this.state.currStat]["stat"]} onChange={this.handleChange} onKeyDown={this.triggerSaveStat} placeholder="E.g. Two-thirds of respondents identified cyber risk as one of their top five concerns" id='stat' type="text" className="materialize-textarea validate" ></textarea>
+                                <label htmlFor='stat' data-error='wrong' className="active">Statistic</label>
                             </div>
                             <SaveStatButton buttonText={this.state.buttonText} saveStat={this.saveStat} />
                             <div className="input-field col s6">
                                 <input value={this.state.statsToAdd[this.state.currStat]["topictags"]} onChange={this.handleChange} placeholder="Comma,separated,tags" id='topicTags' type="text" className="validate" ></input>
+                                <label htmlFor='topicTags' data-error='wrong' className="active">Topic tags</label>
                             </div>
                         </div>
                     </form>
