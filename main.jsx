@@ -402,25 +402,31 @@ var SearchStat = React.createClass({
                         <div className='row'>
                             <div className="input-field col s3">
                                 <input placeholder="Search on Title" id="title" type="text" className="validate" onLoadStart={this.props.filter} onChange={this.props.filter}></input>
+                                <label htmlFor='title' className="active">Title of study or report</label>
                             </div>
                             <div className="input-field col s3">
                                 <input placeholder="Search on Organization" id="org" type="text" className="validate" onChange={this.props.filter}></input>
+                                <label htmlFor='org' className="active">Authoring organization</label>
                             </div>
                             <div className="input-field col s6">
                                 <input placeholder="Search on Stat" id="stat" type="text" className="validate" onChange={this.props.filter}></input>
+                                <label htmlFor='stat' className="active">Statistic</label>
                             </div>
                         </div>
                         <br></br>
                         <div className='row'>
                             <div className="input-field col s3">
-                                <input placeholder='Published On or After' id="beginDate" type="date" onChange={this.props.filter}></input>
+                                <input placeholder='mm/dd/yyyy' id="beginDate" type="date" onChange={this.props.filter}></input>
+                                <label htmlFor='beginDate' className="active">Published on or after</label>
                             </div>
                             <br></br>
                             <div className="input-field col s3">
-                                <input placeholder='Published On or Before' id="endDate" type="date"  onChange={this.props.filter}></input>
+                                <input placeholder='mm/dd/yyyy' id="endDate" type="date"  onChange={this.props.filter}></input>
+                                <label htmlFor='endDate' className="active">Published on or before</label>
                             </div>
                             <div className="input-field col s6">
                                 <input placeholder='Comma,separated,tags' id="topicTags" type="text" onChange={this.props.filter}></input>
+                                <label htmlFor='topicTags' data-error='wrong' className="active">Topic tags</label>
                             </div>
                         </div>
                         <div className='row'>
