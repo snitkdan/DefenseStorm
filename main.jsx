@@ -65,7 +65,7 @@ var Stat = React.createClass({
             return (
                 <tr>
                     <td>
-                        <a href={this.props.data.source}>{this.props.data.title}</a>
+                        <a href={this.props.data.source} target='_blank'>{this.props.data.title}</a>
                     </td>
                     <td>
                         <p>{this.props.data.stat}</p>
