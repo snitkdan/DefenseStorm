@@ -22,6 +22,10 @@ var SCOPES = ["https://www.googleapis.com/auth/spreadsheets"];
  */
 var RANGE = 'A2:H1000';
 
+var test_data = [];
+var lastRow = 2;
+var quickFilterYears = [];
+
 /**
  * For reading a JSON configuration file
  */
@@ -96,9 +100,6 @@ var handleAuthClick = function(event) {
   return false;
 }
 
-var test_data = [];
-var lastRow = 2;
-
 /**
  * Load Sheets API client library
  */
@@ -133,6 +134,12 @@ function processSheetsData() {
             'stat'      : row[5],
             'topicTags' : row[6],
             'rowNum'    : row[7]
+          }
+          if (row[3] != '') {
+            var publishedYear = row[3].split('/')[2];
+            if (!window.quickFilterYears.includes(publishedYear)) {
+               window.quickFilterYears.push(publishedYear);
+            }
           }
         }
       }
