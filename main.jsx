@@ -486,7 +486,8 @@ var AddStat = React.createClass({
         $('body').css('width', 'initial');
     },
 
-    submit: function() {
+    submit: function(event) {
+        event.preventDefault();
         var RANGE;
         var action;
 
@@ -628,48 +629,48 @@ var AddStat = React.createClass({
     // renders the adding Stat form
     render: function() {
         return (
-            <div id="addModal" className="modal bottom-sheet">
-                <div className="modal-header">
-                    <AddStatHeader data={this.state} />
-                </div>
-                <div className="modal-content">
-                    <form id="addStatForm">
-                        <div className='row'>
-                            <div className="input-field col s3">
-                                <input value={this.state.statsToAdd[this.state.currStat]["title"]} onChange={this.handleChange} placeholder="Title of Report" id='title' type="text" className="validate"></input>
-                                <label htmlFor='title' data-error='wrong' className="active">Title of study or report</label>
+            <div id="addModal"  onSubmit={this.submit} className="modal bottom-sheet">
+                <form id="addStatForm">
+                    <div className="modal-header">
+                        <AddStatHeader data={this.state} />
+                    </div>
+                    <div className="modal-content">
+                            <div className='row'>
+                                <div className="input-field col s3">
+                                    <input value={this.state.statsToAdd[this.state.currStat]["title"]} onChange={this.handleChange} placeholder="Title of Report" id='title' type="text" className="validate" required></input>
+                                    <label htmlFor='title' data-error='wrong' className="active">Title of study or report</label>
+                                </div>
+                                <div className="input-field col s3">
+                                    <input value={this.state.statsToAdd[this.state.currStat]["source"]} onChange={this.handleChange} placeholder="http://www.example.com" id='source' type="url" className="validate" required></input>
+                                    <label htmlFor='source' data-error='Invalid URL. Did you include "http://"?' className="active">Source URL</label>
+                                </div>
+                                <div className="input-field col s3">
+                                    <input value={this.state.statsToAdd[this.state.currStat]["org"]} onChange={this.handleChange} placeholder="E.g. Ponemon, Verizon, etc." id='org' type="text" className="validate" required></input>
+                                    <label htmlFor='org' data-error='wrong' className="active">Authoring organization</label>
+                                </div>
+                                <div className="input-field col s3">
+                                    <input value={this.state.statsToAdd[this.state.currStat]["published"]} onChange={this.handleChange} placeholder="mm/dd/yyyy" id='published' type="date" className="validate" ></input>
+                                    <label htmlFor='published' data-error='wrong' className="active">Date published</label>
+                                </div>
                             </div>
-                            <div className="input-field col s3">
-                                <input value={this.state.statsToAdd[this.state.currStat]["source"]} onChange={this.handleChange} placeholder="http://www.example.com" id='source' type="url" className="validate"></input>
-                                <label htmlFor='source' data-error='Invalid URL. Did you include "http://"?' className="active">Source URL</label>
+                            <div className='row'>
+                                <div className="input-field col s5">
+                                    <textarea value={this.state.statsToAdd[this.state.currStat]["stat"]} onChange={this.handleChange} onKeyDown={this.triggerSaveStat} placeholder="E.g. Two-thirds of respondents identified cyber risk as one of their top five concerns" id='stat' type="text" className="materialize-textarea validate" required></textarea>
+                                    <label htmlFor='stat' data-error='wrong' className="active">Statistic</label>
+                                </div>
+                                <SaveStatButton buttonText={this.state.buttonText} saveStat={this.saveStat} />
+                                <div className="input-field col s6">
+                                    <input value={this.state.statsToAdd[this.state.currStat]["topictags"]} onChange={this.handleChange} placeholder="Comma,separated,tags" id='topicTags' type="text" className="validate" ></input>
+                                    <label htmlFor='topicTags' data-error='wrong' className="active">Topic tags</label>
+                                </div>
                             </div>
-                            <div className="input-field col s3">
-                                <input value={this.state.statsToAdd[this.state.currStat]["org"]} onChange={this.handleChange} placeholder="E.g. Ponemon, Verizon, etc." id='org' type="text" className="validate"></input>
-                                <label htmlFor='org' data-error='wrong' className="active">Authoring organization</label>
-                            </div>
-                            <div className="input-field col s3">
-                                <input value={this.state.statsToAdd[this.state.currStat]["published"]} onChange={this.handleChange} placeholder="mm/dd/yyyy" id='published' type="date" className="validate" ></input>
-                                <label htmlFor='published' data-error='wrong' className="active">Date published</label>
-                            </div>
-                        </div>
-                        <div className='row'>
-                            <div className="input-field col s5">
-                                <textarea value={this.state.statsToAdd[this.state.currStat]["stat"]} onChange={this.handleChange} onKeyDown={this.triggerSaveStat} placeholder="E.g. Two-thirds of respondents identified cyber risk as one of their top five concerns" id='stat' type="text" className="materialize-textarea validate" ></textarea>
-                                <label htmlFor='stat' data-error='wrong' className="active">Statistic</label>
-                            </div>
-                            <SaveStatButton buttonText={this.state.buttonText} saveStat={this.saveStat} />
-                            <div className="input-field col s6">
-                                <input value={this.state.statsToAdd[this.state.currStat]["topictags"]} onChange={this.handleChange} placeholder="Comma,separated,tags" id='topicTags' type="text" className="validate" ></input>
-                                <label htmlFor='topicTags' data-error='wrong' className="active">Topic tags</label>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-                <div className="modal-footer">
-                    <a href="#!" id={this.state.buttonText} onClick={this.submit} className="waves-effect waves-green btn-flat">{this.state.buttonText}</a>
-                    <a href="#!" onClick={this.clear} className="waves-effect waves-green btn-flat">Reset</a>
-                    <a href="#!" className="modal-action modal-close waves-effect waves-green btn-flat">Close</a>
-                </div>
+                    </div>
+                    <div className="modal-footer">
+                        <button id={this.state.buttonText} className="waves-effect waves-green btn-flat" type='submit'>Submit</button>
+                        <a href="#!" onClick={this.clear} className="waves-effect waves-green btn-flat">Reset</a>
+                        <a href="#!" className="modal-action modal-close waves-effect waves-green btn-flat">Close</a>
+                    </div>
+                </form>
                 <StatBatchPreviewModal statsToAdd={this.state.statsToAdd} currStat={this.currStat} />
             </div>
           )
