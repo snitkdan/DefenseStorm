@@ -493,7 +493,8 @@ var AddStat = React.createClass({
                     published:'',
                     stat:'',
                     topicTags:'',
-                    rowNum:''
+                    rowNum:'',
+                    lastTouch:''
                 }
             ],
             buttonText:'Add',
@@ -508,9 +509,8 @@ var AddStat = React.createClass({
             // Google Chrome's datepicker is picky about the format of the date passed to it
             var publishDate = '';
             if (data.published) {
-                publishDate = window.getYYYYMMDDFromDateParts(window.getDateParts(new Date(data.published)));
+                publishDate = window.getYYYYMMDDFromDateString(data.published);
             }
-
             this.setState({
                 statsToAdd: [
                     {
@@ -520,7 +520,8 @@ var AddStat = React.createClass({
                         published: publishDate,
                         stat: data.stat,
                         topicTags: data.topicTags,
-                        rowNum:data.rowNum
+                        rowNum:data.rowNum,
+                        lastTouch:data.lastTouch
                     }
                 ],
                 buttonText:'Edit',
@@ -535,7 +536,6 @@ var AddStat = React.createClass({
     },
 
     submit: function(event) {
-
         event.preventDefault();
         $('a#Add, a#Edit').addClass('disabled');
         var RANGE;
@@ -552,13 +552,13 @@ var AddStat = React.createClass({
             if (statsToAdd[this.state.currStat]["stat"] == '') {
             	statsToAdd = statsToAdd.slice(0, this.state.currStat);
         	}
-            for (var i = 0; i < this.state.currStat; i++) {
+            for (var i = 0; i <= this.state.currStat; i++) {
                 statsToAdd[i]['lastTouch'] = window.currDate();
                 statsToAdd[i]['topicTags'] = window.removeDuplicateTags(statsToAdd[i]['topicTags']);
 		    	// Dates entered into the Google Sheet get formatted like so: MM/DD/YYYY with no leading zeroes
 		    	// However, this piece of data hasn't made the round trip - it will be in the Chrome Datepicker's native format
 		    	// which is YYYY-MM-DD
-		    	// Using slashes instead of hyphens, Date() will parse the date in the local timezone
+		    	// Using slashes instead of hyphens, we use Date() to parse the date in the local timezone for later display.
 			    var publishDate = statsToAdd[i]["published"];    	
 		    	if (publishDate != '') {
 			    	var publishDateMMDDYYYY = window.getMMDDYYYYFromDateParts(window.getDateParts(new Date(publishDate.replace(/-/g, '/'))));
@@ -650,7 +650,8 @@ var AddStat = React.createClass({
                         published   :   '',
                         stat        :   '',
                         topicTags   :   '',
-                        rowNum      :   ''
+                        rowNum      :   '',
+                        lastTouch	:	''
                     }
                 ],
             buttonText  :   'Add',
@@ -683,13 +684,14 @@ var AddStat = React.createClass({
                 published   :   this.state.statsToAdd[this.state.currStat]['published'],
                 stat        :   '',
                 topicTags   :   this.state.statsToAdd[this.state.currStat]['topicTags'],
-                rowNum      :   ''
+                rowNum      :   '',
+                lastTouch	:	''
             };
             this.setState({
                 statsToAdd: updatedArr,
                 currStat: nextStat
             });
-            $('form#addStatForm input:not(input[name=stat], input[name=topicTags])').attr('disabled','disabled');
+            $('form#addStatForm input:not(#topicTags)').attr('disabled','disabled');
         } else {
         	$('#addStatForm')[0].reportValidity();
         }

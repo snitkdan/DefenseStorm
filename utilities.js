@@ -9,15 +9,13 @@ var getDateParts = function(dateObj) {
     var dd = dateObj.getDate();
     var mm = dateObj.getMonth() + 1; //January is 0!
     var yyyy = dateObj.getFullYear();
-    dd = window.addDigitIfLessThanTen(dd);
-    mm = window.addDigitIfLessThanTen(mm);
     return [yyyy, mm, dd];
 }
 
 // Add a preceding 0 to months and days less than 10
 var addDigitIfLessThanTen = function(smallInt) {
     if (smallInt < 10) {
-        return smallInt;
+        return '0' + smallInt;
     }
     return smallInt;
 }
@@ -27,10 +25,12 @@ var getMMDDYYYYFromDateParts = function(dateParts) {
     return dateParts[1] + '/' + dateParts[2] + '/' + dateParts[0];
 }
 
-// Return a string of the format YYYY-MM-DD from an array containing the elements of a date
-var getYYYYMMDDFromDateParts = function(dateParts) {
-    return dateParts[0] + '-' + dateParts[1] + '-' + dateParts[2];
+// Return a string of the format YYYY-MM-DD from a string in the format M/D/YYYY
+var getYYYYMMDDFromDateString = function(dateString) {
+    var dateParts = dateString.split('/');
+    return dateParts[2] + '-' + addDigitIfLessThanTen(dateParts[0]) + '-' + addDigitIfLessThanTen(dateParts[1]);
 }
+
 
 // end >>
 
