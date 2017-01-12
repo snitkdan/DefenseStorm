@@ -11,7 +11,7 @@ var SPREADSHEET_ID = null;
 /**
  * SCOPES determine an app's permissions when making API calls involving user data
  */
-var SCOPES = ["https://www.googleapis.com/auth/spreadsheets"];
+var SCOPES = null;
 
 /**
  * This is the set of cells that we want returned. E.g. A1:B2 would refer to these cells:
@@ -20,7 +20,7 @@ var SCOPES = ["https://www.googleapis.com/auth/spreadsheets"];
  *
  * TODO: figure out how to return all non-empty rows instead of hardcoding a large number of rows.
  */
-var RANGE = 'A2:H1000';
+var RANGE = null;
 
 /**
  * For reading a JSON configuration file
@@ -44,6 +44,8 @@ function setIDsFromConfig(text) {
   var data = JSON.parse(text);
   CLIENT_ID = data.client_id;
   SPREADSHEET_ID = data.sheet_id;
+  SCOPES = data.scopes;
+  RANGE = "A2:H" + data.max_rows;
 }
 
 readConfig("config.json", setIDsFromConfig);
@@ -70,7 +72,7 @@ function handleAuthResult(authResult) {
   if (authResult && !authResult.error) {
     // Hide auth UI, then load client library.
     authorizeDiv.remove();
-    $('#logo').css('display', 'hidden');
+    $('#auth-logo').css('display', 'none');
     loadSheetsApi();
   } else {
     // Show auth UI, allowing the user to initiate authorization by
@@ -79,7 +81,7 @@ function handleAuthResult(authResult) {
     authButton.text('Authorize Google Sheets');
     authButton.attr('id', 'authorize-button');
     authButton.click(handleAuthClick);
-    $('#logo').css('display', 'block');
+    $('#auth-logo').css('display', 'block');
     authorizeDiv.append(authButton);
   }
 }
@@ -122,8 +124,8 @@ function processSheetsData() {
       // This part turns the array of arrays returned by the API into a JSON resembling the hardcoded 'test_data' object we had before.
       for (i = 0; i < range.values.length; i++) {
         row = range.values[i];
-        // Require columns 0, 2 and 5 which currently correspond to title, org, and stat //
-        if (row[0] && row[2] && row[5]) {
+        // Check that the row is not blank 
+        if (!(row[0] == '' && row[1] == '' && row[2] == '' && row[3] == '' && row[4] == '' && row[5] == '' && row[6] == '')) {
           test_data[i] = {
             'title'     : row[0],
             'source'    : row[1],

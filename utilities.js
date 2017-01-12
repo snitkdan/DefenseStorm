@@ -1,12 +1,3 @@
-// This file is for misc. useful functions 
-
-// Returns whether or not an URL string begins with 'ftp://', 'http://', or 'https://',
-
-// Courtesy of http://stackoverflow.com/a/24657561
-function hasProtocol(url) {
-    return /^(?:f|ht)tps?\:\/\//.test(url);
-}
-
 // For saving the date a stat was modified
 // Returns the local date
 // Courtesy of http://stackoverflow.com/a/4929629

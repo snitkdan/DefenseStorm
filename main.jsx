@@ -53,12 +53,19 @@ var Stat = React.createClass({
             }
         );
     },
+
+    hide: function() {
+        this.setState({
+            isDeleted: true
+        });
+    },
+
     render: function() {
         if (!this.state.isDeleted) {
             return (
                 <tr>
                     <td>
-                        <a href={this.props.data.source}>{this.props.data.title}</a>
+                        <a href={this.props.data.source} target='_blank'>{this.props.data.title}</a>
                     </td>
                     <td>
                         <p>{this.props.data.stat}</p>
@@ -144,12 +151,8 @@ var StatTable = React.createClass({
         var order = this.state.order;
         var sorted_Rows = this.props.data.sort(function(a, b) {
             if (a[sortCriterion] == undefined) {
-                console.log("a: " + JSON.stringify(a));
-                console.log(sortCriterion);
             }
             if (b[sortCriterion] == undefined) {
-                console.log("b: " + JSON.stringify(b));
-                console.log(sortCriterion);
             }
             var sortA = a[sortCriterion].trim().toLowerCase();
             var sortB = b[sortCriterion].trim().toLowerCase();
@@ -227,22 +230,23 @@ var StatSearch = React.createClass({
         });
     },
 
-    componentWillMount: function() {
-        $(document).ready(function(){
-            // the "href" attribute of .modal-trigger must specify the modal ID that wants to be triggered
-            $('.modal').modal({
-                opacity: 0,
-                ready: function(modal, trigger) {
-                    $('#logo').hide();
-                    $('#sidebar').hide();
-                    $('#statTable').removeClass('offset-s2');
-                },
-                complete: function() {
-                    $('#logo').show();
-                    $('#sidebar').show();
-                    $('#statTable').addClass('offset-s2');
-                }
-            });
+    componentDidMount: function() {
+        // the "href" attribute of .modal-trigger must specify the modal ID that wants to be triggered
+        $('#searchModal, #addModal').modal({
+            opacity: 0,
+            ready: function(modal, trigger) {
+                $('div.navbar-fixed').hide('slow');
+            },
+            complete: function() {
+                $('div.navbar-fixed').show('slow');
+            }
+        });
+        $('#statBatchPreviewModal').modal({
+            opacity: 0,
+            ready: function(modal, trigger) {
+            },
+            complete: function() {
+            }
         });
     },
 
@@ -311,7 +315,7 @@ var StatSearch = React.createClass({
             new Promise(function(resolve, reject){
                 RANGE = 'A' + data.rowNum + ':G' + data.rowNum;
                 gapi.client.sheets.spreadsheets.values.update({
-                    spreadsheetId: 'g',
+                    spreadsheetId: SPREADSHEET_ID,
                     range: RANGE,
                     valueInputOption: 'USER_ENTERED',
                     values: [
@@ -394,24 +398,34 @@ var StatSearch = React.createClass({
                 }
             }
         }
+
         return (
             <div>
-                <div className='row'>
-                    <div className="left" id='sidebar'>
-                        <div className='flex'>
-                            <button id='search' data-target='searchModal' className="modal-trigger #e0e0e0 grey lighten-2 col s6 btn-large btn-large waves-effect waves-light red">
-                                <i className="black-text material-icons">search</i>
-                            </button>
-                            <button id='add' data-target='addModal' className="modal-trigger #e0e0e0 grey lighten-2 col s6 btn-large btn-large waves-effect waves-light red">
-                                <i className="black-text material-icons">add</i>
-                            </button>
+                <div className="navbar-fixed">
+                    <nav>
+                        <div className="nav-wrapper">
+                            <a href="#!" className="brand-logo">
+                                <img id='logo' className="" src='imgs/DefenseStorm_horz_bk.png' alt='DefenseStorm logo' />
+                            </a>
+                            <ul className="right">
+                                <li>
+                                    <a id='search' href='#searchModal' className="modal-trigger">
+                                        <i className="black-text material-icons large">search</i>
+                                    </a>                            
+                                </li>
+                                <li>
+                                    <a id='add' data-target='addModal' className="modal-trigger">
+                                        <i className="black-text material-icons large">add</i>
+                                    </a>
+                                </li>
+                            </ul>
                         </div>
-                    </div>
-                    <AddStat edit_data={this.state.edit_data} insertStats={this.insertStats} />
-                    <SearchStat filter={this.filter} />
-                    <div id='statTable' className='col s12 offset-s2'>
-                        <StatTable delete={this.delete} edit={this.edit} data={stats}/>
-                    </div>
+                    </nav>
+                </div>                
+                <AddStat edit_data={this.state.edit_data} insertStats={this.insertStats}/>
+                <SearchStat filter={this.filter} />
+                <div id='statTable' className='col s12'>
+                    <StatTable delete={this.delete} edit={this.edit} data={stats}/>
                 </div>
             </div>
         );
@@ -498,13 +512,29 @@ var AddStat = React.createClass({
     componentWillReceiveProps:function(nextProps){
         var data = nextProps.edit_data;
         if (data) {
+            // Google Chrome's datepicker is picky about the format of the date passed to it
+            var publishDate = '';
+            if (data.published) {
+                publishDate = new Date(data.published);
+                var dd = publishDate.getDate();
+                var mm = publishDate.getMonth() + 1; //January is 0!
+                var yyyy = publishDate.getFullYear();
+                if (dd < 10) {
+                    dd = '0' + dd
+                }
+                if (mm < 10) {
+                    mm = '0' + mm
+                }
+                publishDate = yyyy + '-' + mm + '-' + dd;
+            }
+
             this.setState({
                 statsToAdd: [
                     {
                         title: data.title,
                         source: data.source,
                         org: data.org,
-                        published: data.published,
+                        published: publishDate,
                         stat: data.stat,
                         topicTags: data.topicTags,
                         rowNum:data.rowNum
@@ -523,6 +553,8 @@ var AddStat = React.createClass({
 
     submit: function(event) {
         event.preventDefault();
+        $('a#Add, a#Edit').addClass('disabled');
+
         var RANGE;
         var action;
 
@@ -584,13 +616,23 @@ var AddStat = React.createClass({
         }).then(function(response) {
             if (this.state.buttonText == 'Add') {
                 window.lastRow = window.lastRow + response.result.updates.updatedRows;
+                this.props.insertStats(statsToAdd);
+                Materialize.toast('Successfully added ' + response.result.updates.updatedRows + ' rows', 4000);
+                $('a#Add, a#Edit').removeClass('disabled');
+            } else {
+                Materialize.toast('Successfully edited stat #' + statsToAdd[0].rowNum, 4000);
+                $('a#Add, a#Edit').removeClass('disabled');
             }
-            console.log("range: " + RANGE);
-            console.log("statsToAdd:" + JSON.stringify(statsToAdd));
-            this.props.insertStats(statsToAdd);
+            this.clear();
         // Error callback
         }.bind(this), function(response) {
-            console.log('Error, code 400: ' + response.result.error.message);
+            if (this.state.buttonText == 'Add') {
+                Materialize.toast('Could not add ' + (this.state.currStat + 1) + ' rows', 4000);
+            } else {
+                Materialize.toast('Could not edit stat #' + statsToAdd[0].rowNum, 4000);
+            }
+            console.log('Error: ' + response.result.error.message);
+            $('a#Add, a#Edit').removeClass('disabled');
         });
     },
 
@@ -611,6 +653,7 @@ var AddStat = React.createClass({
             currStat    :   0
         });
         $('#addStatForm').trigger('reset');
+        $('label').addClass('active');
     },
 
     //Handles user input when editing a stat
@@ -623,20 +666,15 @@ var AddStat = React.createClass({
             statsToAdd: updatedArr
         });
     },
-/*
-    showTipIfInvalid:function(id, value) {
-        if (id == 'source') {
-            if (window.hasProtocol(value)) {
-                $('form#addStatForm label[for="source"]').attr('data-error', 'wrong');
-            } else {
-                $('form#addStatForm label[for="source"]').removeAttr('data-error');
-            }
-        }
-    },
-*/
-    triggerSaveStat:function(event) {
+
+    handleEnterKey:function(event) {
         if (event.key == 'Enter') {
-            this.saveStat(event);
+            if (event.target.id == 'stat') {
+                $('a#saveStatButton')[0].click();
+            }
+            if (event.target.id == 'topicTags') {
+                $('a#Add, a#Edit')[0].click();
+            }
         }
     },
 
@@ -689,22 +727,17 @@ var AddStat = React.createClass({
                                 </div>
                             </div>
                             <div className='row'>
-                                <div className="input-field col s5">
-                                    <textarea value={this.state.statsToAdd[this.state.currStat]["stat"]} onChange={this.handleChange} onKeyDown={this.triggerSaveStat} placeholder="E.g. Two-thirds of respondents identified cyber risk as one of their top five concerns" id='stat' type="text" className="materialize-textarea validate" required></textarea>
-                                    <label htmlFor='stat' data-error='Invalid statistic' className="active">Statistic</label>
-                                </div>
-                                <SaveStatButton buttonText={this.state.buttonText} saveStat={this.saveStat} />
                                 <div className="input-field col s6">
-                                    <input value={this.state.statsToAdd[this.state.currStat]["topictags"]} onChange={this.handleChange} placeholder="Comma,separated,tags" id='topicTags' type="text" className="validate" ></input>
+                                    <input value={this.state.statsToAdd[this.state.currStat]["topictags"]} onChange={this.handleChange} onKeyDown={this.handleEnterKey} placeholder="Comma,separated,tags" id='topicTags' type="text" className="validate" ></input>
                                     <label htmlFor='topicTags' data-error='Invalid tags' className="active">Topic tags</label>
+                                </div>
+                                <div className="input-field col s6">
+                                    <textarea value={this.state.statsToAdd[this.state.currStat]["stat"]} onChange={this.handleChange} onKeyDown={this.handleEnterKey} placeholder="E.g. Two-thirds of respondents identified cyber risk as one of their top five concerns" id='stat' type="text" className="materialize-textarea validate" required></textarea>
+                                    <label htmlFor='stat' data-error='Invalid statistic' className="active">Statistic</label>
                                 </div>
                             </div>
                     </div>
-                    <div className="modal-footer">
-                        <button id={this.state.buttonText} className="waves-effect waves-light btn" type='submit'>Submit</button>
-                        <a href="#!" onClick={this.clear} className="waves-effect waves-light btn clear-btn">Clear</a>
-                        <a href="#!" className="modal-action modal-close waves-effect waves-light btn">Close</a>
-                    </div>
+                    <AddStatFooter buttonText={this.state.buttonText} clear={this.clear} submit={this.submit} saveStat={this.saveStat} source={this.state.statsToAdd.source}/>
                 </form>
                 <StatBatchPreviewModal statsToAdd={this.state.statsToAdd} currStat={this.currStat} />
             </div>
@@ -712,16 +745,26 @@ var AddStat = React.createClass({
       }
   });
 
-var SaveStatButton = React.createClass({
+var AddStatFooter = React.createClass({
     render: function() {
         if (this.props.buttonText == 'Add') {
             return (
-                <a href="#!" id="saveStatButton" onClick={this.props.saveStat} className="waves-effect waves-light btn col s1">
-                    <i className="material-icons">add</i>
-                </a>
+                <div className="modal-footer">
+                    <button type="submit" id={this.props.buttonText} onClick={this.props.submit} className="waves-effect btn">Submit</button>
+                    <a href="#!" className="modal-action modal-close waves-effect btn">Close</a>
+                    <a href="#!" onClick={this.props.clear} className="waves-effect btn">Clear</a>
+                    <a href="#!" id="saveStatButton" onClick={this.props.saveStat} className="waves-effect btn">Add to batch</a>
+                </div>
+            );
+        } else {
+            return (
+                <div className="modal-footer">
+                    <button type="submit" id={this.props.buttonText} onClick={this.props.submit} className="waves-effect btn">Submit</button>
+                    <a href="#!" className="modal-action modal-close waves-effect btn">Close</a>
+                    <a href="#!" onClick={this.props.clear} className="waves-effect btn">Switch to Add Mode</a>
+                </div>
             );
         }
-        return null;
     }
 });
 
