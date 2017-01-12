@@ -554,7 +554,6 @@ var AddStat = React.createClass({
     submit: function(event) {
         event.preventDefault();
         $('a#Add, a#Edit').addClass('disabled');
-
         var RANGE;
         var action;
 
