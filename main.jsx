@@ -34,58 +34,29 @@
    The properties that it gets is "data", which is an individual JS object that has properties
   'title', 'stat', 'org', and 'published', all of which get rendered in with <td> tags. */
 var Stat = React.createClass({
-    getInitialState: function() {
-        return ({
-            isDeleted: false
-        });
-    },
-
-    // Delete Stat from the Google Sheet, and if successful, hide at client-side.
-    // This makes it look as though the stat was deleted until test_data is updated to reflect the Sheet, i.e. by refreshing
-    deleteAndHide: function(event) {
-        this.props.delete(this.props.data).then(
-            function(result) {
-                this.setState({
-                    isDeleted: result
-                });
-            }.bind(this), function(error) {
-                console.log(error);
-            }
-        );
-    },
-
-    hide: function() {
-        this.setState({
-            isDeleted: true
-        });
-    },
-
     render: function() {
-        if (!this.state.isDeleted) {
-            return (
-                <tr>
-                    <td>
-                        <a href={this.props.data.source} target='_blank'>{this.props.data.title}</a>
-                    </td>
-                    <td>
-                        <p>{this.props.data.stat}</p>
-                        <TagList topicTags={this.props.data.topicTags} />
-                    </td>
-                    <td>{this.props.data.org}</td>
-                    <td>{this.props.data.published}</td>
-                    <td>{this.props.data.lastTouch}</td>
-                    <td>
-                        <button data-target='addModal' className="modal-trigger btn-floating btn-small waves-effect waves-light" onClick={() => this.props.edit(this.props.data, this.props.arrayIndex)}>
-                            <i className="material-icons">mode_edit</i>
-                        </button>
-                        <button className="btn-floating btn-small waves-effect waves-light" onClick={this.deleteAndHide}>
-                            <i className="material-icons">delete</i>
-                        </button>
-                    </td>
-                </tr>
-            );
-        }
-        return null;
+        return (
+            <tr>
+                <td>
+                    <a href={this.props.data.source} target='_blank'>{this.props.data.title}</a>
+                </td>
+                <td>
+                    <p>{this.props.data.stat}</p>
+                    <TagList topicTags={this.props.data.topicTags} />
+                </td>
+                <td>{this.props.data.org}</td>
+                <td>{this.props.data.published}</td>
+                <td>{this.props.data.lastTouch}</td>
+                <td>
+                    <button data-target='addModal' className="modal-trigger btn-floating btn-small waves-effect waves-light" onClick={() => this.props.edit(this.props.data, this.props.arrayIndex)}>
+                        <i className="material-icons">mode_edit</i>
+                    </button>
+                    <button className="btn-floating btn-small waves-effect waves-light" onClick={() => this.props.delete(this.props.data, this.props.arrayIndex)}>
+                        <i className="material-icons">delete</i>
+                    </button>
+                </td>
+            </tr>
+        );
     }
 });
 
@@ -331,40 +302,40 @@ var StatSearch = React.createClass({
         });
     },
 
+    deleteStatLocally: function(index) {
+    	this.setState({
+    		stats: this.state.stats.slice(0, index).concat(this.state.stats.slice(index + 1))
+    	});
+    },
+
     // Clear row in Google Sheet and return a Promise so we can hide the row on success */
-    delete: function(data) {
-        return(
-            new Promise(function(resolve, reject){
-                RANGE = 'A' + data.rowNum + ':G' + data.rowNum;
-                gapi.client.sheets.spreadsheets.values.update({
-                    spreadsheetId: SPREADSHEET_ID,
-                    range: RANGE,
-                    valueInputOption: 'USER_ENTERED',
-                    values: [
-                        [
-                            '',
-                            '',
-                            '',
-                            '',
-                            '',
-                            '',
-                            ''
-                        ]
-                    ]
-                    // Success callback
-                }).then(
-                    function(response) {
-                        // Materialize.toast(message, displayLength, className, completeCallback);
-                        Materialize.toast('Deleted stat #' + data.rowNum, 4000);
-                        resolve(true);
-                        // Error callback
-                    }, function(response) {
-                        Materialize.toast('Couldn\'t delete stat #' + data.rowNum, 4000);
-                        console.log("Couldn't delete stat: " + response.result.error.message);
-                        reject(response.result.error.message);
-                    }
-                );
-            })
+    delete: function(data, index) {
+        RANGE = 'A' + data.rowNum + ':H' + data.rowNum;
+        gapi.client.sheets.spreadsheets.values.update({
+            spreadsheetId: SPREADSHEET_ID,
+            range: RANGE,
+            valueInputOption: 'USER_ENTERED',
+            values: [
+            	[
+	            	'',
+	            	'',
+	            	'',
+	            	'',
+	            	'',
+	            	'',
+	            	''
+            	]
+            ]
+        }).then(
+        	// Success callback
+            function(response) {
+            	this.deleteStatLocally(index);
+                Materialize.toast('Deleted stat #' + data.rowNum, 4000);
+            // Error callback
+            }.bind(this), function(response) {
+                Materialize.toast('Couldn\'t delete stat #' + data.rowNum, 4000);
+                console.log("Couldn't delete stat: " + response.result.error.message);
+            }
         );
 
     },
@@ -589,7 +560,7 @@ var AddStat = React.createClass({
                     statsToAdd[i]["published"],
                     statsToAdd[i]['lastTouch'],
                     statsToAdd[i]["stat"],
-                    statsToAdd[i]["topictags"],
+                    statsToAdd[i]["topicTags"],
                     (window.lastRow + i + 1)
                 ];
             }
@@ -606,7 +577,7 @@ var AddStat = React.createClass({
                     statsToAdd[0]["published"],
                     statsToAdd[0]['lastTouch'],
                     statsToAdd[0]["stat"],
-                    statsToAdd[0]["topictags"],
+                    statsToAdd[0]["topicTags"],
             ];
             // New stats need a row number
             if (this.state.buttonText == 'Add' && this.state.currStat == 0) {
@@ -742,7 +713,7 @@ var AddStat = React.createClass({
                             </div>
                             <div className='row'>
                                 <div className="input-field col s6">
-                                    <input value={this.state.statsToAdd[this.state.currStat]["topictags"]} onChange={this.handleChange} onKeyDown={this.handleEnterKey} placeholder="Comma,separated,tags" id='topicTags' type="text" className="validate" ></input>
+                                    <input value={this.state.statsToAdd[this.state.currStat]["topicTags"]} onChange={this.handleChange} onKeyDown={this.handleEnterKey} placeholder="Comma,separated,tags" id='topicTags' type="text" className="validate" ></input>
                                     <label htmlFor='topicTags' data-error='Invalid tags' className="active">Topic tags</label>
                                 </div>
                                 <div className="input-field col s6">
@@ -819,7 +790,7 @@ var StatBatchPreviewModal = React.createClass({
                             </tr>
                         </thead>
                         <tbody>
-                            {this.props.statsToAdd.map((d, i) => <Stat edit={null} delete={null} key={'preview-' + i} data={d}/>)}
+                            {this.props.statsToAdd.map((d, i) => <Stat edit={null} delete={null} key={'preview-' + i} arrayIndex={i} data={d}/>)}
                         </tbody>
                     </table>
                 </div>
