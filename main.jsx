@@ -62,7 +62,7 @@ var Stat = React.createClass({
 
 var TagList = React.createClass({
 	getInitialState:function(){
-		if (this.props.topicTags != undefined && this.props.topicTags != '') {
+		if (this.props.topicTags != undefined) {
 			return ({
 				topicTags: this.props.topicTags.trim().split(',')
 			});
@@ -74,9 +74,13 @@ var TagList = React.createClass({
 
     componentWillReceiveProps:function(nextProps){
         var newTopicTags = nextProps.topicTags;
-        if (newTopicTags != undefined && newTopicTags != '') {
+        if (newTopicTags != undefined) {
             this.setState({
                 topicTags: newTopicTags.trim().split(',')
+            });
+        } else {
+            this.setState({
+                topicTags: []
             });
         }
     },
@@ -283,12 +287,6 @@ var StatSearch = React.createClass({
     updateStat: function(newData) {
     	var updatedArr = [].concat(this.state.stats.slice());
     	updatedArr[this.state.editDataIndex] = newData;
-    	// Dates entered into the Google Sheet get formatted as 'short dates' i.e. MM/DD/YYYY
-    	// However, this piece of data hasn't made the round trip - it will be in the Chrome Datepicker's native format
-    	// which is YYYY-MM-DD
-    	var publishDate = updatedArr[this.state.editDataIndex]["published"];
-    	var publishDateMMDDYYYY = window.getMMDDYYYYFromDateParts(window.getDateParts(new Date(publishDate)));
-    	updatedArr[this.state.editDataIndex]["published"] = publishDateMMDDYYYY;
     	this.setState({
     		stats: updatedArr
     	});
@@ -297,6 +295,8 @@ var StatSearch = React.createClass({
     // Insert new stats into this.state.stats following a successful submit from <AddStat />
     // This prompts <StatTable /> to re-render, giving the appearance of real-time adding
     insertStats: function(newStats) {
+    	console.log(JSON.stringify(newStats));
+    	console.log(JSON.stringify(this.state.stats.concat(newStats)));
         this.setState({
             stats: this.state.stats.concat(newStats)
         });
@@ -553,6 +553,14 @@ var AddStat = React.createClass({
             for (var i = 0; i < this.state.currStat; i++) {
                 statsToAdd[i]['lastTouch'] = window.currDate();
                 statsToAdd[i]['topicTags'] = window.removeDuplicateTags(statsToAdd[i]['topicTags']);
+		    	// Dates entered into the Google Sheet get formatted as 'short dates' i.e. MM/DD/YYYY
+		    	// However, this piece of data hasn't made the round trip - it will be in the Chrome Datepicker's native format
+		    	// which is YYYY-MM-DD
+			    var publishDate = statsToAdd[i]["published"];    	
+		    	if (publishDate != '') {
+			    	var publishDateMMDDYYYY = window.getMMDDYYYYFromDateParts(window.getDateParts(new Date(publishDate)));
+			    	statsToAdd[i]["published"] = publishDateMMDDYYYY;
+		    	}
                 values[i] = [
                     statsToAdd[i]["title"],
                     statsToAdd[i]["source"],
@@ -570,6 +578,11 @@ var AddStat = React.createClass({
         } else {
             statsToAdd[0]['lastTouch'] = window.currDate();
             statsToAdd[0]['topicTags'] = window.removeDuplicateTags(statsToAdd[0]['topicTags']);
+		    var publishDate = statsToAdd[0]["published"];    	
+	    	if (publishDate != '') {
+		    	var publishDateMMDDYYYY = window.getMMDDYYYYFromDateParts(window.getDateParts(new Date(publishDate)));
+		    	statsToAdd[0]["published"] = publishDateMMDDYYYY;
+	    	}
             values[0] = [
                     statsToAdd[0]["title"],
                     statsToAdd[0]["source"],
@@ -652,20 +665,9 @@ var AddStat = React.createClass({
         });
     },
 
-    handleEnterKey:function(event) {
-        if (event.key == 'Enter') {
-            if (event.target.id == 'stat') {
-                $('a#saveStatButton')[0].click();
-            }
-            if (event.target.id == 'topicTags') {
-                $('a#Add, a#Edit')[0].click();
-            }
-        }
-    },
-
     //For saving multiple stats for batch submission
     saveStat:function(event){
-        if (this.state.buttonText == 'Add') {
+        if ($('#addStatForm')[0].checkValidity()) {
             var updatedArr = this.state.statsToAdd.slice();
             var nextStat = this.state.currStat + 1;
             updatedArr[nextStat] = {
@@ -681,6 +683,8 @@ var AddStat = React.createClass({
                 statsToAdd: updatedArr,
                 currStat: nextStat
             });
+        } else {
+        	$('#addStatForm')[0].reportValidity();
         }
     },
 
@@ -713,11 +717,11 @@ var AddStat = React.createClass({
                             </div>
                             <div className='row'>
                                 <div className="input-field col s6">
-                                    <input value={this.state.statsToAdd[this.state.currStat]["topicTags"]} onChange={this.handleChange} onKeyDown={this.handleEnterKey} placeholder="Comma,separated,tags" id='topicTags' type="text" className="validate" ></input>
+                                    <input value={this.state.statsToAdd[this.state.currStat]["topicTags"]} onChange={this.handleChange} placeholder="Comma,separated,tags" id='topicTags' type="text" className="validate" ></input>
                                     <label htmlFor='topicTags' data-error='Invalid tags' className="active">Topic tags</label>
                                 </div>
                                 <div className="input-field col s6">
-                                    <textarea value={this.state.statsToAdd[this.state.currStat]["stat"]} onChange={this.handleChange} onKeyDown={this.handleEnterKey} placeholder="E.g. Two-thirds of respondents identified cyber risk as one of their top five concerns" id='stat' type="text" className="materialize-textarea validate" required></textarea>
+                                    <textarea value={this.state.statsToAdd[this.state.currStat]["stat"]} onChange={this.handleChange} placeholder="E.g. Two-thirds of respondents identified cyber risk as one of their top five concerns" id='stat' type="text" className="materialize-textarea validate" required></textarea>
                                     <label htmlFor='stat' data-error='Invalid statistic' className="active">Statistic</label>
                                 </div>
                             </div>
@@ -735,7 +739,7 @@ var AddStatFooter = React.createClass({
         if (this.props.buttonText == 'Add') {
             return (
                 <div className="modal-footer">
-                    <button type="submit" id={this.props.buttonText} onClick={this.props.submit} className="waves-effect btn">Submit</button>
+                    <button type="submit" id={this.props.buttonText} onSubmit={this.props.submit} className="waves-effect btn">Submit</button>
                     <a href="#!" className="modal-action modal-close waves-effect btn">Close</a>
                     <a href="#!" onClick={this.props.clear} className="waves-effect btn">Clear</a>
                     <a href="#!" id="saveStatButton" onClick={this.props.saveStat} className="waves-effect btn">Add to batch</a>
@@ -744,7 +748,7 @@ var AddStatFooter = React.createClass({
         } else {
             return (
                 <div className="modal-footer">
-                    <button type="submit" id={this.props.buttonText} onClick={this.props.submit} className="waves-effect btn">Submit</button>
+                    <button type="submit" id={this.props.buttonText} onSubmit={this.props.submit} className="waves-effect btn">Submit</button>
                     <a href="#!" className="modal-action modal-close waves-effect btn">Close</a>
                     <a href="#!" onClick={this.props.clear} className="waves-effect btn">Switch to Add Mode</a>
                 </div>

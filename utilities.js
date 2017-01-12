@@ -17,7 +17,7 @@ var getDateParts = function(dateObj) {
 // Add a preceding 0 to months and days less than 10
 var addDigitIfLessThanTen = function(smallInt) {
     if (smallInt < 10) {
-        return '0' + smallInt;
+        return smallInt;
     }
     return smallInt;
 }
@@ -34,13 +34,13 @@ var getYYYYMMDDFromDateParts = function(dateParts) {
 
 // end >>
 
-// Return a new array, minus duplicates
+// Return a new array, minus duplicates and empty strings
 // Adapted from http://stackoverflow.com/a/12551709
 var removeDuplicateTags = function(topicTags) {
     var tagArray = topicTags.trim().split(',');
     var result = [];
     $.each(tagArray, function(i, e) {
-    if ($.inArray(e, result) == -1) result.push(e);
+        if ($.inArray(e, result) == -1 && e != '') result.push(e);
     });
     return result.join(',');
 }
