@@ -2,19 +2,29 @@
 // Returns the local date
 // Courtesy of http://stackoverflow.com/a/4929629
 var currDate = function() {
-    var today = new Date();
-    var dd = today.getDate();
-    var mm = today.getMonth() + 1; //January is 0!
-    var yyyy = today.getFullYear();
+    return window.getMMDDYYYYFromDateParts(window.getDateParts(new Date()));
+}
 
-    if (dd < 10) {
-        dd = '0' + dd
+var getDateParts = function(dateObj) {
+    var dd = dateObj.getDate();
+    var mm = dateObj.getMonth() + 1; //January is 0!
+    var yyyy = dateObj.getFullYear();
+    dd = window.addDigitIfLessThanTen(dd);
+    mm = window.addDigitIfLessThanTen(mm);
+    return [yyyy, mm, dd];
+}
+
+var addDigitIfLessThanTen = function(smallInt) {
+    if (smallInt < 10) {
+        return '0' + smallInt;
     }
+    return smallInt;
+}
 
-    if (mm < 10) {
-        mm = '0' + mm
-    }
+var getMMDDYYYYFromDateParts = function(dateParts) {
+    return dateParts[1] + '/' + dateParts[2] + '/' + dateParts[0];
+}
 
-    today = mm + '/' + dd + '/' + yyyy;
-    return today;
+var getYYYYMMDDFromDateParts = function(dateParts) {
+    return dateParts[0] + '-' + dateParts[1] + '-' + dateParts[2];
 }
