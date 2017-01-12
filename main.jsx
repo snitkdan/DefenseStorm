@@ -295,7 +295,6 @@ var StatSearch = React.createClass({
     // Insert new stats into this.state.stats following a successful submit from <AddStat />
     // This prompts <StatTable /> to re-render, giving the appearance of real-time adding
     insertStats: function(newStats) {
-    	console.log(JSON.stringify(newStats));
     	console.log(JSON.stringify(this.state.stats.concat(newStats)));
         this.setState({
             stats: this.state.stats.concat(newStats)
@@ -536,6 +535,7 @@ var AddStat = React.createClass({
     },
 
     submit: function(event) {
+
         event.preventDefault();
         $('a#Add, a#Edit').addClass('disabled');
         var RANGE;
@@ -549,16 +549,19 @@ var AddStat = React.createClass({
         if (this.state.buttonText == 'Add' && this.state.currStat > 0) {
             // If the user hits the '+' button to add another stat to the batch, but then leaves it blank, there is a trailing
             // empty element in statsToAdd. Here we remove it
-            statsToAdd = statsToAdd.slice(0, this.state.currStat);
+            if (statsToAdd[this.state.currStat]["stat"] == '') {
+            	statsToAdd = statsToAdd.slice(0, this.state.currStat);
+        	}
             for (var i = 0; i < this.state.currStat; i++) {
                 statsToAdd[i]['lastTouch'] = window.currDate();
                 statsToAdd[i]['topicTags'] = window.removeDuplicateTags(statsToAdd[i]['topicTags']);
-		    	// Dates entered into the Google Sheet get formatted as 'short dates' i.e. MM/DD/YYYY
+		    	// Dates entered into the Google Sheet get formatted like so: MM/DD/YYYY with no leading zeroes
 		    	// However, this piece of data hasn't made the round trip - it will be in the Chrome Datepicker's native format
 		    	// which is YYYY-MM-DD
+		    	// Using slashes instead of hyphens, Date() will parse the date in the local timezone
 			    var publishDate = statsToAdd[i]["published"];    	
 		    	if (publishDate != '') {
-			    	var publishDateMMDDYYYY = window.getMMDDYYYYFromDateParts(window.getDateParts(new Date(publishDate)));
+			    	var publishDateMMDDYYYY = window.getMMDDYYYYFromDateParts(window.getDateParts(new Date(publishDate.replace(/-/g, '/'))));
 			    	statsToAdd[i]["published"] = publishDateMMDDYYYY;
 		    	}
                 values[i] = [
@@ -578,9 +581,10 @@ var AddStat = React.createClass({
         } else {
             statsToAdd[0]['lastTouch'] = window.currDate();
             statsToAdd[0]['topicTags'] = window.removeDuplicateTags(statsToAdd[0]['topicTags']);
-		    var publishDate = statsToAdd[0]["published"];    	
+		    var publishDate = statsToAdd[0]["published"];
+		    console.log(publishDate);  	
 	    	if (publishDate != '') {
-		    	var publishDateMMDDYYYY = window.getMMDDYYYYFromDateParts(window.getDateParts(new Date(publishDate)));
+		    	var publishDateMMDDYYYY = window.getMMDDYYYYFromDateParts(window.getDateParts(new Date(publishDate.replace(/-/g, '/'))));
 		    	statsToAdd[0]["published"] = publishDateMMDDYYYY;
 	    	}
             values[0] = [
@@ -616,12 +620,12 @@ var AddStat = React.createClass({
                 window.lastRow = window.lastRow + response.result.updates.updatedRows;
                 this.props.insertStats(statsToAdd);
                 Materialize.toast('Successfully added ' + response.result.updates.updatedRows + ' rows', 4000);
-                $('a#Add, a#Edit').removeClass('disabled');
             } else {
             	this.props.updateStat(statsToAdd[0]);
                 Materialize.toast('Successfully edited stat #' + statsToAdd[0].rowNum, 4000);
-                $('a#Add, a#Edit').removeClass('disabled');
             }
+            $('a#Add, a#Edit').removeClass('disabled');
+            $('form#addStatForm input').removeAttr('disabled');
             this.clear();
         // Error callback
         }.bind(this), function(response) {
@@ -632,6 +636,7 @@ var AddStat = React.createClass({
             }
             console.log('Error: ' + response.result.error.message);
             $('a#Add, a#Edit').removeClass('disabled');
+            $('form#addStatForm input').removeAttr('disabled');
         });
     },
 
@@ -652,6 +657,7 @@ var AddStat = React.createClass({
             currStat    :   0
         });
         $('#addStatForm').trigger('reset');
+        $('form#addStatForm input').removeAttr('disabled');
         $('label').addClass('active');
     },
 
@@ -683,6 +689,7 @@ var AddStat = React.createClass({
                 statsToAdd: updatedArr,
                 currStat: nextStat
             });
+            $('form#addStatForm input:not(input[name=stat], input[name=topicTags])').attr('disabled','disabled');
         } else {
         	$('#addStatForm')[0].reportValidity();
         }
