@@ -69,7 +69,7 @@ var Stat = React.createClass({
                     </td>
                     <td>
                         <p>{this.props.data.stat}</p>
-                        Tags: {this.props.data.topicTags.split(',').map((d, i) => <div className='chip' key={this.props.row + '-tag-' + i}>{d}</div>)}
+                        <TagList topicTags={this.props.data.topicTags} />
                     </td>
                     <td>{this.props.data.org}</td>
                     <td>{this.props.data.published}</td>
@@ -87,6 +87,39 @@ var Stat = React.createClass({
         }
         return null;
     }
+});
+
+var TagList = React.createClass({
+	getInitialState:function(){
+		console.log('topicTags: ' + this.props.topicTags);
+		if (this.props.topicTags != undefined && this.props.topicTags != '') {
+			return ({
+				topicTags: this.props.topicTags.trim().split(',')
+			});
+		}
+		return ({
+			topicTags: []
+		});
+	},
+
+    componentWillReceiveProps:function(nextProps){
+        var newTopicTags = nextProps.topicTags;
+        console.log('newTopicTags: ' + newTopicTags);
+        if (newTopicTags != undefined && newTopicTags != '') {
+            this.setState({
+                topicTags: newTopicTags.trim().split(',')
+            });
+        }
+        console.log('this.state.topicTags: ' + this.state.topicTags);
+    },
+
+	render: function() {
+		return(
+			<div className='tagList'>
+				{this.state.topicTags.map((d, i) => <div className='chip' key={i}>{d}</div>)}
+			</div>
+		);
+	}
 });
 
 /*This is a React component for the StatTable, which holds the headings
@@ -405,48 +438,50 @@ var SearchStat = React.createClass({
     render: function() {
         return (
             <div id="searchModal" className="modal bottom-sheet">
-                <div className="modal-header">
-                    <h5 className="modal-header">
-                        Search for an existing stat
-                        <i className="material-icons right">search</i>
-                    </h5>
-                </div>
-                <div className="modal-content">
-                    <form id='searchStatForm'>
+           		<form id='searchStatForm'>
+	                <div className="modal-header">
+	                    <h5 className="modal-header">
+	                        Search for an existing stat
+	                        <i className="material-icons right">search</i>
+	                    </h5>
+	                </div>
+	                <div className="modal-content">
                         <div className='row'>
                             <div className="input-field col s3">
                                 <input placeholder="Search on Title" id="title" type="text" className="validate" onLoadStart={this.props.filter} onChange={this.props.filter}></input>
+                                <label htmlFor='title' className="active">Title of study or report</label>
                             </div>
                             <div className="input-field col s3">
                                 <input placeholder="Search on Organization" id="org" type="text" className="validate" onChange={this.props.filter}></input>
+                                <label htmlFor='org' className="active">Authoring organization</label>
                             </div>
                             <div className="input-field col s6">
                                 <input placeholder="Search on Stat" id="stat" type="text" className="validate" onChange={this.props.filter}></input>
+                                <label htmlFor='stat' className="active">Statistic</label>
                             </div>
                         </div>
                         <br></br>
                         <div className='row'>
                             <div className="input-field col s3">
-                                <input placeholder='Published On or After' id="beginDate" type="date" onChange={this.props.filter}></input>
+                                <input placeholder='mm/dd/yyyy' id="beginDate" type="date" onChange={this.props.filter}></input>
+                                <label htmlFor='beginDate' className="active">Published on or after</label>
                             </div>
                             <br></br>
                             <div className="input-field col s3">
-                                <input placeholder='Published On or Before' id="endDate" type="date"  onChange={this.props.filter}></input>
+                                <input placeholder='mm/dd/yyyy' id="endDate" type="date"  onChange={this.props.filter}></input>
+                                <label htmlFor='endDate' className="active">Published on or before</label>
                             </div>
                             <div className="input-field col s6">
-                                <input placeholder='Comma,separated,tags' id="topicTags" type="text" onChange={this.props.filter}></input>
+                                <input placeholder='Comma,separated,tags' id="topicTags" type="text" className="validate" onChange={this.props.filter}></input>
+                                <label htmlFor='topicTags' data-error='wrong' className="active">Topic tags</label>
                             </div>
                         </div>
-                        <div className='row'>
-                            <label className='col s3'>Begin Date</label>
-                            <label className='col s3'>End Date</label>
-                        </div>
-                    </form>
-                </div>
-                <div className="modal-footer">
-                    <a href="#!" className="modal-action modal-close waves-effect waves-green btn-flat">Close</a>
-                    <a href="#!" onClick={this.props.filter} id='clearSearch' className="waves-effect waves-green btn-flat">Clear</a>
-                </div>
+	                </div>
+	                <div className="modal-footer">
+	                    <a href="#!" className="modal-action modal-close waves-effect waves-light btn">Close</a>
+	                    <a href="#!" onClick={this.props.filter} id='clearSearch' className="waves-effect waves-light btn clear-btn">Clear</a>
+	                </div>
+                </form>	                
             </div>
         );
     }
@@ -516,7 +551,8 @@ var AddStat = React.createClass({
         $('body').css('width', 'initial');
     },
 
-    submit: function() {
+    submit: function(event) {
+        event.preventDefault();
         $('a#Add, a#Edit').addClass('disabled');
         var RANGE;
         var action;
@@ -616,10 +652,13 @@ var AddStat = React.createClass({
             currStat    :   0
         });
         $('#addStatForm').trigger('reset');
+        $('label').addClass('active');
     },
 
     //Handles user input when editing a stat
     handleChange:function(event){
+/*        this.showTipIfInvalid(event.target.id, event.target.value);
+*/
         var updatedArr = this.state.statsToAdd.slice();
         updatedArr[this.state.currStat][event.target.id] = event.target.value;
         this.setState({
@@ -662,37 +701,43 @@ var AddStat = React.createClass({
     // renders the adding Stat form
     render: function() {
         return (
-            <div id="addModal" className="modal bottom-sheet">
-                <div className="modal-header">
-                    <AddStatHeader data={this.state} />
-                </div>
-                <div className="modal-content">
-                    <form id="addStatForm">
-                        <div className='row'>
-                            <div className="input-field col s3">
-                                <input value={this.state.statsToAdd[this.state.currStat]["title"]} onChange={this.handleChange} placeholder="Add Title..." id='title' type="text" className="validate"></input>
+            <div id="addModal"  onSubmit={this.submit} className="modal bottom-sheet">
+                <form id="addStatForm">
+                    <div className="modal-header">
+                        <AddStatHeader data={this.state} />
+                    </div>
+                    <div className="modal-content">
+                            <div className='row'>
+                                <div className="input-field col s3">
+                                    <input value={this.state.statsToAdd[this.state.currStat]["title"]} onChange={this.handleChange} placeholder="Title of Report" id='title' type="text" className="validate" required></input>
+                                    <label htmlFor='title' data-error='Invalid title' className="active">Title of study or report</label>
+                                </div>
+                                <div className="input-field col s3">
+                                    <input value={this.state.statsToAdd[this.state.currStat]["source"]} onChange={this.handleChange} placeholder="http://www.example.com" id='source' type="url" className="validate" required></input>
+                                    <label htmlFor='source' data-error='Invalid URL. Did you include "http://"?' className="active">Source URL</label>
+                                </div>
+                                <div className="input-field col s3">
+                                    <input value={this.state.statsToAdd[this.state.currStat]["org"]} onChange={this.handleChange} placeholder="E.g. Ponemon, Verizon, etc." id='org' type="text" className="validate" required></input>
+                                    <label htmlFor='org' data-error='Invalid organization' className="active">Authoring organization</label>
+                                </div>
+                                <div className="input-field col s3">
+                                    <input value={this.state.statsToAdd[this.state.currStat]["published"]} onChange={this.handleChange} placeholder="mm/dd/yyyy" id='published' type="date" className="validate" ></input>
+                                    <label htmlFor='published' data-error='Invalid date' className="active">Date published</label>
+                                </div>
                             </div>
-                            <div className="input-field col s3">
-                                <input value={this.state.statsToAdd[this.state.currStat]["source"]} onChange={this.handleChange} placeholder="Add Source URL..." id='source' type="text" className="validate"></input>
+                            <div className='row'>
+                                <div className="input-field col s6">
+                                    <input value={this.state.statsToAdd[this.state.currStat]["topictags"]} onChange={this.handleChange} onKeyDown={this.handleEnterKey} placeholder="Comma,separated,tags" id='topicTags' type="text" className="validate" ></input>
+                                    <label htmlFor='topicTags' data-error='Invalid tags' className="active">Topic tags</label>
+                                </div>
+                                <div className="input-field col s6">
+                                    <textarea value={this.state.statsToAdd[this.state.currStat]["stat"]} onChange={this.handleChange} onKeyDown={this.handleEnterKey} placeholder="E.g. Two-thirds of respondents identified cyber risk as one of their top five concerns" id='stat' type="text" className="materialize-textarea validate" required></textarea>
+                                    <label htmlFor='stat' data-error='Invalid statistic' className="active">Statistic</label>
+                                </div>
                             </div>
-                            <div className="input-field col s3">
-                                <input value={this.state.statsToAdd[this.state.currStat]["org"]} onChange={this.handleChange} placeholder="Add Organization..." id='org' type="text" className="validate"></input>
-                            </div>
-                            <div className="input-field col s3">
-                                <input value={this.state.statsToAdd[this.state.currStat]["published"]} onChange={this.handleChange} placeholder="Add Publish Date..." id='published' type="date" className="validate" ></input>
-                            </div>
-                        </div>
-                        <div className='row'>
-                            <div className="input-field col s7">
-                                <input value={this.state.statsToAdd[this.state.currStat]["stat"]} onChange={this.handleChange} onKeyDown={this.handleEnterKey} placeholder="Add Stat..." id='stat' type="text" className="validate" ></input>
-                            </div>
-                            <div className="input-field col s5">
-                                <input value={this.state.statsToAdd[this.state.currStat]["topictags"]} onChange={this.handleChange} onKeyDown={this.handleEnterKey} placeholder="Comma,separated,tags" id='topicTags' type="text" className="validate" ></input>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-                <AddStatFooter buttonText={this.state.buttonText} clear={this.clear} submit={this.submit} saveStat={this.saveStat} source={this.state.statsToAdd.source}/>
+                    </div>
+                    <AddStatFooter buttonText={this.state.buttonText} clear={this.clear} submit={this.submit} saveStat={this.saveStat} source={this.state.statsToAdd.source}/>
+                </form>
                 <StatBatchPreviewModal statsToAdd={this.state.statsToAdd} currStat={this.currStat} />
             </div>
           )
@@ -704,18 +749,18 @@ var AddStatFooter = React.createClass({
         if (this.props.buttonText == 'Add') {
             return (
                 <div className="modal-footer">
-                    <a href="#!" id={this.props.buttonText} onClick={this.props.submit} className="waves-effect waves-green btn-flat">Submit</a>
-                    <a href="#!" className="modal-action modal-close waves-effect waves-green btn-flat">Close</a>
-                    <a href="#!" onClick={this.props.clear} className="waves-effect waves-green btn-flat">Clear</a>
-                    <a href="#!" id="saveStatButton" onClick={this.props.saveStat} className="waves-effect waves-green btn-flat">Add to batch</a>
+                    <button type="submit" id={this.props.buttonText} onClick={this.props.submit} className="waves-effect btn">Submit</button>
+                    <a href="#!" className="modal-action modal-close waves-effect btn">Close</a>
+                    <a href="#!" onClick={this.props.clear} className="waves-effect btn">Clear</a>
+                    <a href="#!" id="saveStatButton" onClick={this.props.saveStat} className="waves-effect btn">Add to batch</a>
                 </div>
             );
         } else {
             return (
                 <div className="modal-footer">
-                    <a href="#!" id={this.props.buttonText} onClick={this.props.submit} className="waves-effect waves-green btn-flat">Submit</a>
-                    <a href="#!" className="modal-action modal-close waves-effect waves-green btn-flat">Close</a>
-                    <a href="#!" onClick={this.props.clear} className="waves-effect waves-green btn-flat">Add mode</a>
+                    <button type="submit" id={this.props.buttonText} onClick={this.props.submit} className="waves-effect btn">Submit</button>
+                    <a href="#!" className="modal-action modal-close waves-effect btn">Close</a>
+                    <a href="#!" onClick={this.props.clear} className="waves-effect btn">Switch to Add Mode</a>
                 </div>
             );
         }

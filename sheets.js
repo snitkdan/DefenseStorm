@@ -1,25 +1,3 @@
-    // for saving the date a stat was modified
-    // returns the local date
-    // courtesy of http://stackoverflow.com/a/4929629
-
-  var currDate = function() {
-    var today = new Date();
-    var dd = today.getDate();
-    var mm = today.getMonth() + 1; //January is 0!
-    var yyyy = today.getFullYear();
-
-    if (dd < 10) {
-        dd = '0' + dd
-    }
-
-    if (mm < 10) {
-        mm = '0' + mm
-    }
-
-    today = mm + '/' + dd + '/' + yyyy;
-    return today;
-}
-
 /**
  * This is API key from the Google Developer Console
  */
@@ -33,7 +11,7 @@ var SPREADSHEET_ID = null;
 /**
  * SCOPES determine an app's permissions when making API calls involving user data
  */
-var SCOPES = ["https://www.googleapis.com/auth/spreadsheets"];
+var SCOPES = null;
 
 /**
  * This is the set of cells that we want returned. E.g. A1:B2 would refer to these cells:
@@ -42,7 +20,7 @@ var SCOPES = ["https://www.googleapis.com/auth/spreadsheets"];
  *
  * TODO: figure out how to return all non-empty rows instead of hardcoding a large number of rows.
  */
-var RANGE = 'A2:H1000';
+var RANGE = null;
 
 /**
  * For reading a JSON configuration file
@@ -66,6 +44,8 @@ function setIDsFromConfig(text) {
   var data = JSON.parse(text);
   CLIENT_ID = data.client_id;
   SPREADSHEET_ID = data.sheet_id;
+  SCOPES = data.scopes;
+  RANGE = "A2:H" + data.max_rows;
 }
 
 readConfig("config.json", setIDsFromConfig);

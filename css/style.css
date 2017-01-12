@@ -121,39 +121,73 @@ div#statTable table tbody tr td:last-child {
 	background-color: transparent;
 }
 
+/* Bottom-sheet modals */
 
-/* Reduce spacing in and around modal content to make it more compact */
-.modal.bottom-sheet div.modal-content {
-	padding-bottom: 0px;
-	padding-top: 0px;
-}
+	/* Reduce spacing in and around searchModal and addModal content to make it more compact */
+	.modal.bottom-sheet div.modal-content {
+		padding-bottom: 0px;
+		padding-top: 0px;
+	}
 
-.modal.bottom-sheet div.row,
-.modal.bottom-sheet div.row input,
-.modal.bottom-sheet div.input-field {
-	margin-bottom: 0px;
-	margin-top: 0px;
-	padding-top: 0px;
-}
+	/* Modal header background */
+	div.modal-header {
+		background-color: #202830;
+		padding: 0px;
+		margin: 0px;
+	}
 
-/* Modal headers */
-div.modal-header {
-	background-color: #202830;
-	padding: 0px;
-	margin: 0px;
-}
+	/* Modal header text */
+	div.modal-header h5 {
+		color: #FFFFFF;
+		padding: 0.66em;
+		margin: 0px;
+	}
 
-div.modal-header h5 {
-	color: #FFFFFF;
-	padding: 0.66em;
-	margin: 0px;
-}
+	/* Header icon */
+	div.modal-header h5 i.material-icons {
+		right: 0px;
+	}
 
-/*Placeholder text*/
-::-webkit-input-placeholder {
-    color: black;
-    opacity: 1 !important; /* for older chrome versions. may no longer apply. */
-}
+	/* Modal footer */
+	form div.modal-footer {
+		margin-left: -1.5rem;
+    	margin-right: -1.5rem;
+	}
+
+	/* Buttons */
+	.modal .modal-footer button.btn:first-child,
+	.modal .modal-footer a.btn:first-child {
+		margin-left: 0.33em;
+	}
+
+	.modal .modal-footer button.btn[type=submit] {
+		background-color: #2F9ACD;
+	}	
+
+	.modal .modal-footer button.btn:not(first-child),
+	.modal .modal-footer a.btn:not(first-child) {
+		background-color: #4D4d4d;
+		margin-left: 0.33em;
+	}
+
+/* Placeholder text (DO NOT group these rules) */
+	/* Chrome */
+	*::-webkit-input-placeholder {
+	    color: black;
+	    opacity: 1 !important;
+	}
+
+	/* FF 4-18 */
+	*:-moz-placeholder {
+	    color: black;
+	    opacity: 1 !important;
+	}
+
+	/* FF 19+ */
+	*::-moz-placeholder {
+	    color: black;
+	    opacity: 1 !important;
+	}
 
 /* Override the overflow style applied by the bottom-sheet modals, which prevent scrolling */
 body {
