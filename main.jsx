@@ -62,7 +62,7 @@ var Stat = React.createClass({
                     </td>
                     <td>
                         <p>{this.props.data.stat}</p>
-                        Tags: {this.props.data.topicTags.split(',').map((d, i) => <div className='chip' key={this.props.row + '-tag-' + i}>{d}</div>)}
+                        <TagList topicTags={this.props.data.topicTags} />
                     </td>
                     <td>{this.props.data.org}</td>
                     <td>{this.props.data.published}</td>
@@ -80,6 +80,39 @@ var Stat = React.createClass({
         }
         return null;
     }
+});
+
+var TagList = React.createClass({
+	getInitialState:function(){
+		console.log('topicTags: ' + this.props.topicTags);
+		if (this.props.topicTags != undefined && this.props.topicTags != '') {
+			return ({
+				topicTags: this.props.topicTags.trim().split(',')
+			});
+		}
+		return ({
+			topicTags: []
+		});
+	},
+
+    componentWillReceiveProps:function(nextProps){
+        var newTopicTags = nextProps.topicTags;
+        console.log('newTopicTags: ' + newTopicTags);
+        if (newTopicTags != undefined && newTopicTags != '') {
+            this.setState({
+                topicTags: newTopicTags.trim().split(',')
+            });
+        }
+        console.log('this.state.topicTags: ' + this.state.topicTags);
+    },
+
+	render: function() {
+		return(
+			<div className='tagList'>
+				{this.state.topicTags.map((d, i) => <div className='chip' key={i}>{d}</div>)}
+			</div>
+		);
+	}
 });
 
 /*This is a React component for the StatTable, which holds the headings
@@ -391,14 +424,14 @@ var SearchStat = React.createClass({
     render: function() {
         return (
             <div id="searchModal" className="modal bottom-sheet">
-                <div className="modal-header">
-                    <h5 className="modal-header">
-                        Search for an existing stat
-                        <i className="material-icons right">search</i>
-                    </h5>
-                </div>
-                <div className="modal-content">
-                    <form id='searchStatForm'>
+           		<form id='searchStatForm'>
+	                <div className="modal-header">
+	                    <h5 className="modal-header">
+	                        Search for an existing stat
+	                        <i className="material-icons right">search</i>
+	                    </h5>
+	                </div>
+	                <div className="modal-content">
                         <div className='row'>
                             <div className="input-field col s3">
                                 <input placeholder="Search on Title" id="title" type="text" className="validate" onLoadStart={this.props.filter} onChange={this.props.filter}></input>
@@ -425,20 +458,16 @@ var SearchStat = React.createClass({
                                 <label htmlFor='endDate' className="active">Published on or before</label>
                             </div>
                             <div className="input-field col s6">
-                                <input placeholder='Comma,separated,tags' id="topicTags" type="text" onChange={this.props.filter}></input>
+                                <input placeholder='Comma,separated,tags' id="topicTags" type="text" className="validate" onChange={this.props.filter}></input>
                                 <label htmlFor='topicTags' data-error='wrong' className="active">Topic tags</label>
                             </div>
                         </div>
-                        <div className='row'>
-                            <label className='col s3'>Begin Date</label>
-                            <label className='col s3'>End Date</label>
-                        </div>
-                    </form>
-                </div>
-                <div className="modal-footer">
-                    <a href="#!" className="modal-action modal-close waves-effect waves-green btn-flat">Close</a>
-                    <a href="#!" onClick={this.props.filter} id='clearSearch' className="waves-effect waves-green btn-flat">Clear</a>
-                </div>
+	                </div>
+	                <div className="modal-footer">
+	                    <a href="#!" className="modal-action modal-close waves-effect waves-light btn">Close</a>
+	                    <a href="#!" onClick={this.props.filter} id='clearSearch' className="waves-effect waves-light btn clear-btn">Clear</a>
+	                </div>
+                </form>	                
             </div>
         );
     }
@@ -644,7 +673,7 @@ var AddStat = React.createClass({
                             <div className='row'>
                                 <div className="input-field col s3">
                                     <input value={this.state.statsToAdd[this.state.currStat]["title"]} onChange={this.handleChange} placeholder="Title of Report" id='title' type="text" className="validate" required></input>
-                                    <label htmlFor='title' data-error='wrong' className="active">Title of study or report</label>
+                                    <label htmlFor='title' data-error='Invalid title' className="active">Title of study or report</label>
                                 </div>
                                 <div className="input-field col s3">
                                     <input value={this.state.statsToAdd[this.state.currStat]["source"]} onChange={this.handleChange} placeholder="http://www.example.com" id='source' type="url" className="validate" required></input>
@@ -652,29 +681,29 @@ var AddStat = React.createClass({
                                 </div>
                                 <div className="input-field col s3">
                                     <input value={this.state.statsToAdd[this.state.currStat]["org"]} onChange={this.handleChange} placeholder="E.g. Ponemon, Verizon, etc." id='org' type="text" className="validate" required></input>
-                                    <label htmlFor='org' data-error='wrong' className="active">Authoring organization</label>
+                                    <label htmlFor='org' data-error='Invalid organization' className="active">Authoring organization</label>
                                 </div>
                                 <div className="input-field col s3">
                                     <input value={this.state.statsToAdd[this.state.currStat]["published"]} onChange={this.handleChange} placeholder="mm/dd/yyyy" id='published' type="date" className="validate" ></input>
-                                    <label htmlFor='published' data-error='wrong' className="active">Date published</label>
+                                    <label htmlFor='published' data-error='Invalid date' className="active">Date published</label>
                                 </div>
                             </div>
                             <div className='row'>
                                 <div className="input-field col s5">
                                     <textarea value={this.state.statsToAdd[this.state.currStat]["stat"]} onChange={this.handleChange} onKeyDown={this.triggerSaveStat} placeholder="E.g. Two-thirds of respondents identified cyber risk as one of their top five concerns" id='stat' type="text" className="materialize-textarea validate" required></textarea>
-                                    <label htmlFor='stat' data-error='wrong' className="active">Statistic</label>
+                                    <label htmlFor='stat' data-error='Invalid statistic' className="active">Statistic</label>
                                 </div>
                                 <SaveStatButton buttonText={this.state.buttonText} saveStat={this.saveStat} />
                                 <div className="input-field col s6">
                                     <input value={this.state.statsToAdd[this.state.currStat]["topictags"]} onChange={this.handleChange} placeholder="Comma,separated,tags" id='topicTags' type="text" className="validate" ></input>
-                                    <label htmlFor='topicTags' data-error='wrong' className="active">Topic tags</label>
+                                    <label htmlFor='topicTags' data-error='Invalid tags' className="active">Topic tags</label>
                                 </div>
                             </div>
                     </div>
                     <div className="modal-footer">
-                        <button id={this.state.buttonText} className="waves-effect waves-green btn-flat" type='submit'>Submit</button>
-                        <a href="#!" onClick={this.clear} className="waves-effect waves-green btn-flat">Reset</a>
-                        <a href="#!" className="modal-action modal-close waves-effect waves-green btn-flat">Close</a>
+                        <button id={this.state.buttonText} className="waves-effect waves-light btn" type='submit'>Submit</button>
+                        <a href="#!" onClick={this.clear} className="waves-effect waves-light btn clear-btn">Clear</a>
+                        <a href="#!" className="modal-action modal-close waves-effect waves-light btn">Close</a>
                     </div>
                 </form>
                 <StatBatchPreviewModal statsToAdd={this.state.statsToAdd} currStat={this.currStat} />
@@ -687,7 +716,7 @@ var SaveStatButton = React.createClass({
     render: function() {
         if (this.props.buttonText == 'Add') {
             return (
-                <a href="#!" id="saveStatButton" onClick={this.props.saveStat} className="waves-effect waves-green btn-flat col s1">
+                <a href="#!" id="saveStatButton" onClick={this.props.saveStat} className="waves-effect waves-light btn col s1">
                     <i className="material-icons">add</i>
                 </a>
             );
