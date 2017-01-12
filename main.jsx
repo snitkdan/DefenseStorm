@@ -323,6 +323,8 @@ var StatSearch = React.createClass({
     	});
     },
 
+    // Insert new stats into this.state.stats following a successful submit from <AddStat />
+    // This prompts <StatTable /> to re-render, giving the appearance of real-time adding
     insertStats: function(newStats) {
         this.setState({
             stats: this.state.stats.concat(newStats)
@@ -579,6 +581,7 @@ var AddStat = React.createClass({
             statsToAdd = statsToAdd.slice(0, this.state.currStat);
             for (var i = 0; i < this.state.currStat; i++) {
                 statsToAdd[i]['lastTouch'] = window.currDate();
+                statsToAdd[i]['topicTags'] = window.removeDuplicateTags(statsToAdd[i]['topicTags']);
                 values[i] = [
                     statsToAdd[i]["title"],
                     statsToAdd[i]["source"],
@@ -595,6 +598,7 @@ var AddStat = React.createClass({
         // We are editing or adding a single stat
         } else {
             statsToAdd[0]['lastTouch'] = window.currDate();
+            statsToAdd[0]['topicTags'] = window.removeDuplicateTags(statsToAdd[0]['topicTags']);
             values[0] = [
                     statsToAdd[0]["title"],
                     statsToAdd[0]["source"],
