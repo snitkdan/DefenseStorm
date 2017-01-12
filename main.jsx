@@ -34,64 +34,34 @@
    The properties that it gets is "data", which is an individual JS object that has properties
   'title', 'stat', 'org', and 'published', all of which get rendered in with <td> tags. */
 var Stat = React.createClass({
-    getInitialState: function() {
-        return ({
-            isDeleted: false
-        });
-    },
-
-    // Delete Stat from the Google Sheet, and if successful, hide at client-side.
-    // This makes it look as though the stat was deleted until test_data is updated to reflect the Sheet, i.e. by refreshing
-    deleteAndHide: function(event) {
-        this.props.delete(this.props.data).then(
-            function(result) {
-                this.setState({
-                    isDeleted: result
-                });
-            }.bind(this), function(error) {
-                console.log(error);
-            }
-        );
-    },
-
-    hide: function() {
-        this.setState({
-            isDeleted: true
-        });
-    },
-
     render: function() {
-        if (!this.state.isDeleted) {
-            return (
-                <tr>
-                    <td>
-                        <a href={this.props.data.source} target='_blank'>{this.props.data.title}</a>
-                    </td>
-                    <td>
-                        <p>{this.props.data.stat}</p>
-                        <TagList topicTags={this.props.data.topicTags} />
-                    </td>
-                    <td>{this.props.data.org}</td>
-                    <td>{this.props.data.published}</td>
-                    <td>{this.props.data.lastTouch}</td>
-                    <td>
-                        <button data-target='addModal' className="modal-trigger btn-floating btn-small waves-effect waves-light" onClick={() => this.props.edit(this.props.data)}>
-                            <i className="material-icons">mode_edit</i>
-                        </button>
-                        <button className="btn-floating btn-small waves-effect waves-light" onClick={this.deleteAndHide}>
-                            <i className="material-icons">delete</i>
-                        </button>
-                    </td>
-                </tr>
-            );
-        }
-        return null;
+        return (
+            <tr>
+                <td>
+                    <a href={this.props.data.source} target='_blank'>{this.props.data.title}</a>
+                </td>
+                <td>
+                    <p>{this.props.data.stat}</p>
+                    <TagList topicTags={this.props.data.topicTags} />
+                </td>
+                <td>{this.props.data.org}</td>
+                <td>{this.props.data.published}</td>
+                <td>{this.props.data.lastTouch}</td>
+                <td>
+                    <button data-target='addModal' className="modal-trigger btn-floating btn-small waves-effect waves-light" onClick={() => this.props.edit(this.props.data, this.props.arrayIndex)}>
+                        <i className="material-icons">mode_edit</i>
+                    </button>
+                    <button className="btn-floating btn-small waves-effect waves-light" onClick={() => this.props.delete(this.props.data, this.props.arrayIndex)}>
+                        <i className="material-icons">delete</i>
+                    </button>
+                </td>
+            </tr>
+        );
     }
 });
 
 var TagList = React.createClass({
 	getInitialState:function(){
-		console.log('topicTags: ' + this.props.topicTags);
 		if (this.props.topicTags != undefined && this.props.topicTags != '') {
 			return ({
 				topicTags: this.props.topicTags.trim().split(',')
@@ -104,13 +74,11 @@ var TagList = React.createClass({
 
     componentWillReceiveProps:function(nextProps){
         var newTopicTags = nextProps.topicTags;
-        console.log('newTopicTags: ' + newTopicTags);
         if (newTopicTags != undefined && newTopicTags != '') {
             this.setState({
                 topicTags: newTopicTags.trim().split(',')
             });
         }
-        console.log('this.state.topicTags: ' + this.state.topicTags);
     },
 
 	render: function() {
@@ -205,7 +173,7 @@ var StatTable = React.createClass({
                         </tr>
                     </thead>
                     <tbody>
-                        {this.props.data.map((d, i) => <Stat edit={this.props.edit} delete={this.props.delete} key={'stat-' + i} data={d}/>)}
+                        {this.props.data.map((d, i) => <Stat edit={this.props.edit} delete={this.props.delete} key={i} arrayIndex={i} data={d}/>)}
                     </tbody>
                 </table>
             </div>
@@ -299,50 +267,75 @@ var StatSearch = React.createClass({
         });
     },
 
-    edit: function(data) {
-        this.setState({edit_data: data});
+    // Set this.state.edit_data to the data parameter, the object representing a stat
+    // Set this.state.editDataIndex to the index of the stat to be updated
+    // This prompts <AddStat /> to re-render in 'Edit' mode rather than 'Add'
+    edit: function(data, index) {
+    	console.log(index);
+        this.setState({
+        	edit_data: data,
+        	editDataIndex: index
+        });
     },
 
+    // Update a stat in this.state.stats following a successful edit from <AddStat />
+    // This prompts <StatTable /> to re-render, giving the appearance of real-time editing
+    updateStat: function(newData) {
+    	var updatedArr = [].concat(this.state.stats.slice());
+    	updatedArr[this.state.editDataIndex] = newData;
+    	// Dates entered into the Google Sheet get formatted as 'short dates' i.e. MM/DD/YYYY
+    	// However, this piece of data hasn't made the round trip - it will be in the Chrome Datepicker's native format
+    	// which is YYYY-MM-DD
+    	var publishDate = updatedArr[this.state.editDataIndex]["published"];
+    	var publishDateMMDDYYYY = window.getMMDDYYYYFromDateParts(window.getDateParts(new Date(publishDate)));
+    	updatedArr[this.state.editDataIndex]["published"] = publishDateMMDDYYYY;
+    	this.setState({
+    		stats: updatedArr
+    	});
+    },
+
+    // Insert new stats into this.state.stats following a successful submit from <AddStat />
+    // This prompts <StatTable /> to re-render, giving the appearance of real-time adding
     insertStats: function(newStats) {
         this.setState({
             stats: this.state.stats.concat(newStats)
         });
     },
 
+    deleteStatLocally: function(index) {
+    	this.setState({
+    		stats: this.state.stats.slice(0, index).concat(this.state.stats.slice(index + 1))
+    	});
+    },
+
     // Clear row in Google Sheet and return a Promise so we can hide the row on success */
-    delete: function(data) {
-        return(
-            new Promise(function(resolve, reject){
-                RANGE = 'A' + data.rowNum + ':G' + data.rowNum;
-                gapi.client.sheets.spreadsheets.values.update({
-                    spreadsheetId: SPREADSHEET_ID,
-                    range: RANGE,
-                    valueInputOption: 'USER_ENTERED',
-                    values: [
-                        [
-                            '',
-                            '',
-                            '',
-                            '',
-                            '',
-                            '',
-                            ''
-                        ]
-                    ]
-                    // Success callback
-                }).then(
-                    function(response) {
-                        // Materialize.toast(message, displayLength, className, completeCallback);
-                        Materialize.toast('Deleted stat #' + data.rowNum, 4000);
-                        resolve(true);
-                        // Error callback
-                    }, function(response) {
-                        Materialize.toast('Couldn\'t delete stat #' + data.rowNum, 4000);
-                        console.log("Couldn't delete stat: " + response.result.error.message);
-                        reject(response.result.error.message);
-                    }
-                );
-            })
+    delete: function(data, index) {
+        RANGE = 'A' + data.rowNum + ':H' + data.rowNum;
+        gapi.client.sheets.spreadsheets.values.update({
+            spreadsheetId: SPREADSHEET_ID,
+            range: RANGE,
+            valueInputOption: 'USER_ENTERED',
+            values: [
+            	[
+	            	'',
+	            	'',
+	            	'',
+	            	'',
+	            	'',
+	            	'',
+	            	''
+            	]
+            ]
+        }).then(
+        	// Success callback
+            function(response) {
+            	this.deleteStatLocally(index);
+                Materialize.toast('Deleted stat #' + data.rowNum, 4000);
+            // Error callback
+            }.bind(this), function(response) {
+                Materialize.toast('Couldn\'t delete stat #' + data.rowNum, 4000);
+                console.log("Couldn't delete stat: " + response.result.error.message);
+            }
         );
 
     },
@@ -422,7 +415,7 @@ var StatSearch = React.createClass({
                         </div>
                     </nav>
                 </div>                
-                <AddStat edit_data={this.state.edit_data} insertStats={this.insertStats}/>
+                <AddStat edit_data={this.state.edit_data} insertStats={this.insertStats} updateStat={this.updateStat}/>
                 <SearchStat filter={this.filter} />
                 <div id='statTable' className='col s12'>
                     <StatTable delete={this.delete} edit={this.edit} data={stats}/>
@@ -511,21 +504,12 @@ var AddStat = React.createClass({
 
     componentWillReceiveProps:function(nextProps){
         var data = nextProps.edit_data;
+
         if (data) {
             // Google Chrome's datepicker is picky about the format of the date passed to it
             var publishDate = '';
             if (data.published) {
-                publishDate = new Date(data.published);
-                var dd = publishDate.getDate();
-                var mm = publishDate.getMonth() + 1; //January is 0!
-                var yyyy = publishDate.getFullYear();
-                if (dd < 10) {
-                    dd = '0' + dd
-                }
-                if (mm < 10) {
-                    mm = '0' + mm
-                }
-                publishDate = yyyy + '-' + mm + '-' + dd;
+                publishDate = window.getYYYYMMDDFromDateParts(window.getDateParts(new Date(data.published)));
             }
 
             this.setState({
@@ -568,6 +552,7 @@ var AddStat = React.createClass({
             statsToAdd = statsToAdd.slice(0, this.state.currStat);
             for (var i = 0; i < this.state.currStat; i++) {
                 statsToAdd[i]['lastTouch'] = window.currDate();
+                statsToAdd[i]['topicTags'] = window.removeDuplicateTags(statsToAdd[i]['topicTags']);
                 values[i] = [
                     statsToAdd[i]["title"],
                     statsToAdd[i]["source"],
@@ -575,7 +560,7 @@ var AddStat = React.createClass({
                     statsToAdd[i]["published"],
                     statsToAdd[i]['lastTouch'],
                     statsToAdd[i]["stat"],
-                    statsToAdd[i]["topictags"],
+                    statsToAdd[i]["topicTags"],
                     (window.lastRow + i + 1)
                 ];
             }
@@ -584,6 +569,7 @@ var AddStat = React.createClass({
         // We are editing or adding a single stat
         } else {
             statsToAdd[0]['lastTouch'] = window.currDate();
+            statsToAdd[0]['topicTags'] = window.removeDuplicateTags(statsToAdd[0]['topicTags']);
             values[0] = [
                     statsToAdd[0]["title"],
                     statsToAdd[0]["source"],
@@ -591,19 +577,19 @@ var AddStat = React.createClass({
                     statsToAdd[0]["published"],
                     statsToAdd[0]['lastTouch'],
                     statsToAdd[0]["stat"],
-                    statsToAdd[0]["topictags"],
+                    statsToAdd[0]["topicTags"],
             ];
             // New stats need a row number
             if (this.state.buttonText == 'Add' && this.state.currStat == 0) {
                 RANGE = 'A' + (window.lastRow + 1) + ':H' + (window.lastRow + 1);
                 action = 'append';
-                values[0].push(window.lastRow + 1);
+                statsToAdd[0]["rowNum"] = window.lastRow + 1;
             // Existing stats use their existing row number
             } else {
                 RANGE = 'A' + statsToAdd[0]["rowNum"] + ':H' + statsToAdd[0]["rowNum"];
                 action = 'update';
-                values[0].push(statsToAdd[0]["rowNum"]);
             }
+            values[0].push(statsToAdd[0]["rowNum"]);
         }
 
         gapi.client.sheets.spreadsheets.values[action]({
@@ -619,6 +605,7 @@ var AddStat = React.createClass({
                 Materialize.toast('Successfully added ' + response.result.updates.updatedRows + ' rows', 4000);
                 $('a#Add, a#Edit').removeClass('disabled');
             } else {
+            	this.props.updateStat(statsToAdd[0]);
                 Materialize.toast('Successfully edited stat #' + statsToAdd[0].rowNum, 4000);
                 $('a#Add, a#Edit').removeClass('disabled');
             }
@@ -657,9 +644,8 @@ var AddStat = React.createClass({
 
     //Handles user input when editing a stat
     handleChange:function(event){
-/*        this.showTipIfInvalid(event.target.id, event.target.value);
-*/
-        var updatedArr = this.state.statsToAdd.slice();
+    	// Make a deep copy of this.state.statsToAdd to avoid directly mutating state
+        var updatedArr = [].concat(this.state.statsToAdd.slice());
         updatedArr[this.state.currStat][event.target.id] = event.target.value;
         this.setState({
             statsToAdd: updatedArr
@@ -727,7 +713,7 @@ var AddStat = React.createClass({
                             </div>
                             <div className='row'>
                                 <div className="input-field col s6">
-                                    <input value={this.state.statsToAdd[this.state.currStat]["topictags"]} onChange={this.handleChange} onKeyDown={this.handleEnterKey} placeholder="Comma,separated,tags" id='topicTags' type="text" className="validate" ></input>
+                                    <input value={this.state.statsToAdd[this.state.currStat]["topicTags"]} onChange={this.handleChange} onKeyDown={this.handleEnterKey} placeholder="Comma,separated,tags" id='topicTags' type="text" className="validate" ></input>
                                     <label htmlFor='topicTags' data-error='Invalid tags' className="active">Topic tags</label>
                                 </div>
                                 <div className="input-field col s6">
@@ -804,7 +790,7 @@ var StatBatchPreviewModal = React.createClass({
                             </tr>
                         </thead>
                         <tbody>
-                            {this.props.statsToAdd.map((d, i) => <Stat edit={null} delete={null} key={'preview-' + i} data={d}/>)}
+                            {this.props.statsToAdd.map((d, i) => <Stat edit={null} delete={null} key={'preview-' + i} arrayIndex={i} data={d}/>)}
                         </tbody>
                     </table>
                 </div>
