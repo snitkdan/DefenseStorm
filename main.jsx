@@ -75,7 +75,7 @@ var Stat = React.createClass({
                     <td>{this.props.data.published}</td>
                     <td>{this.props.data.lastTouch}</td>
                     <td>
-                        <button data-target='addModal' className="modal-trigger btn-floating btn-small waves-effect waves-light" onClick={() => this.props.edit(this.props.data)}>
+                        <button data-target='addModal' className="modal-trigger btn-floating btn-small waves-effect waves-light" onClick={() => this.props.edit(this.props.data, this.props.arrayIndex)}>
                             <i className="material-icons">mode_edit</i>
                         </button>
                         <button className="btn-floating btn-small waves-effect waves-light" onClick={this.deleteAndHide}>
@@ -91,7 +91,6 @@ var Stat = React.createClass({
 
 var TagList = React.createClass({
 	getInitialState:function(){
-		console.log('topicTags: ' + this.props.topicTags);
 		if (this.props.topicTags != undefined && this.props.topicTags != '') {
 			return ({
 				topicTags: this.props.topicTags.trim().split(',')
@@ -104,13 +103,11 @@ var TagList = React.createClass({
 
     componentWillReceiveProps:function(nextProps){
         var newTopicTags = nextProps.topicTags;
-        console.log('newTopicTags: ' + newTopicTags);
         if (newTopicTags != undefined && newTopicTags != '') {
             this.setState({
                 topicTags: newTopicTags.trim().split(',')
             });
         }
-        console.log('this.state.topicTags: ' + this.state.topicTags);
     },
 
 	render: function() {
@@ -205,7 +202,7 @@ var StatTable = React.createClass({
                         </tr>
                     </thead>
                     <tbody>
-                        {this.props.data.map((d, i) => <Stat edit={this.props.edit} delete={this.props.delete} key={'stat-' + i} data={d}/>)}
+                        {this.props.data.map((d, i) => <Stat edit={this.props.edit} delete={this.props.delete} key={i} arrayIndex={i} data={d}/>)}
                     </tbody>
                 </table>
             </div>
@@ -299,8 +296,31 @@ var StatSearch = React.createClass({
         });
     },
 
-    edit: function(data) {
-        this.setState({edit_data: data});
+    // Set this.state.edit_data to the data parameter, the object representing a stat
+    // Set this.state.editDataIndex to the index of the stat to be updated
+    // This prompts <AddStat /> to re-render in 'Edit' mode rather than 'Add'
+    edit: function(data, index) {
+    	console.log(index);
+        this.setState({
+        	edit_data: data,
+        	editDataIndex: index
+        });
+    },
+
+    // Update a stat in this.state.stats following a successful edit from <AddStat />
+    // This prompts <StatTable /> to re-render, giving the appearance of real-time editing
+    updateStat: function(newData) {
+    	var updatedArr = [].concat(this.state.stats.slice());
+    	updatedArr[this.state.editDataIndex] = newData;
+    	// Dates entered into the Google Sheet get formatted as 'short dates' i.e. MM/DD/YYYY
+    	// However, this piece of data hasn't made the round trip - it will be in the Chrome Datepicker's native format
+    	// which is YYYY-MM-DD
+    	var publishDate = updatedArr[this.state.editDataIndex]["published"];
+    	var publishDateMMDDYYYY = window.getMMDDYYYYFromDateParts(window.getDateParts(new Date(publishDate)));
+    	updatedArr[this.state.editDataIndex]["published"] = publishDateMMDDYYYY;
+    	this.setState({
+    		stats: updatedArr
+    	});
     },
 
     insertStats: function(newStats) {
@@ -422,7 +442,7 @@ var StatSearch = React.createClass({
                         </div>
                     </nav>
                 </div>                
-                <AddStat edit_data={this.state.edit_data} insertStats={this.insertStats}/>
+                <AddStat edit_data={this.state.edit_data} insertStats={this.insertStats} updateStat={this.updateStat}/>
                 <SearchStat filter={this.filter} />
                 <div id='statTable' className='col s12'>
                     <StatTable delete={this.delete} edit={this.edit} data={stats}/>
@@ -511,21 +531,12 @@ var AddStat = React.createClass({
 
     componentWillReceiveProps:function(nextProps){
         var data = nextProps.edit_data;
+
         if (data) {
             // Google Chrome's datepicker is picky about the format of the date passed to it
             var publishDate = '';
             if (data.published) {
-                publishDate = new Date(data.published);
-                var dd = publishDate.getDate();
-                var mm = publishDate.getMonth() + 1; //January is 0!
-                var yyyy = publishDate.getFullYear();
-                if (dd < 10) {
-                    dd = '0' + dd
-                }
-                if (mm < 10) {
-                    mm = '0' + mm
-                }
-                publishDate = yyyy + '-' + mm + '-' + dd;
+                publishDate = window.getYYYYMMDDFromDateParts(window.getDateParts(new Date(data.published)));
             }
 
             this.setState({
@@ -597,13 +608,13 @@ var AddStat = React.createClass({
             if (this.state.buttonText == 'Add' && this.state.currStat == 0) {
                 RANGE = 'A' + (window.lastRow + 1) + ':H' + (window.lastRow + 1);
                 action = 'append';
-                values[0].push(window.lastRow + 1);
+                statsToAdd[0]["rowNum"] = window.lastRow + 1;
             // Existing stats use their existing row number
             } else {
                 RANGE = 'A' + statsToAdd[0]["rowNum"] + ':H' + statsToAdd[0]["rowNum"];
                 action = 'update';
-                values[0].push(statsToAdd[0]["rowNum"]);
             }
+            values[0].push(statsToAdd[0]["rowNum"]);
         }
 
         gapi.client.sheets.spreadsheets.values[action]({
@@ -619,6 +630,7 @@ var AddStat = React.createClass({
                 Materialize.toast('Successfully added ' + response.result.updates.updatedRows + ' rows', 4000);
                 $('a#Add, a#Edit').removeClass('disabled');
             } else {
+            	this.props.updateStat(statsToAdd[0]);
                 Materialize.toast('Successfully edited stat #' + statsToAdd[0].rowNum, 4000);
                 $('a#Add, a#Edit').removeClass('disabled');
             }
@@ -657,9 +669,8 @@ var AddStat = React.createClass({
 
     //Handles user input when editing a stat
     handleChange:function(event){
-/*        this.showTipIfInvalid(event.target.id, event.target.value);
-*/
-        var updatedArr = this.state.statsToAdd.slice();
+    	// Make a deep copy of this.state.statsToAdd to avoid directly mutating state
+        var updatedArr = [].concat(this.state.statsToAdd.slice());
         updatedArr[this.state.currStat][event.target.id] = event.target.value;
         this.setState({
             statsToAdd: updatedArr
