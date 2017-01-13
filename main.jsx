@@ -62,7 +62,7 @@ var Stat = React.createClass({
 
 var TagList = React.createClass({
 	getInitialState:function(){
-		if (this.props.topicTags != undefined) {
+		if (this.props.topicTags != undefined && this.props.topicTags != '') {
 			return ({
 				topicTags: this.props.topicTags.trim().split(',')
 			});
@@ -74,7 +74,7 @@ var TagList = React.createClass({
 
     componentWillReceiveProps:function(nextProps){
         var newTopicTags = nextProps.topicTags;
-        if (newTopicTags != undefined) {
+        if (newTopicTags != undefined && newTopicTags != '') {
             this.setState({
                 topicTags: newTopicTags.trim().split(',')
             });
@@ -185,14 +185,12 @@ var StatTable = React.createClass({
 var StatSearch = React.createClass({
     //Sets the initial search term and criteria
     getInitialState: function() {
-    	console.log(this.props.tagCountsArray);
     	var initFrequentTags = [];
     	for (var e = 0; e < this.props.tagCountsArray.length; e++) {
-    		if (this.props.tagCountsArray[e][1] > 10) {
+    		if (this.props.tagCountsArray[e][1] > window.frequent_tag_threshold) {
     			initFrequentTags.push(this.props.tagCountsArray[e][0]);
 			}
     	}
-    	console.log(initFrequentTags);
         return ({
             searchCriteria			: {
                 title		: '',
@@ -207,28 +205,6 @@ var StatSearch = React.createClass({
             tagCountsArray			: this.props.tagCountsArray,
             frequentTags			: initFrequentTags
         });
-    },
-
-    updateTagCountsArray: function(allTagsToAdd) {
-    	var newTagCountsArray = [].concat(this.state.tagCountsArray);
-    	var newFrequentTags = [];
-    	for (var i = 0; i < this.state.tagCountsArray.length; i++) {
-    		if (allTagsToAdd.indexOf(this.state.tagCountsArray[i][0]) != -1) {
-    			newTagCountsArray[i][1] = newTagCountsArray[i][1] + 1;
-    			if (newTagCountsArray[i][1] > 10) {
-    				newFrequentTags.push(newTagCountsArray[i][0]);
-    			}
-    			allTagsToAdd.pop();
-    		}
-    	}
-    	while (allTagsToAdd.length > 0) {
-    		newTagCountsArray.push([allTagsToAdd.pop(), 0]);
-
-    	}
-    	this.setState({
-    		tagCountsArray	: newTagCountsArray,
-    		frequentTags	: newFrequentTags
-    	});
     },
 
     componentDidMount: function() {
@@ -251,6 +227,19 @@ var StatSearch = React.createClass({
         });
     },
 
+    quickSetTags:function(topicTags) {
+        this.setState({
+            searchCriteria: {
+	            title: this.state.searchCriteria.title,
+	            org: this.state.searchCriteria.org,
+	            stat: this.state.searchCriteria.stat,
+	            beginDate: this.state.searchCriteria.beginDate,
+	            endDate: this.state.searchCriteria.endDate,
+	            topicTags: topicTags
+			}
+        });
+    },
+
     // Sets the searchTerm and searchCriterion to the event's value and id, respectively.
     // This determines what will be searched and what that search will be on.
     filter: function(event) {
@@ -269,17 +258,6 @@ var StatSearch = React.createClass({
                     }
                 });
             }
-            if ($(event.target).hasClass('clearSearch')) {
-                var criterionToClear = $(event.target).attr('criterion');
-                var newSearchCriteria = {};
-                for (var criterion in this.state.searchCriteria) {
-                	newSearchCriteria[criterion] = this.state.searchCriteria[criterion];
-                }
-                newSearchCriteria[criterionToClear] = '';
-                this.setState({
-                    searchCriteria: newSearchCriteria
-                });
-            }
         } else if (event.target.id == 'topicTags' && event.target.value != '') {
             var tagArray = event.target.value.trim().toLowerCase().split(',');
             this.setState({
@@ -293,18 +271,37 @@ var StatSearch = React.createClass({
                 }
             });
         } else if ($(event.target).hasClass('clearSearch')) {
-            this.setState({
-                searchCriteria: {
-                    title: '',
-                    org: '',
-                    stat: '',
-                    beginDate: '',
-                    endDate: '',
-                    topicTags: ''
+            if ($(event.target).hasClass('clearQuickFilters')) {
+                var criterionToClear = $(event.target).attr('data-criterion');
+                var newSearchCriteria = {};
+                for (var criterion in this.state.searchCriteria) {
+                	newSearchCriteria[criterion] = this.state.searchCriteria[criterion];
                 }
-            });
-            $('#searchStatForm').trigger('reset');
-            $('.chip.quick-filter').removeClass('active');
+                if (criterionToClear === 'published') {
+                	newSearchCriteria['beginDate'] = '';
+                	newSearchCriteria['endDate'] = '';
+                } else {
+                	newSearchCriteria[criterionToClear] = '';
+            	}
+                this.setState({
+                    searchCriteria: newSearchCriteria
+                });
+	            $('.chip.quick-filter.' + criterionToClear + '-filterTag').removeClass('active');
+            } else {
+	            this.setState({
+	                searchCriteria: {
+	                    title: '',
+	                    org: '',
+	                    stat: '',
+	                    beginDate: '',
+	                    endDate: '',
+	                    topicTags: ''
+	                }
+	            });
+	            $('#searchStatForm').trigger('reset');
+        		$('label').addClass('active');
+	            $('.chip.quick-filter').removeClass('active');
+        	}
         } else {
             var newSearchCriteria = {
                 title: this.state.searchCriteria.title,
@@ -331,6 +328,9 @@ var StatSearch = React.createClass({
     // Set this.state.editDataIndex to the index of the stat to be updated
     // This prompts <AddStat /> to re-render in 'Edit' mode rather than 'Add'
     edit: function(data, index) {
+        $('#addStatForm').trigger('reset');
+        $('form#addStatForm input').removeAttr('disabled');
+        $('label').addClass('active');        
         this.setState({
         	edit_data: data,
         	editDataIndex: index
@@ -338,11 +338,14 @@ var StatSearch = React.createClass({
     },
 
     clearEditData:function(event) {
-    	alert();
     	if (this.state.edit_data != null) {
 	    	this.setState({
-	    		edit_data: null
+	    		edit_data: null,
+	    		editDataIndex: null
 	    	});
+        	$('#addStatForm').trigger('reset');
+	        $('form#addStatForm input').removeAttr('disabled');
+	        $('label').addClass('active');
 	    }
     },
 
@@ -483,11 +486,11 @@ var StatSearch = React.createClass({
                         </div>
                     </nav>
                 </div>                
-                <AddStat edit_data={this.state.edit_data} insertStats={this.insertStats} updateStat={this.updateStat} updateUniquePublishedYears={this.updateUniquePublishedYears} updateTagCountsArray={this.updateTagCountsArray}/>
+                <AddStat edit_data={this.state.edit_data} insertStats={this.insertStats} updateStat={this.updateStat} updateUniquePublishedYears={this.updateUniquePublishedYears} />
                 <SearchStat filter={this.filter} activeFilters={this.state.searchCriteria} />
                 <div id='statTable' className='col s12'>
                 	<QuickFilterTagList filter={this.filter} data={this.state.uniquePublishedYears} criterion="published" />
-					<QuickFilterTagList filter={this.filter} data={this.state.frequentTags} criterion="topicTags" />
+					<QuickFilterTagList filter={this.filter} data={this.state.frequentTags} quickSetTags={this.quickSetTags} criterion="topicTags" />
                     <StatTable delete={this.delete} edit={this.edit} data={stats}/>
                 </div>
             </div>
@@ -496,18 +499,6 @@ var StatSearch = React.createClass({
 });
 
 var QuickFilterTagList = React.createClass({
-    render: function() {
-        return(
-        	<div className='quickFilterTagList'>
-        		<a href="#!" onClick={this.props.filter} className="waves-effect waves-light btn clearSearch" criterion={this.props.criterion}>Clear</a>
-        		{this.props.data.map((d, i) => <QuickFilterTag key={i} data={d} criterion={this.props.criterion} filter={this.props.filter} />)}
-        	</div>
-        );
-    }
-});
-
-// Renders a list of clickable tags to make filtering easier
-var QuickFilterTag = React.createClass({
 	getInitialState: function() {
 		return({
 			active: []
@@ -521,29 +512,44 @@ var QuickFilterTag = React.createClass({
 	        this.props.filter(event);
 		}
 		if ($(event.target).hasClass('topicTags-filterTag')) {
+			var newActive;
 			if ($(event.target).hasClass('active')) {
 				$(event.target).removeClass('active');
-				var newActive = [].concat(this.state.active);
+				newActive = [].concat(this.state.active);
 				var index = newActive.indexOf($(event.target).attr('data'));
 				while (index != -1) {
 					newActive.splice(index, 1);
+					index = newActive.indexOf($(event.target).attr('data'));
 				}
 				this.setState({
 					active	:	newActive
 				});
 			} else {
 				$(event.target).addClass('active');
-				var newActive = [].concat(this.state.active).push($(event.target).attr('data'));
+				newActive = [$(event.target).attr('data')].concat(this.state.active);
 				this.setState({
-					active	:	newActive
+					active:	newActive
 				});
 			}
+			this.props.quickSetTags(newActive);
 		}
 	},
 
     render: function() {
         return(
-        	<div className={"chip quick-filter " + this.props.criterion + "-filterTag"} data={this.props.data} onClick={this.setFilter}>
+        	<div className='quickFilterTagList'>
+        		<a href="#!" onClick={this.props.filter} className="waves-effect waves-light btn clearSearch clearQuickFilters" data-criterion={this.props.criterion}>Clear {this.props.criterion}</a>
+        		{this.props.data.map((d, i) => <QuickFilterTag key={i} data={d} criterion={this.props.criterion} setFilter={this.setFilter} />)}
+        	</div>
+        );
+    }
+});
+
+// Renders a list of clickable tags to make filtering easier
+var QuickFilterTag = React.createClass({
+    render: function() {
+        return(
+        	<div className={"chip quick-filter " + this.props.criterion + "-filterTag"} data={this.props.data} onClick={this.props.setFilter}>
         		{this.props.data}
         	</div>
         );
@@ -697,11 +703,7 @@ var AddStat = React.createClass({
         	}
             for (var i = 0; i <= this.state.currStat; i++) {
                 statsToAdd[i]['lastTouch'] = window.currDate();
-                statsToAdd[i]['topicTags'] = window.removeDuplicateTagsAndReturnArr(statsToAdd[i]['topicTags']);
-                if (statsToAdd[i]['topicTags'].length > 0) {
-                	Array.prototype.push.apply(allTagsToAdd, statsToAdd[i]['topicTags']);
-            	}
-            	statsToAdd[i]['topicTags'] = statsToAdd[i]['topicTags'].join(',');
+                statsToAdd[i]['topicTags'] = window.removeDuplicateTags(statsToAdd[i]['topicTags']);
 		    	// Dates entered into the Google Sheet get formatted like so: MM/DD/YYYY with no leading zeroes
 		    	// However, this piece of data hasn't made the round trip - it will be in the Chrome Datepicker's native format
 		    	// which is YYYY-MM-DD
@@ -733,13 +735,9 @@ var AddStat = React.createClass({
         // We are editing or adding a single stat
         } else {
             statsToAdd[0]['lastTouch'] = window.currDate();
-            statsToAdd[0]['topicTags'] = window.removeDuplicateTagsAndReturnArr(statsToAdd[0]['topicTags']);
+            statsToAdd[0]['topicTags'] = window.removeDuplicateTags(statsToAdd[0]['topicTags']);
             // If a stat is edited and the tags are left unchanged, this will end up incorrectly incrementing the count of each of those tags by one
             // until the page is reloaded, which is a bug I can live with
-            if (statsToAdd[0]['topicTags'].length > 0) {
-            	Array.prototype.push.apply(allTagsToAdd, statsToAdd[0]['topicTags']);
-        	}
-        	statsToAdd[0]['topicTags'] = statsToAdd[0]['topicTags'].join(',');
 		    var publishDate = statsToAdd[0]["published"]; 	
 	    	if (publishDate != '') {
 		    	var publishDateMMDDYYYY = window.getMMDDYYYYFromDateParts(window.getDateParts(new Date(publishDate.replace(/-/g, '/'))));
@@ -792,7 +790,6 @@ var AddStat = React.createClass({
             $('form#addStatForm input').removeAttr('disabled');
             this.clear();
             this.props.updateUniquePublishedYears(publishedYears);
-            this.props.updateTagCountsArray(allTagsToAdd);
         // Error callback
         }.bind(this), function(response) {
             if (this.state.buttonText == 'Add') {

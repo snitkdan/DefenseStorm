@@ -41,11 +41,6 @@ var removeDuplicateTags = function(topicTags) {
     return window.removeDuplicateElements(tagArray).join(',');
 }
 
-var removeDuplicateTagsAndReturnArr = function(topicTags) {
-    var tagArray = topicTags.trim().split(',');
-    return window.removeDuplicateElements(tagArray);
-}
-
 var removeDuplicateElements = function(arr) {
     var result = [];
     $.each(arr, function(i, e) {

@@ -26,6 +26,7 @@ var test_data = [];
 var LASTROW = 2;
 var quickFilterYears = [];
 var tagCountsArray = [];
+var frequent_tag_threshold = 10;
 
 /**
  * For reading a JSON configuration file
@@ -52,6 +53,7 @@ function setIDsFromConfig(text) {
   SCOPES = data.scopes;
   LASTROW = data.first_data_row;
   RANGE = "A" + data.first_data_row + ":H" + data.max_rows;
+  frequent_tag_threshold = data.frequent_tag_threshold;
 }
 
 readConfig("config.json", setIDsFromConfig);
