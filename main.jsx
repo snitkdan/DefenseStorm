@@ -46,6 +46,7 @@ var Stat = React.createClass({
     	if (this.isBlank()) {
     		return null;
     	}
+    	var published = (this.props.reformattedDate == null ? this.props.data.published : this.props.reformattedDate )
         return (
             <tr>
                 <td>
@@ -56,7 +57,7 @@ var Stat = React.createClass({
                     <TagList topicTags={this.props.data.topicTags} />
                 </td>
                 <td>{this.props.data.org}</td>
-                <td>{this.props.data.published}</td>
+                <td>{published}</td>
                 <td>{this.props.data.lastTouch}</td>
                 <td>
                     <button data-target='addModal' className="modal-trigger btn-floating btn-small waves-effect waves-light" onClick={() => this.props.edit(this.props.data, this.props.arrayIndex)}>
@@ -73,7 +74,7 @@ var Stat = React.createClass({
 
 var TagList = React.createClass({
 	getInitialState:function(){
-		if (this.props.topicTags != undefined && this.props.topicTags != '') {
+		if (this.props.topicTags) {
 			return ({
 				topicTags: this.props.topicTags.trim().split(',')
 			});
@@ -85,7 +86,7 @@ var TagList = React.createClass({
 
     componentWillReceiveProps:function(nextProps){
         var newTopicTags = nextProps.topicTags;
-        if (newTopicTags != undefined && newTopicTags != '') {
+        if (newTopicTags) {
             this.setState({
                 topicTags: newTopicTags.trim().split(',')
             });
@@ -221,19 +222,27 @@ var StatSearch = React.createClass({
     componentDidMount: function() {
         // the "href" attribute of .modal-trigger must specify the modal ID that wants to be triggered
         $('#searchModal, #addModal').modal({
-            opacity: 0,
+            opacity: .1,
             ready: function(modal, trigger) {
-                $('div.navbar-fixed').hide('slow');
+                $('div.navbar-fixed').hide('fast');
             },
             complete: function() {
-                $('div.navbar-fixed').show('slow');
+                $('div.navbar-fixed').show('fast');
             }
         });
         $('#statBatchPreviewModal').modal({
-            opacity: 0,
+            opacity: .1,
             ready: function(modal, trigger) {
+            	$('body').addClass('noscroll');
+            	$('body').removeClass('scroll');
+            	$('#statBatchPreviewModal').addClass('scroll');
+            	$('#statBatchPreviewModal').removeClass('noscroll');
             },
             complete: function() {
+            	$('body').addClass('scroll');
+            	$('body').removeClass('noscroll');
+            	$('#statBatchPreviewModal').addClass('noscroll');
+            	$('#statBatchPreviewModal').removeClass('scroll');
             }
         });
     },
@@ -312,6 +321,7 @@ var StatSearch = React.createClass({
 	            $('#searchStatForm').trigger('reset');
         		$('label').addClass('active');
 	            $('.chip.quick-filter').removeClass('active');
+	            $('#searchStatForm input:first-child').first().focus();
         	}
         } else {
             var newSearchCriteria = {
@@ -607,7 +617,7 @@ var SearchStat = React.createClass({
                             </div>
                             <div className="input-field col s6">
                                 <input value={this.props.activeFilters.topicTags} placeholder='Comma,separated,tags' id="topicTags" type="text" className="validate" onChange={this.props.filter}></input>
-                                <label htmlFor='topicTags' data-error='wrong' className="active">Topic tags</label>
+                                <label htmlFor='topicTags' data-error='Invalid tags' className="active">Topic tags</label>
                             </div>
                         </div>
 	                </div>
@@ -624,7 +634,6 @@ var SearchStat = React.createClass({
 
 //Contains the Stat-adding feature
 var AddStat = React.createClass({
-
     getInitialState:function(){
         return ({
             statsToAdd: [
@@ -835,6 +844,7 @@ var AddStat = React.createClass({
         $('#addStatForm').trigger('reset');
         $('form#addStatForm input').removeAttr('disabled');
         $('label').addClass('active');
+        $('#addStatForm input:first-child').first().focus();
     },
 
     //Handles user input when editing a stat
@@ -867,6 +877,7 @@ var AddStat = React.createClass({
                 currStat: nextStat
             });
             $('form#addStatForm input:not(#topicTags)').attr('disabled','disabled');
+            $('#addStatForm textarea').focus();
         } else {
         	$('#addStatForm')[0].reportValidity();
         }
@@ -875,44 +886,46 @@ var AddStat = React.createClass({
     // renders the adding Stat form
     render: function() {
         return (
-            <div id="addModal"  onSubmit={this.submit} className="modal bottom-sheet">
-                <form id="addStatForm">
-                    <div className="modal-header">
-                        <AddStatHeader data={this.state} />
-                    </div>
-                    <div className="modal-content">
-                            <div className='row'>
-                                <div className="input-field col s3">
-                                    <input value={this.state.statsToAdd[this.state.currStat]["title"]} onChange={this.handleChange} placeholder="Title of Report" id='title' type="text" className="validate" required></input>
-                                    <label htmlFor='title' data-error='Invalid title' className="active">Title of study or report</label>
-                                </div>
-                                <div className="input-field col s3">
-                                    <input value={this.state.statsToAdd[this.state.currStat]["source"]} onChange={this.handleChange} placeholder="http://www.example.com" id='source' type="url" className="validate" required></input>
-                                    <label htmlFor='source' data-error='Invalid URL. Did you include "http://"?' className="active">Source URL</label>
-                                </div>
-                                <div className="input-field col s3">
-                                    <input value={this.state.statsToAdd[this.state.currStat]["org"]} onChange={this.handleChange} placeholder="E.g. Ponemon, Verizon, etc." id='org' type="text" className="validate" required></input>
-                                    <label htmlFor='org' data-error='Invalid organization' className="active">Authoring organization</label>
-                                </div>
-                                <div className="input-field col s3">
-                                    <input value={this.state.statsToAdd[this.state.currStat]["published"]} onChange={this.handleChange} placeholder="mm/dd/yyyy" id='published' type="date" className="validate" ></input>
-                                    <label htmlFor='published' data-error='Invalid date' className="active">Date published</label>
-                                </div>
-                            </div>
-                            <div className='row'>
-                                <div className="input-field col s6">
-                                    <input value={this.state.statsToAdd[this.state.currStat]["topicTags"]} onChange={this.handleChange} placeholder="Comma,separated,tags" id='topicTags' type="text" className="validate" ></input>
-                                    <label htmlFor='topicTags' data-error='Invalid tags' className="active">Topic tags</label>
-                                </div>
-                                <div className="input-field col s6">
-                                    <textarea value={this.state.statsToAdd[this.state.currStat]["stat"]} onChange={this.handleChange} placeholder="E.g. Two-thirds of respondents identified cyber risk as one of their top five concerns" id='stat' type="text" className="materialize-textarea validate" required></textarea>
-                                    <label htmlFor='stat' data-error='Invalid statistic' className="active">Statistic</label>
-                                </div>
-                            </div>
-                    </div>
-                    <AddStatFooter buttonText={this.state.buttonText} clear={this.clear} submit={this.submit} saveStat={this.saveStat} source={this.state.statsToAdd.source}/>
-                </form>
-                <StatBatchPreviewModal statsToAdd={this.state.statsToAdd} currStat={this.currStat} />
+        	<div>
+	            <div id="addModal"  onSubmit={this.submit} className="modal bottom-sheet">
+	                <form id="addStatForm">
+	                    <div className="modal-header">
+	                        <AddStatHeader data={this.state} />
+	                    </div>
+	                    <div className="modal-content">
+	                            <div className='row'>
+	                                <div className="input-field col s3">
+	                                    <input value={this.state.statsToAdd[this.state.currStat]["title"]} onChange={this.handleChange} placeholder="Title of Report" id='title' type="text" className="validate" required></input>
+	                                    <label htmlFor='title' data-error='Invalid title' className="active">Title of study or report</label>
+	                                </div>
+	                                <div className="input-field col s3">
+	                                    <input value={this.state.statsToAdd[this.state.currStat]["source"]} onChange={this.handleChange} placeholder="http://www.example.com" id='source' type="url" className="validate" required></input>
+	                                    <label htmlFor='source' data-error='Invalid URL. Did you include "http://"?' className="active">Source URL</label>
+	                                </div>
+	                                <div className="input-field col s3">
+	                                    <input value={this.state.statsToAdd[this.state.currStat]["org"]} onChange={this.handleChange} placeholder="E.g. Ponemon, Verizon, etc." id='org' type="text" className="validate" required></input>
+	                                    <label htmlFor='org' data-error='Invalid organization' className="active">Authoring organization</label>
+	                                </div>
+	                                <div className="input-field col s3">
+	                                    <input value={this.state.statsToAdd[this.state.currStat]["published"]} onChange={this.handleChange} placeholder="mm/dd/yyyy" id='published' type="date" className="validate" ></input>
+	                                    <label htmlFor='published' data-error='Invalid date' className="active">Date published</label>
+	                                </div>
+	                            </div>
+	                            <div className='row'>
+	                                <div className="input-field col s6">
+	                                    <input value={this.state.statsToAdd[this.state.currStat]["topicTags"]} onChange={this.handleChange} placeholder="Comma,separated,tags" id='topicTags' type="text" className="validate" ></input>
+	                                    <label htmlFor='topicTags' data-error='Invalid tags' className="active">Topic tags</label>
+	                                </div>
+	                                <div className="input-field col s6">
+	                                    <textarea value={this.state.statsToAdd[this.state.currStat]["stat"]} onChange={this.handleChange} placeholder="E.g. Two-thirds of respondents identified cyber risk as one of their top five concerns" id='stat' type="text" className="materialize-textarea validate" required></textarea>
+	                                    <label htmlFor='stat' data-error='Invalid statistic' className="active">Statistic</label>
+	                                </div>
+	                            </div>
+	                    </div>
+	                    <AddStatFooter buttonText={this.state.buttonText} clear={this.clear} submit={this.submit} saveStat={this.saveStat} source={this.state.statsToAdd.source}/>
+	                </form>
+	            </div>
+	            <StatBatchPreviewModal statsToAdd={this.state.statsToAdd} />
             </div>
           )
       }
@@ -967,7 +980,7 @@ var StatBatchPreviewModal = React.createClass({
         return(
             <div id="statBatchPreviewModal" className="modal">
                 <div className="modal-content">
-                    <table className='pure-table pure-table-bordered pure-table-striped'>
+                    <table className='pure-table pure-table-bordered pure-table-striped' id="statBatchPreviewTable">
                         <thead>
                             <tr>
                                 <th className='center-align'>Title</th>
@@ -977,7 +990,7 @@ var StatBatchPreviewModal = React.createClass({
                             </tr>
                         </thead>
                         <tbody>
-                            {this.props.statsToAdd.map((d, i) => <Stat edit={null} delete={null} key={'preview-' + i} arrayIndex={i} data={d}/>)}
+                            {this.props.statsToAdd.map((d, i) => <Stat edit={null} delete={null} key={'preview-' + i} arrayIndex={i} data={d} reformattedDate={window.getMMDDYYYYFromDateParts(d['published'].split('-'))}/>)}
                         </tbody>
                     </table>
                 </div>

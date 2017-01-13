@@ -27,7 +27,7 @@ Front end for manipulating a Google Spreadsheet of cybersecurity-related statist
 ## Setup
 1. Clone or download this repo
 2. In your copy of the project, create a file called `config.json` in the root directory
-3. Place the following contents in the file:
+3. Place the following contents in the file:  
   `{
     "client_id"                 : "<YOUR-OAUTH-CLIENT-ID-HERE>",
     "sheet_id"                  : "<YOUR-SHEET-ID-HERE>",
@@ -35,8 +35,8 @@ Front end for manipulating a Google Spreadsheet of cybersecurity-related statist
     "max_rows"                  : "1000",
     "first_data_row"            : "2",
     "frequent_tag_threshold"    : "10"
-  }`
-  The `max_rows` property can be increased.
+  }`  
+  The `max_rows` property can be increased.  
   The `frequent_tag_threshold` property is how many times a tag must appear in the Sheet backend before it appears above the StatTable for convenient filtering.
 4. Run this web app from your preferred webserver
 5. Navigate to the site from Chrome
@@ -49,7 +49,7 @@ If there are errors when granting access to your Google account, make sure you a
 
 ## Notes, caveats & known issues
 * The architecture of this project makes it difficult/impossible to perform validation server-side. Any validation is therefore performed client-side. Please don't go forging POST requests :(
-* Multiple users attempting to edit concurrently (via this app or Google Docs) will cause issues, including overwritten data, deletion of the incorrect row, etc.
-* It is not advised to edit the Sheet directly
+* Multiple users should be able to add stats without issue. However, attempting to edit/delete will cause issues, including overwritten data, deletion of the incorrect row, etc.
+* It is not advised to edit the Sheet directly. If you do, refresh this app before resuming working from it
 * When adding a stat, the local date at the client will be submitted to the "Date Added" column (column E in the Sheet)
 

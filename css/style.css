@@ -92,7 +92,8 @@ body {
 		text-decoration: none;
 	}
 
-	div#statTable table thead tr th {
+	div#statTable table thead tr th, 
+	table#statBatchPreviewTable thead tr th {
 		background-color: #202830;
 		color:white;
 	}
@@ -208,8 +209,15 @@ body {
 
 /* Override the overflow style applied by the bottom-sheet modals, which prevent scrolling */
 body {
-	overflow: auto !important;
 	width: initial !important;
+}
+
+.noscroll {
+	overflow: hide;
+}
+
+.scroll {
+	overflow: auto;
 }
 
 /* Batch-adding preview modal */
@@ -230,7 +238,6 @@ div#statBatchPreviewModal div.modal-content table tbody tr td:nth-last-child(-n 
 /* Table of stats to be added */
 div#statBatchPreviewModal div.modal-content {
 	padding: 1em;
-	overflow: auto;
 }
 
 label {
