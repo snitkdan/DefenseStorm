@@ -31,7 +31,6 @@ var getYYYYMMDDFromDateString = function(dateString) {
     return dateParts[2] + '-' + addDigitIfLessThanTen(dateParts[0]) + '-' + addDigitIfLessThanTen(dateParts[1]);
 }
 
-
 // end >>
 
 // Return a new array, minus duplicates and empty strings

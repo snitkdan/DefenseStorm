@@ -1,8 +1,14 @@
+/* Logo */
 #logo {
 	width: 250px;
 	height: auto;
 	padding-left: 1em;
 	padding-top: .25em;
+}
+
+/* Authorization */
+#authorize-button {
+	margin-top: 5%;
 }
 
 #auth-logo {
@@ -12,27 +18,13 @@
 	margin-top: 10%;
 }
 
-#authorize-button {
-	margin-top: 5%;
+.row:after {
+	clear:none;
+	display: none;
 }
 
-body {
+div.navbar-fixed nav {
 	background-color: #FFFFFF;
-}
-
-.left {
-    position:fixed;
-    left: 0.66em;
-    width: 25%;
-}
-
-#row {
-	color: #000000;
-}
-
-#title_lable {
-	color: #000000;
-	font-style: bold;
 }
 
 #authorize-div {
@@ -44,21 +36,12 @@ body {
 	display: none;
 }
 
-.flex {
-	display: flex;
-	justify-content: center;
-	justify-content: space-around;
-}
-
-
-.input-field {
-	color: black;
-}
-
 /* StatTable styles */
 	/* QuickFilters */
 	.chip.quick-filter {
 		cursor: pointer;
+		background-color: #FFFFFF;
+		font-weight: bold;
 	}
 
 	.chip.quick-filter.active {
@@ -67,6 +50,7 @@ body {
 		color: #FFFFFF;
 	}
 
+	/* 'Clear' buttons */
 	div#statTable>div.quickFilterTagList>a.clearSearch {
 		background-color: #4D4d4d !important;
 		margin-right: 0.33em;
@@ -103,12 +87,18 @@ body {
 		color:black;
 	}
 
+	/* other table styles */
 	div#statTable {
 		width: 90%;
 		margin:auto;
 		margin-top: 3.35em;
 		margin-bottom: 6.7em;
 	}
+
+	div#statTable table.pure-table tbody tr:nth-child(even) td:not(:last-child) {
+		background-color: #FFFFFF;
+	}
+
 	/* The below is for hiding the table cells in which the edit/delete buttons are rendered.
 	** The excessive specificity of the selectors ensures we override Materialize's styles.
 	*/
@@ -140,7 +130,10 @@ body {
 	}
 
 /* Bottom-sheet modals */
-
+	/* Let bottom-sheet modal be as tall as they need to be to avoid overflow */
+	.modal.bottom-sheet {
+		max-height: initial;
+	}
 	/* Reduce spacing in and around searchModal and addModal content to make it more compact */
 	.modal.bottom-sheet div.modal-content {
 		padding-bottom: 0px;
@@ -188,76 +181,69 @@ body {
 		margin-left: 0.33em;
 	}
 
-/* Placeholder text (DO NOT group these rules) */
-	/* Chrome */
-	*::-webkit-input-placeholder {
-	    color: black;
-	    opacity: 1 !important;
+	a#saveStatButton {
+		background-color: #B3C44B;
 	}
 
-	/* FF 4-18 */
-	*:-moz-placeholder {
-	    color: black;
-	    opacity: 1 !important;
+	/* Inputs */
+	/* Placeholder text (DO NOT group these rules) */
+		/* Chrome */
+		*::-webkit-input-placeholder {
+		    color: black;
+		    opacity: 1 !important;
+		}
+
+		/* FF 4-18 */
+		*:-moz-placeholder {
+		    color: black;
+		    opacity: 1 !important;
+		}
+
+		/* FF 19+ */
+		*::-moz-placeholder {
+		    color: black;
+		    opacity: 1 !important;
+		}
+
+	.input-field {
+		color: black;
 	}
 
-	/* FF 19+ */
-	*::-moz-placeholder {
-	    color: black;
-	    opacity: 1 !important;
+	/* Override styles applied when modals open, which prevent scrolling */
+	/* Background image from https://subtlepatterns.com/old-husks/ */
+	/* CC BY-SA 3.0 - Subtle Patterns © Atle Mo & Toptal Designers. */
+	/* Creator: https://joshgreendesign.com/ */
+	body {
+		width: initial !important;
+		background-color: #DFDFDF;
+		background: url('../imgs/husk.png');
 	}
 
-/* Override the overflow style applied by the bottom-sheet modals, which prevent scrolling */
-body {
-	width: initial !important;
-}
+	.noscroll {
+		overflow: hide !important;
+	}
 
-.noscroll {
-	overflow: hide;
-}
-
-.scroll {
-	overflow: auto;
-}
+	.scroll {
+		overflow: auto !important;
+	}
 
 /* Batch-adding preview modal */
-div#statBatchPreviewModal div.modal-content table tbody tr {
-	height: 15vh;
-}
+	/* Hide the last 'stat' in the batch, which is blank by design and will not be submitted */
+	div#statBatchPreviewModal div.modal-content table tbody tr:last-child {
+		display: none !important;
+	}
 
-/* Hide the last 'stat' in the batch, which is blank by design and will not be submitted */
-div#statBatchPreviewModal div.modal-content table tbody tr:last-child {
-	display: none !important;
-}
+	/* Hide the action button cell and the dateAdded cell in the preview */
+	div#statBatchPreviewModal div.modal-content table tbody tr td:nth-last-child(-n + 2) {
+		display: none !important;
+	}
 
-/* Hide the action button cell and the rowNum cell in the preview */
-div#statBatchPreviewModal div.modal-content table tbody tr td:nth-last-child(-n + 2) {
-	display: none !important;
-}
+	/* Table of stats to be added */
+	div#statBatchPreviewModal div.modal-content {
+		padding: 1em;
+	}
 
-/* Table of stats to be added */
-div#statBatchPreviewModal div.modal-content {
-	padding: 1em;
-}
-
-label {
-	color:black;
-}
-
-.row:after {
-	clear:none;
-	display: none;
-}
-
-div.navbar-fixed nav {
-	background-color: #FFFFFF;
-}
-
-a#saveStatButton {
-	background-color: #B3C44B;
-}
-
-#statBatchPreviewModal {
-	width: 100%;
-	height: 100%;
-}
+	#statBatchPreviewModal {
+		width: 95%;
+		height: 100%;
+	}

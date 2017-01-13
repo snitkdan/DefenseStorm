@@ -36,8 +36,10 @@ Front end for manipulating a Google Spreadsheet of cybersecurity-related statist
     "first_data_row"            : "2",
     "frequent_tag_threshold"    : "10"
   }`  
+
   The `max_rows` property can be increased.  
-  The `frequent_tag_threshold` property is how many times a tag must appear in the Sheet backend before it appears above the StatTable for convenient filtering.
+  The `frequent_tag_threshold` property is how many times a tag must appear in the Sheet backend before it appears above the StatTable for convenient filtering.  
+
 4. Run this web app from your preferred webserver
 5. Navigate to the site from Chrome
 6. Authenticate with your Google account

@@ -225,6 +225,8 @@ var StatSearch = React.createClass({
             opacity: .1,
             ready: function(modal, trigger) {
                 $('div.navbar-fixed').hide('fast');
+            	$('body').addClass('scroll');
+            	$('body').removeClass('noscroll');
             },
             complete: function() {
                 $('div.navbar-fixed').show('fast');
