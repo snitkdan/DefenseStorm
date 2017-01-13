@@ -413,10 +413,10 @@ var StatSearch = React.createClass({
         	// Success callback
             function(response) {
             	this.deleteStatLocally(index);
-                Materialize.toast('Deleted stat #' + data.rowNum, 4000);
+                Materialize.toast('Deleted stat. Title: ' + data.title, 4000);
             // Error callback
             }.bind(this), function(response) {
-                Materialize.toast('Couldn\'t delete stat #' + data.rowNum, 4000);
+                Materialize.toast('Couldn\'t delete stat. Title: ' + data.title, 4000);
             }
         );
 
@@ -497,7 +497,7 @@ var StatSearch = React.createClass({
                         </div>
                     </nav>
                 </div>                
-                <AddStat edit_data={this.state.edit_data} insertStats={this.insertStats} updateStat={this.updateStat} updateUniquePublishedYears={this.updateUniquePublishedYears} />
+                <AddStat edit_data={this.state.edit_data} insertStats={this.insertStats} updateStat={this.updateStat} updateUniquePublishedYears={this.updateUniquePublishedYears} clearEditData={this.clearEditData}/>
                 <SearchStat filter={this.filter} activeFilters={this.state.searchCriteria} />
                 <div id='statTable' className='col s12'>
                 	<QuickFilterTagList filter={this.filter} data={this.state.uniquePublishedYears} criterion="published" />
@@ -792,10 +792,10 @@ var AddStat = React.createClass({
             if (this.state.buttonText == 'Add') {
                 window.LASTROW = window.LASTROW + response.result.updates.updatedRows;
                 this.props.insertStats(statsToAdd);
-                Materialize.toast('Successfully added ' + response.result.updates.updatedRows + ' rows', 4000);
+                Materialize.toast('Successfully added ' + response.result.updates.updatedRows + ' stats', 4000);
             } else {
             	this.props.updateStat(statsToAdd[0]);
-                Materialize.toast('Successfully edited stat #' + statsToAdd[0].rowNum, 4000);
+                Materialize.toast('Successfully edited stat. Title: ' + statsToAdd[0].title, 4000);
             }
             $('a#Add, a#Edit').removeClass('disabled');
             $('form#addStatForm input').removeAttr('disabled');
@@ -804,9 +804,9 @@ var AddStat = React.createClass({
         // Error callback
         }.bind(this), function(response) {
             if (this.state.buttonText == 'Add') {
-                Materialize.toast('Could not add ' + (this.state.currStat + 1) + ' rows', 4000);
+                Materialize.toast('Could not add ' + (this.state.currStat + 1) + ' stats', 4000);
             } else {
-                Materialize.toast('Could not edit stat #' + statsToAdd[0].rowNum, 4000);
+                Materialize.toast('Could not edit stat. Title: ' + statsToAdd[0].title, 4000);
             }
             console.log('Error: ' + response.result.error.message);
             $('a#Add, a#Edit').removeClass('disabled');
@@ -831,6 +831,7 @@ var AddStat = React.createClass({
             buttonText  :   'Add',
             currStat    :   0
         });
+		this.props.clearEditData();
         $('#addStatForm').trigger('reset');
         $('form#addStatForm input').removeAttr('disabled');
         $('label').addClass('active');
