@@ -145,7 +145,6 @@ function processSheetsData() {
             'rowNum'    : (row[7] ? row[7] : '')
           }
           if (row[3]) {
-            console.log(row[3]);
             var publishedYear = row[3].split('/')[2];
             if (!window.quickFilterYears.includes(publishedYear)) {
                window.quickFilterYears.push(publishedYear);
@@ -161,7 +160,6 @@ function processSheetsData() {
       if (allTags.length > 0) {
         window.tagCountsArray = window.getElementCounts(allTags);
       }
-      console.log(allTags);
       $('#logo').css('display', 'block');
       $('#root').css('display', 'block');
       renderTable();

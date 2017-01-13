@@ -65,6 +65,5 @@ var getElementCounts = function(arr) {
     for (var tag in counts) {
         countsArray.push([tag, counts[tag]]);
     }
-    console.log(countsArray);
     return countsArray;
 }

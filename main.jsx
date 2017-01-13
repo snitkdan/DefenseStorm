@@ -122,10 +122,6 @@ var StatTable = React.createClass({
         var sortCriterion = this.state.sortCriterion;
         var order = this.state.order;
         var sorted_Rows = this.props.data.sort(function(a, b) {
-            if (a[sortCriterion] == undefined) {
-            }
-            if (b[sortCriterion] == undefined) {
-            }
             var sortA = a[sortCriterion].trim().toLowerCase();
             var sortB = b[sortCriterion].trim().toLowerCase();
             if (sortCriterion == 'published' || sortCriterion =='lastTouch') {
@@ -189,12 +185,14 @@ var StatTable = React.createClass({
 var StatSearch = React.createClass({
     //Sets the initial search term and criteria
     getInitialState: function() {
+    	console.log(this.props.tagCountsArray);
     	var initFrequentTags = [];
-    	for (var e in this.props.tagCountsArray) {
-    		if (e[1] > 10) {
-    			initFrequentTags.push(e[0]);
+    	for (var e = 0; e < this.props.tagCountsArray.length; e++) {
+    		if (this.props.tagCountsArray[e][1] > 10) {
+    			initFrequentTags.push(this.props.tagCountsArray[e][0]);
 			}
     	}
+    	console.log(initFrequentTags);
         return ({
             searchCriteria			: {
                 title		: '',
@@ -207,18 +205,16 @@ var StatSearch = React.createClass({
             stats					: this.props.data,
             uniquePublishedYears	: this.props.uniquePublishedYears,
             tagCountsArray			: this.props.tagCountsArray,
-            frequentTags			: []
+            frequentTags			: initFrequentTags
         });
     },
 
     updateTagCountsArray: function(allTagsToAdd) {
-    	console.log(this.state);
     	var newTagCountsArray = [].concat(this.state.tagCountsArray);
     	var newFrequentTags = [];
     	for (var i = 0; i < this.state.tagCountsArray.length; i++) {
     		if (allTagsToAdd.indexOf(this.state.tagCountsArray[i][0]) != -1) {
     			newTagCountsArray[i][1] = newTagCountsArray[i][1] + 1;
-    			console.log(newTagCountsArray[i][1]);
     			if (newTagCountsArray[i][1] > 10) {
     				newFrequentTags.push(newTagCountsArray[i][0]);
     			}
@@ -233,7 +229,6 @@ var StatSearch = React.createClass({
     		tagCountsArray	: newTagCountsArray,
     		frequentTags	: newFrequentTags
     	});
-    	console.log(this.state);
     },
 
     componentDidMount: function() {
@@ -273,7 +268,6 @@ var StatSearch = React.createClass({
                         topicTags: this.state.searchCriteria.topicTags
                     }
                 });
-                console.log(this.state.searchCriteria);
             }
             if ($(event.target).hasClass('clearSearch')) {
                 var criterionToClear = $(event.target).attr('criterion');
@@ -337,11 +331,19 @@ var StatSearch = React.createClass({
     // Set this.state.editDataIndex to the index of the stat to be updated
     // This prompts <AddStat /> to re-render in 'Edit' mode rather than 'Add'
     edit: function(data, index) {
-    	console.log(index);
         this.setState({
         	edit_data: data,
         	editDataIndex: index
         });
+    },
+
+    clearEditData:function(event) {
+    	alert();
+    	if (this.state.edit_data != null) {
+	    	this.setState({
+	    		edit_data: null
+	    	});
+	    }
     },
 
     // Update a stat in this.state.stats following a successful edit from <AddStat />
@@ -357,7 +359,6 @@ var StatSearch = React.createClass({
     // Insert new stats into this.state.stats following a successful submit from <AddStat />
     // This prompts <StatTable /> to re-render, giving the appearance of real-time adding
     insertStats: function(newStats) {
-    	console.log(JSON.stringify(this.state.stats.concat(newStats)));
         this.setState({
             stats: this.state.stats.concat(newStats)
         });
@@ -370,7 +371,6 @@ var StatSearch = React.createClass({
     },
 
     updateUniquePublishedYears: function(yearArray) {
-    	alert('years');
     	this.setState({
     		uniquePublishedYears: window.removeDuplicateElements(this.state.uniquePublishedYears.concat(yearArray).sort())
     	});
@@ -403,18 +403,16 @@ var StatSearch = React.createClass({
             // Error callback
             }.bind(this), function(response) {
                 Materialize.toast('Couldn\'t delete stat #' + data.rowNum, 4000);
-                console.log("Couldn't delete stat: " + response.result.error.message);
             }
         );
 
     },
+
     // renders the StatSearch component.
     render: function() {
         var stats = this.state.stats;
         for (var searchCriterion in this.state.searchCriteria) {
             var searchTerm = this.state.searchCriteria[searchCriterion];
-            console.log(searchTerm + ' in filter');
-            console.log(this.state.searchCriteria);
             if (searchTerm.length > 0) {
                 if (searchCriterion == 'beginDate') {
                     var beginElements = searchTerm.split("/");
@@ -477,7 +475,7 @@ var StatSearch = React.createClass({
                                     </a>                            
                                 </li>
                                 <li>
-                                    <a id='add' data-target='addModal' className="modal-trigger">
+                                    <a id='add' data-target='addModal' className="modal-trigger" onClick={this.clearEditData}>
                                         <i className="black-text material-icons large">add</i>
                                     </a>
                                 </li>
@@ -631,7 +629,6 @@ var AddStat = React.createClass({
 
     componentWillReceiveProps:function(nextProps){
         var data = nextProps.edit_data;
-
         if (data) {
             // Google Chrome's datepicker is picky about the format of the date passed to it
             var publishDate = '';
@@ -654,6 +651,23 @@ var AddStat = React.createClass({
                 buttonText:'Edit',
                 currStat: 0
             });
+        } else {
+	        this.setState({
+	            statsToAdd: [
+	                {
+	                    title:'',
+	                    source:'',
+	                    org:'',
+	                    published:'',
+	                    stat:'',
+	                    topicTags:'',
+	                    rowNum:'',
+	                    lastTouch:''
+	                }
+	            ],
+	            buttonText:'Add',
+	            currStat: 0
+	        });
         }
     },
 
@@ -911,7 +925,6 @@ var AddStatFooter = React.createClass({
                 <div className="modal-footer">
                     <button type="submit" id={this.props.buttonText} onSubmit={this.props.submit} className="waves-effect btn">Submit</button>
                     <a href="#!" className="modal-action modal-close waves-effect btn">Close</a>
-                    <a href="#!" onClick={this.props.clear} className="waves-effect btn">Switch to Add Mode</a>
                 </div>
             );
         }
