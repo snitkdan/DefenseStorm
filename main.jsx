@@ -34,7 +34,18 @@
    The properties that it gets is "data", which is an individual JS object that has properties
   'title', 'stat', 'org', and 'published', all of which get rendered in with <td> tags. */
 var Stat = React.createClass({
+	isBlank:function() {
+		return(
+			this.props.data.source === '' && this.props.data.title === '' &&
+			this.props.data.stat === '' && this.props.data.topicTags === '' &&
+			this.props.data.org === '' && this.props.data.published === '' && this.props.data.lastTouch === ''
+		);
+	},
+
     render: function() {
+    	if (this.isBlank()) {
+    		return null;
+    	}
         return (
             <tr>
                 <td>
