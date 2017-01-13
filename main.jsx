@@ -189,6 +189,12 @@ var StatTable = React.createClass({
 var StatSearch = React.createClass({
     //Sets the initial search term and criteria
     getInitialState: function() {
+    	var initFrequentTags = [];
+    	for (var e in this.props.tagCountsArray) {
+    		if (e[1] > 10) {
+    			initFrequentTags.push(e[0]);
+			}
+    	}
         return ({
             searchCriteria			: {
                 title		: '',
@@ -199,8 +205,35 @@ var StatSearch = React.createClass({
                 topicTags	: ''
             },
             stats					: this.props.data,
-            uniquePublishedYears	: this.props.uniquePublishedYears
+            uniquePublishedYears	: this.props.uniquePublishedYears,
+            tagCountsArray			: this.props.tagCountsArray,
+            frequentTags			: []
         });
+    },
+
+    updateTagCountsArray: function(allTagsToAdd) {
+    	console.log(this.state);
+    	var newTagCountsArray = [].concat(this.state.tagCountsArray);
+    	var newFrequentTags = [];
+    	for (var i = 0; i < this.state.tagCountsArray.length; i++) {
+    		if (allTagsToAdd.indexOf(this.state.tagCountsArray[i][0]) != -1) {
+    			newTagCountsArray[i][1] = newTagCountsArray[i][1] + 1;
+    			console.log(newTagCountsArray[i][1]);
+    			if (newTagCountsArray[i][1] > 10) {
+    				newFrequentTags.push(newTagCountsArray[i][0]);
+    			}
+    			allTagsToAdd.pop();
+    		}
+    	}
+    	while (allTagsToAdd.length > 0) {
+    		newTagCountsArray.push([allTagsToAdd.pop(), 0]);
+
+    	}
+    	this.setState({
+    		tagCountsArray	: newTagCountsArray,
+    		frequentTags	: newFrequentTags
+    	});
+    	console.log(this.state);
     },
 
     componentDidMount: function() {
@@ -452,10 +485,11 @@ var StatSearch = React.createClass({
                         </div>
                     </nav>
                 </div>                
-                <AddStat edit_data={this.state.edit_data} insertStats={this.insertStats} updateStat={this.updateStat} updateUniquePublishedYears={this.updateUniquePublishedYears}/>
+                <AddStat edit_data={this.state.edit_data} insertStats={this.insertStats} updateStat={this.updateStat} updateUniquePublishedYears={this.updateUniquePublishedYears} updateTagCountsArray={this.updateTagCountsArray}/>
                 <SearchStat filter={this.filter} activeFilters={this.state.searchCriteria} />
                 <div id='statTable' className='col s12'>
-                	<QuickFilterTagList filter={this.filter} key={i} data={this.state.uniquePublishedYears} criterion="published" />
+                	<QuickFilterTagList filter={this.filter} data={this.state.uniquePublishedYears} criterion="published" />
+					<QuickFilterTagList filter={this.filter} data={this.state.frequentTags} criterion="topicTags" />
                     <StatTable delete={this.delete} edit={this.edit} data={stats}/>
                 </div>
             </div>
@@ -476,10 +510,37 @@ var QuickFilterTagList = React.createClass({
 
 // Renders a list of clickable tags to make filtering easier
 var QuickFilterTag = React.createClass({
+	getInitialState: function() {
+		return({
+			active: []
+		});
+	},
+
 	setFilter: function(event) {
-        $('.chip.quick-filter').removeClass('active');
-        $(event.target).addClass('active');
-        this.props.filter(event);
+		if ($(event.target).hasClass('published-filterTag')) {
+	        $('.published-filterTag').removeClass('active');
+	        $(event.target).addClass('active');
+	        this.props.filter(event);
+		}
+		if ($(event.target).hasClass('topicTags-filterTag')) {
+			if ($(event.target).hasClass('active')) {
+				$(event.target).removeClass('active');
+				var newActive = [].concat(this.state.active);
+				var index = newActive.indexOf($(event.target).attr('data'));
+				while (index != -1) {
+					newActive.splice(index, 1);
+				}
+				this.setState({
+					active	:	newActive
+				});
+			} else {
+				$(event.target).addClass('active');
+				var newActive = [].concat(this.state.active).push($(event.target).attr('data'));
+				this.setState({
+					active	:	newActive
+				});
+			}
+		}
 	},
 
     render: function() {
@@ -609,6 +670,7 @@ var AddStat = React.createClass({
 
         var statsToAdd = this.state.statsToAdd;
         var publishedYears = [];
+        var allTagsToAdd = [];
         var values = [[]];
 
         // Format values and other headers properly based on whether we are adding a single stat, multiple, or editing
@@ -621,7 +683,11 @@ var AddStat = React.createClass({
         	}
             for (var i = 0; i <= this.state.currStat; i++) {
                 statsToAdd[i]['lastTouch'] = window.currDate();
-                statsToAdd[i]['topicTags'] = window.removeDuplicateTags(statsToAdd[i]['topicTags']);
+                statsToAdd[i]['topicTags'] = window.removeDuplicateTagsAndReturnArr(statsToAdd[i]['topicTags']);
+                if (statsToAdd[i]['topicTags'].length > 0) {
+                	Array.prototype.push.apply(allTagsToAdd, statsToAdd[i]['topicTags']);
+            	}
+            	statsToAdd[i]['topicTags'] = statsToAdd[i]['topicTags'].join(',');
 		    	// Dates entered into the Google Sheet get formatted like so: MM/DD/YYYY with no leading zeroes
 		    	// However, this piece of data hasn't made the round trip - it will be in the Chrome Datepicker's native format
 		    	// which is YYYY-MM-DD
@@ -653,9 +719,14 @@ var AddStat = React.createClass({
         // We are editing or adding a single stat
         } else {
             statsToAdd[0]['lastTouch'] = window.currDate();
-            statsToAdd[0]['topicTags'] = window.removeDuplicateTags(statsToAdd[0]['topicTags']);
-		    var publishDate = statsToAdd[0]["published"];
-		    console.log(publishDate);  	
+            statsToAdd[0]['topicTags'] = window.removeDuplicateTagsAndReturnArr(statsToAdd[0]['topicTags']);
+            // If a stat is edited and the tags are left unchanged, this will end up incorrectly incrementing the count of each of those tags by one
+            // until the page is reloaded, which is a bug I can live with
+            if (statsToAdd[0]['topicTags'].length > 0) {
+            	Array.prototype.push.apply(allTagsToAdd, statsToAdd[0]['topicTags']);
+        	}
+        	statsToAdd[0]['topicTags'] = statsToAdd[0]['topicTags'].join(',');
+		    var publishDate = statsToAdd[0]["published"]; 	
 	    	if (publishDate != '') {
 		    	var publishDateMMDDYYYY = window.getMMDDYYYYFromDateParts(window.getDateParts(new Date(publishDate.replace(/-/g, '/'))));
 		    	statsToAdd[0]["published"] = publishDateMMDDYYYY;
@@ -707,6 +778,7 @@ var AddStat = React.createClass({
             $('form#addStatForm input').removeAttr('disabled');
             this.clear();
             this.props.updateUniquePublishedYears(publishedYears);
+            this.props.updateTagCountsArray(allTagsToAdd);
         // Error callback
         }.bind(this), function(response) {
             if (this.state.buttonText == 'Add') {
@@ -895,5 +967,5 @@ var StatBatchPreviewModal = React.createClass({
 // The ReactDOM.render renders components to the dom. It takes 2 args:
 // 1. Component(s) to be rendered and 2. Location to render specified component(s)
 var renderTable = function() {
-  ReactDOM.render(<StatSearch data={test_data} uniquePublishedYears={window.quickFilterYears} />, document.querySelector('#root'));
+  ReactDOM.render(<StatSearch data={test_data} uniquePublishedYears={window.quickFilterYears} tagCountsArray={window.tagCountsArray}/>, document.querySelector('#root'));
 }

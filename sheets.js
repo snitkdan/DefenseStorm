@@ -25,6 +25,7 @@ var RANGE = null;
 var test_data = [];
 var LASTROW = 2;
 var quickFilterYears = [];
+var tagCountsArray = [];
 
 /**
  * For reading a JSON configuration file
@@ -127,31 +128,40 @@ function processSheetsData() {
     var range = response.result;
     var row;
     if (range.values.length > 0) {
+      var allTags = [];
       // This part turns the array of arrays returned by the API into a JSON resembling the hardcoded 'test_data' object we had before.
       for (i = 0; i < range.values.length; i++) {
         row = range.values[i];
         // Check that the row is not entirely blank 
         if (!(row[0] == '' && row[1] == '' && row[2] == '' && row[3] == '' && row[4] == '' && row[5] == '' && row[6] == '' && row[7] == '')) {
           test_data[i] = {
-            'title'     : row[0],
-            'source'    : row[1],
-            'org'       : row[2],
-            'published' : row[3],
-            'lastTouch' : row[4],
-            'stat'      : row[5],
-            'topicTags' : row[6],
-            'rowNum'    : row[7]
+            'title'     : (row[0] ? row[0] : ''),
+            'source'    : (row[1] ? row[1] : ''),
+            'org'       : (row[2] ? row[2] : ''),
+            'published' : (row[3] ? row[3] : ''),
+            'lastTouch' : (row[4] ? row[4] : ''),
+            'stat'      : (row[5] ? row[5] : ''),
+            'topicTags' : (row[6] ? row[6] : ''),
+            'rowNum'    : (row[7] ? row[7] : '')
           }
-          if (row[3] != '') {
+          if (row[3]) {
+            console.log(row[3]);
             var publishedYear = row[3].split('/')[2];
             if (!window.quickFilterYears.includes(publishedYear)) {
                window.quickFilterYears.push(publishedYear);
             }
           }
+          if (row[6]) {
+            Array.prototype.push.apply(allTags, row[6].split(','));
+          }
         }
       }
       window.LASTROW = range.values.length + 1;
       window.quickFilterYears = window.quickFilterYears.sort();
+      if (allTags.length > 0) {
+        window.tagCountsArray = window.getElementCounts(allTags);
+      }
+      console.log(allTags);
       $('#logo').css('display', 'block');
       $('#root').css('display', 'block');
       renderTable();

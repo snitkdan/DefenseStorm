@@ -41,10 +41,30 @@ var removeDuplicateTags = function(topicTags) {
     return window.removeDuplicateElements(tagArray).join(',');
 }
 
+var removeDuplicateTagsAndReturnArr = function(topicTags) {
+    var tagArray = topicTags.trim().split(',');
+    return window.removeDuplicateElements(tagArray);
+}
+
 var removeDuplicateElements = function(arr) {
     var result = [];
     $.each(arr, function(i, e) {
         if ($.inArray(e, result) == -1 && e != '') result.push(e);
     });
     return result;
+}
+
+// Adapted from http://stackoverflow.com/a/5668029
+var getElementCounts = function(arr) {
+    var counts = {};
+    var countsArray = [];
+    for (var i = 0; i < arr.length; i++) {
+        var tag = arr[i];
+        counts[tag] = counts[tag] ? counts[tag] + 1 : 1;
+    }
+    for (var tag in counts) {
+        countsArray.push([tag, counts[tag]]);
+    }
+    console.log(countsArray);
+    return countsArray;
 }
