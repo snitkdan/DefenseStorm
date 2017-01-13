@@ -55,71 +55,88 @@ body {
 	color: black;
 }
 
-/* Delete button */
-div#statTable tbody tr td:last-child {
-	padding-left: 0.33em;
-}
-div#statTable tbody tr td:last-child button:first-child {
-	margin-bottom: 0.13em;
-	background-color: #F9BA09;
-}
+/* StatTable styles */
+	/* QuickFilters */
+	.chip.quick-filter {
+		cursor: pointer;
+	}
 
-div#statTable tbody tr td:last-child button:last-child {
-	margin-top: 0.13em;
-	background-color: #DD1A29;
-}
+	.chip.quick-filter.active {
+		background-color: #2F9ACD;
+		font-weight: bold;
+		color: #FFFFFF;
+	}
 
-/* Table Headers. Indicate that header is clickable, except the last (invisible) cell*/
-div#statTable table thead tr th:not(:last-child) {
-	cursor:pointer;
-	text-decoration: none;
-}
+	div#statTable>div.quickFilterTagList>a.clearSearch {
+		background-color: #4D4d4d !important;
+		margin-right: 0.33em;
+	}
 
-div#statTable table thead tr th {
-	background-color: #202830;
-	color:white;
-}
+	/* Delete button */
+	div#statTable tbody tr td:last-child {
+		padding-left: 0.33em;
+	}
+	div#statTable tbody tr td:last-child button:first-child {
+		margin-bottom: 0.13em;
+		background-color: #F9BA09;
+	}
 
-div#statTable table thead tr th.sortBy {
-	background-color: #2F9ACD;
-	color:black;
-}
+	div#statTable tbody tr td:last-child button:last-child {
+		margin-top: 0.13em;
+		background-color: #DD1A29;
+	}
 
-div#statTable {
-	width: 90%;
-	margin:auto;
-	margin-top: 3.35em;
-	margin-bottom: 6.7em;
-}
-/* The below is for hiding the table cells in which the edit/delete buttons are rendered.
-** The excessive specificity of the selectors ensures we override Materialize's styles.
-*/
+	/* Table Headers. Indicate that header is clickable, except the last (invisible) cell*/
+	div#statTable table thead tr th:not(:last-child) {
+		cursor:pointer;
+		text-decoration: none;
+	}
 
-/* Remove the borders surrounding the table, the thead, and individual non-header cells */
-div#statTable table,
-div#statTable thead {
-	border: none;
-}
+	div#statTable table thead tr th {
+		background-color: #202830;
+		color:white;
+	}
 
-/* Reinstate all borders on header cells */
-div#statTable table thead tr th {
-	border: 1px solid white;
-}
+	div#statTable table thead tr th.sortBy {
+		background-color: #2F9ACD;
+		color:black;
+	}
 
-div#statTable table tbody tr td {
-	border: 1px solid #cbcbcb;
-}
+	div#statTable {
+		width: 90%;
+		margin:auto;
+		margin-top: 3.35em;
+		margin-bottom: 6.7em;
+	}
+	/* The below is for hiding the table cells in which the edit/delete buttons are rendered.
+	** The excessive specificity of the selectors ensures we override Materialize's styles.
+	*/
+
+	/* Remove the borders surrounding the table, the thead, and individual non-header cells */
+	div#statTable table,
+	div#statTable thead {
+		border: none;
+	}
+
+	/* Reinstate all borders on header cells */
+	div#statTable table thead tr th {
+		border: 1px solid white;
+	}
+
+	div#statTable table tbody tr td {
+		border: 1px solid #cbcbcb;
+	}
 
 
-/* Hide the rightmost header cell entirely */
-div#statTable table thead tr th:last-child {
-	display: none;
-}
+	/* Hide the rightmost header cell entirely */
+	div#statTable table thead tr th:last-child {
+		display: none;
+	}
 
-div#statTable table tbody tr td:last-child {
-	border:none;
-	background-color: transparent;
-}
+	div#statTable table tbody tr td:last-child {
+		border:none;
+		background-color: transparent;
+	}
 
 /* Bottom-sheet modals */
 

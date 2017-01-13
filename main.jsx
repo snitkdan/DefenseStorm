@@ -190,15 +190,16 @@ var StatSearch = React.createClass({
     //Sets the initial search term and criteria
     getInitialState: function() {
         return ({
-            searchCriteria: {
-                title: '',
-                org: '',
-                stat: '',
-                beginDate: '',
-                endDate: '',
-                topicTags: '',
+            searchCriteria			: {
+                title		: '',
+                org			: '',
+                stat		: '',
+                beginDate	: '',
+                endDate		: '',
+                topicTags	: ''
             },
-            stats: this.props.data
+            stats					: this.props.data,
+            uniquePublishedYears	: this.props.uniquePublishedYears
         });
     },
 
@@ -225,7 +226,34 @@ var StatSearch = React.createClass({
     // Sets the searchTerm and searchCriterion to the event's value and id, respectively.
     // This determines what will be searched and what that search will be on.
     filter: function(event) {
-        if (event.target.id == 'topicTags' && event.target.value != '') {
+        if ($(event.target).hasClass('quick-filter')) {
+            if ($(event.target).hasClass('published-filterTag')) {
+                var newBeginDate = $(event.target).attr('data') + '-01-01';
+                var newEndDate = $(event.target).attr('data') + '-12-31';
+                this.setState({
+                    searchCriteria: {
+                        title: this.state.searchCriteria.title,
+                        org: this.state.searchCriteria.org,
+                        stat: this.state.searchCriteria.stat,
+                        beginDate: newBeginDate,
+                        endDate: newEndDate,
+                        topicTags: this.state.searchCriteria.topicTags
+                    }
+                });
+                console.log(this.state.searchCriteria);
+            }
+            if ($(event.target).hasClass('clearSearch')) {
+                var criterionToClear = $(event.target).attr('criterion');
+                var newSearchCriteria = {};
+                for (var criterion in this.state.searchCriteria) {
+                	newSearchCriteria[criterion] = this.state.searchCriteria[criterion];
+                }
+                newSearchCriteria[criterionToClear] = '';
+                this.setState({
+                    searchCriteria: newSearchCriteria
+                });
+            }
+        } else if (event.target.id == 'topicTags' && event.target.value != '') {
             var tagArray = event.target.value.trim().toLowerCase().split(',');
             this.setState({
                 searchCriteria: {
@@ -237,7 +265,7 @@ var StatSearch = React.createClass({
                     topicTags: tagArray
                 }
             });
-        } else if (event.target.id == 'clearSearch') {
+        } else if ($(event.target).hasClass('clearSearch')) {
             this.setState({
                 searchCriteria: {
                     title: '',
@@ -249,6 +277,7 @@ var StatSearch = React.createClass({
                 }
             });
             $('#searchStatForm').trigger('reset');
+            $('.chip.quick-filter').removeClass('active');
         } else {
             var newSearchCriteria = {
                 title: this.state.searchCriteria.title,
@@ -307,6 +336,13 @@ var StatSearch = React.createClass({
     	});
     },
 
+    updateUniquePublishedYears: function(yearArray) {
+    	alert('years');
+    	this.setState({
+    		uniquePublishedYears: window.removeDuplicateElements(this.state.uniquePublishedYears.concat(yearArray).sort())
+    	});
+    },
+
     // Clear row in Google Sheet and return a Promise so we can hide the row on success */
     delete: function(data, index) {
         RANGE = 'A' + data.rowNum + ':H' + data.rowNum;
@@ -316,6 +352,7 @@ var StatSearch = React.createClass({
             valueInputOption: 'USER_ENTERED',
             values: [
             	[
+	            	'',
 	            	'',
 	            	'',
 	            	'',
@@ -343,14 +380,15 @@ var StatSearch = React.createClass({
         var stats = this.state.stats;
         for (var searchCriterion in this.state.searchCriteria) {
             var searchTerm = this.state.searchCriteria[searchCriterion];
-
+            console.log(searchTerm + ' in filter');
+            console.log(this.state.searchCriteria);
             if (searchTerm.length > 0) {
                 if (searchCriterion == 'beginDate') {
-                    var beginElements = searchTerm.split("-");
-                    var beginDate = new Date(beginElements[0], beginElements[1], beginElements[2]);
+                    var beginElements = searchTerm.split("/");
+                    var beginDate = new Date(searchTerm);
                     stats = stats.filter(function(stat) {
                         var statElements = stat['published'].split("/");
-                        var date = new Date(statElements[2], statElements[0], statElements[1]);
+                        var date = new Date(stat['published']);
                         if (date >= beginDate)
                             return stat;
                         else
@@ -358,11 +396,11 @@ var StatSearch = React.createClass({
                         }
                     );
                 } else if (searchCriterion == 'endDate') {
-                    var endElements = searchTerm.split("-");
-                    var endDate = new Date(endElements[0], endElements[1], endElements[2]);
+                    var endElements = searchTerm.split("/");
+                    var endDate = new Date(searchTerm);
                     stats = stats.filter(function(stat) {
                         var statElements = stat['published'].split("/");
-                        var date = new Date(statElements[2], statElements[0], statElements[1]);
+                        var date = new Date(stat['published']);
                         if (date <= endDate)
                             return stat;
                         else
@@ -414,9 +452,10 @@ var StatSearch = React.createClass({
                         </div>
                     </nav>
                 </div>                
-                <AddStat edit_data={this.state.edit_data} insertStats={this.insertStats} updateStat={this.updateStat}/>
-                <SearchStat filter={this.filter} />
+                <AddStat edit_data={this.state.edit_data} insertStats={this.insertStats} updateStat={this.updateStat} updateUniquePublishedYears={this.updateUniquePublishedYears}/>
+                <SearchStat filter={this.filter} activeFilters={this.state.searchCriteria} />
                 <div id='statTable' className='col s12'>
+                	<QuickFilterTagList filter={this.filter} key={i} data={this.state.uniquePublishedYears} criterion="published" />
                     <StatTable delete={this.delete} edit={this.edit} data={stats}/>
                 </div>
             </div>
@@ -424,9 +463,36 @@ var StatSearch = React.createClass({
     }
 });
 
+var QuickFilterTagList = React.createClass({
+    render: function() {
+        return(
+        	<div className='quickFilterTagList'>
+        		<a href="#!" onClick={this.props.filter} className="waves-effect waves-light btn clearSearch" criterion={this.props.criterion}>Clear</a>
+        		{this.props.data.map((d, i) => <QuickFilterTag key={i} data={d} criterion={this.props.criterion} filter={this.props.filter} />)}
+        	</div>
+        );
+    }
+});
+
+// Renders a list of clickable tags to make filtering easier
+var QuickFilterTag = React.createClass({
+	setFilter: function(event) {
+        $('.chip.quick-filter').removeClass('active');
+        $(event.target).addClass('active');
+        this.props.filter(event);
+	},
+
+    render: function() {
+        return(
+        	<div className={"chip quick-filter " + this.props.criterion + "-filterTag"} data={this.props.data} onClick={this.setFilter}>
+        		{this.props.data}
+        	</div>
+        );
+    }
+});
+
 //Contains the search functionality
 var SearchStat = React.createClass({
-    // renders the StatSearch component.
     render: function() {
         return (
             <div id="searchModal" className="modal bottom-sheet">
@@ -440,38 +506,38 @@ var SearchStat = React.createClass({
 	                <div className="modal-content">
                         <div className='row'>
                             <div className="input-field col s3">
-                                <input placeholder="Search on Title" id="title" type="text" className="validate" onLoadStart={this.props.filter} onChange={this.props.filter}></input>
+                                <input value={this.props.activeFilters.title} placeholder="Search on Title" id="title" type="text" className="validate" onLoadStart={this.props.filter} onChange={this.props.filter}></input>
                                 <label htmlFor='title' className="active">Title of study or report</label>
                             </div>
                             <div className="input-field col s3">
-                                <input placeholder="Search on Organization" id="org" type="text" className="validate" onChange={this.props.filter}></input>
+                                <input value={this.props.activeFilters.org} placeholder="Search on Organization" id="org" type="text" className="validate" onChange={this.props.filter}></input>
                                 <label htmlFor='org' className="active">Authoring organization</label>
                             </div>
                             <div className="input-field col s6">
-                                <input placeholder="Search on Stat" id="stat" type="text" className="validate" onChange={this.props.filter}></input>
+                                <input value={this.props.activeFilters.stat} placeholder="Search on Stat" id="stat" type="text" className="validate" onChange={this.props.filter}></input>
                                 <label htmlFor='stat' className="active">Statistic</label>
                             </div>
                         </div>
                         <br></br>
                         <div className='row'>
                             <div className="input-field col s3">
-                                <input placeholder='mm/dd/yyyy' id="beginDate" type="date" onChange={this.props.filter}></input>
+                                <input value={this.props.activeFilters.beginDate} placeholder='mm/dd/yyyy' id="beginDate" type="date" onChange={this.props.filter}></input>
                                 <label htmlFor='beginDate' className="active">Published on or after</label>
                             </div>
                             <br></br>
                             <div className="input-field col s3">
-                                <input placeholder='mm/dd/yyyy' id="endDate" type="date"  onChange={this.props.filter}></input>
+                                <input value={this.props.activeFilters.endDate} placeholder='mm/dd/yyyy' id="endDate" type="date"  onChange={this.props.filter}></input>
                                 <label htmlFor='endDate' className="active">Published on or before</label>
                             </div>
                             <div className="input-field col s6">
-                                <input placeholder='Comma,separated,tags' id="topicTags" type="text" className="validate" onChange={this.props.filter}></input>
+                                <input value={this.props.activeFilters.topicTags} placeholder='Comma,separated,tags' id="topicTags" type="text" className="validate" onChange={this.props.filter}></input>
                                 <label htmlFor='topicTags' data-error='wrong' className="active">Topic tags</label>
                             </div>
                         </div>
 	                </div>
 	                <div className="modal-footer">
 	                    <a href="#!" className="modal-action modal-close waves-effect waves-light btn">Close</a>
-	                    <a href="#!" onClick={this.props.filter} id='clearSearch' className="waves-effect waves-light btn clear-btn">Clear</a>
+	                    <a href="#!" onClick={this.props.filter} className="waves-effect waves-light btn clearSearch">Clear</a>
 	                </div>
                 </form>	                
             </div>
@@ -542,6 +608,7 @@ var AddStat = React.createClass({
         var action;
 
         var statsToAdd = this.state.statsToAdd;
+        var publishedYears = [];
         var values = [[]];
 
         // Format values and other headers properly based on whether we are adding a single stat, multiple, or editing
@@ -572,10 +639,16 @@ var AddStat = React.createClass({
                     statsToAdd[i]['lastTouch'],
                     statsToAdd[i]["stat"],
                     statsToAdd[i]["topicTags"],
-                    (window.lastRow + i + 1)
+                    (window.LASTROW + i + 1)
                 ];
+                if (statsToAdd[i]["published"] != '') {
+                    var publishedYear = statsToAdd[i]["published"].split('/')[2];
+                    if (!publishedYears.includes(publishedYear)) {
+                        publishedYears.push(publishedYear);
+                    }
+                }
             }
-            RANGE = 'A' + window.lastRow + ':H' + (window.lastRow + statsToAdd.length);
+            RANGE = 'A' + window.LASTROW + ':H' + (window.LASTROW + statsToAdd.length);
             action = 'append';
         // We are editing or adding a single stat
         } else {
@@ -596,11 +669,17 @@ var AddStat = React.createClass({
                     statsToAdd[0]["stat"],
                     statsToAdd[0]["topicTags"],
             ];
+            if (statsToAdd[0]["published"] != '') {
+                var publishedYear = statsToAdd[0]["published"].split('/')[2];
+                if (!publishedYears.includes(publishedYear)) {
+                    publishedYears.push(publishedYear);
+                }
+            }
             // New stats need a row number
             if (this.state.buttonText == 'Add' && this.state.currStat == 0) {
-                RANGE = 'A' + (window.lastRow + 1) + ':H' + (window.lastRow + 1);
+                RANGE = 'A' + (window.LASTROW + 1) + ':H' + (window.LASTROW + 1);
                 action = 'append';
-                statsToAdd[0]["rowNum"] = window.lastRow + 1;
+                statsToAdd[0]["rowNum"] = window.LASTROW + 1;
             // Existing stats use their existing row number
             } else {
                 RANGE = 'A' + statsToAdd[0]["rowNum"] + ':H' + statsToAdd[0]["rowNum"];
@@ -617,7 +696,7 @@ var AddStat = React.createClass({
         // Success callback
         }).then(function(response) {
             if (this.state.buttonText == 'Add') {
-                window.lastRow = window.lastRow + response.result.updates.updatedRows;
+                window.LASTROW = window.LASTROW + response.result.updates.updatedRows;
                 this.props.insertStats(statsToAdd);
                 Materialize.toast('Successfully added ' + response.result.updates.updatedRows + ' rows', 4000);
             } else {
@@ -627,6 +706,7 @@ var AddStat = React.createClass({
             $('a#Add, a#Edit').removeClass('disabled');
             $('form#addStatForm input').removeAttr('disabled');
             this.clear();
+            this.props.updateUniquePublishedYears(publishedYears);
         // Error callback
         }.bind(this), function(response) {
             if (this.state.buttonText == 'Add') {
@@ -815,5 +895,5 @@ var StatBatchPreviewModal = React.createClass({
 // The ReactDOM.render renders components to the dom. It takes 2 args:
 // 1. Component(s) to be rendered and 2. Location to render specified component(s)
 var renderTable = function() {
-  ReactDOM.render(<StatSearch data={test_data}/>, document.querySelector('#root'));
+  ReactDOM.render(<StatSearch data={test_data} uniquePublishedYears={window.quickFilterYears} />, document.querySelector('#root'));
 }

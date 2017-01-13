@@ -38,9 +38,13 @@ var getYYYYMMDDFromDateString = function(dateString) {
 // Adapted from http://stackoverflow.com/a/12551709
 var removeDuplicateTags = function(topicTags) {
     var tagArray = topicTags.trim().split(',');
+    return window.removeDuplicateElements(tagArray).join(',');
+}
+
+var removeDuplicateElements = function(arr) {
     var result = [];
-    $.each(tagArray, function(i, e) {
+    $.each(arr, function(i, e) {
         if ($.inArray(e, result) == -1 && e != '') result.push(e);
     });
-    return result.join(',');
+    return result;
 }

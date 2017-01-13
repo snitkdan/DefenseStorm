@@ -29,10 +29,11 @@ Front end for manipulating a Google Spreadsheet of cybersecurity-related statist
 2. In your copy of the project, create a file called `config.json` in the root directory
 3. Place the following contents in the file:
   `{
-    "client_id": "<YOUR-OAUTH-CLIENT-ID-HERE>",
-    "sheet_id": "<YOUR-SHEET-ID-HERE>",
-    "scopes": ["https://www.googleapis.com/auth/spreadsheets"],
-    "max_rows": "1000"
+    "client_id"       : "<YOUR-OAUTH-CLIENT-ID-HERE>",
+    "sheet_id"        : "<YOUR-SHEET-ID-HERE>",
+    "scopes"          : ["https://www.googleapis.com/auth/spreadsheets"],
+    "max_rows"        : "1000",
+    "first_data_row"  : "2"
   }`
   The '"max_rows"' property can be increased.
 4. Run this web app from your preferred webserver

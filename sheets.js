@@ -22,6 +22,10 @@ var SCOPES = null;
  */
 var RANGE = null;
 
+var test_data = [];
+var LASTROW = 2;
+var quickFilterYears = [];
+
 /**
  * For reading a JSON configuration file
  */
@@ -45,7 +49,8 @@ function setIDsFromConfig(text) {
   CLIENT_ID = data.client_id;
   SPREADSHEET_ID = data.sheet_id;
   SCOPES = data.scopes;
-  RANGE = "A2:H" + data.max_rows;
+  LASTROW = data.first_data_row;
+  RANGE = "A" + data.first_data_row + ":H" + data.max_rows;
 }
 
 readConfig("config.json", setIDsFromConfig);
@@ -93,13 +98,14 @@ function handleAuthResult(authResult) {
  */
 var handleAuthClick = function(event) {
   gapi.auth.authorize(
-    {client_id: CLIENT_ID, scope: SCOPES, immediate: false},
-    handleAuthResult);
+  {
+    client_id: CLIENT_ID,
+    scope: SCOPES, immediate: false
+  },
+  handleAuthResult
+  );
   return false;
 }
-
-var test_data = [];
-var lastRow = 2;
 
 /**
  * Load Sheets API client library
@@ -124,8 +130,8 @@ function processSheetsData() {
       // This part turns the array of arrays returned by the API into a JSON resembling the hardcoded 'test_data' object we had before.
       for (i = 0; i < range.values.length; i++) {
         row = range.values[i];
-        // Check that the row is not blank 
-        if (!(row[0] == '' && row[1] == '' && row[2] == '' && row[3] == '' && row[4] == '' && row[5] == '' && row[6] == '')) {
+        // Check that the row is not entirely blank 
+        if (!(row[0] == '' && row[1] == '' && row[2] == '' && row[3] == '' && row[4] == '' && row[5] == '' && row[6] == '' && row[7] == '')) {
           test_data[i] = {
             'title'     : row[0],
             'source'    : row[1],
@@ -136,16 +142,24 @@ function processSheetsData() {
             'topicTags' : row[6],
             'rowNum'    : row[7]
           }
+          if (row[3] != '') {
+            var publishedYear = row[3].split('/')[2];
+            if (!window.quickFilterYears.includes(publishedYear)) {
+               window.quickFilterYears.push(publishedYear);
+            }
+          }
         }
       }
-      window.lastRow = range.values.length + 1;
+      window.LASTROW = range.values.length + 1;
+      window.quickFilterYears = window.quickFilterYears.sort();
       $('#logo').css('display', 'block');
       $('#root').css('display', 'block');
       renderTable();
     } else {
-      console.log('No data found within the specified range.');
+      Materialize.toast('No data found within the specified range.', 4000);
     }
   }, function(response) {
-    console.log('Error. Sheets API response: ' + response.result.error.message);
+    Materialize.toast('Failed to get data.', 4000);
+    console.log('Failed to get data. Sheets API response: ' + response.result.error.message);
   });
 }
