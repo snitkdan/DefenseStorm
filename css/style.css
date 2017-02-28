@@ -1,0 +1,249 @@
+/* Logo */
+#logo {
+	width: 250px;
+	height: auto;
+	padding-left: 1em;
+	padding-top: .25em;
+}
+
+/* Authorization */
+#authorize-button {
+	margin-top: 5%;
+}
+
+#auth-logo {
+	width: 30%;
+	height: 30%;
+	margin: auto;
+	margin-top: 10%;
+}
+
+.row:after {
+	clear:none;
+	display: none;
+}
+
+div.navbar-fixed nav {
+	background-color: #FFFFFF;
+}
+
+#authorize-div {
+	display: flex;
+	justify-content: center;
+}
+
+#root {
+	display: none;
+}
+
+/* StatTable styles */
+	/* QuickFilters */
+	.chip.quick-filter {
+		cursor: pointer;
+		background-color: #FFFFFF;
+		font-weight: bold;
+	}
+
+	.chip.quick-filter.active {
+		background-color: #2F9ACD;
+		font-weight: bold;
+		color: #FFFFFF;
+	}
+
+	/* 'Clear' buttons */
+	div#statTable>div.quickFilterTagList>a.clearSearch {
+		background-color: #4D4d4d !important;
+		margin-right: 0.33em;
+	}
+
+	/* Delete button */
+	div#statTable tbody tr td:last-child {
+		padding-left: 0.33em;
+	}
+	div#statTable tbody tr td:last-child button:first-child {
+		margin-bottom: 0.13em;
+		background-color: #F9BA09;
+	}
+
+	div#statTable tbody tr td:last-child button:last-child {
+		margin-top: 0.13em;
+		background-color: #DD1A29;
+	}
+
+	/* Table Headers. Indicate that header is clickable, except the last (invisible) cell*/
+	div#statTable table thead tr th:not(:last-child) {
+		cursor:pointer;
+		text-decoration: none;
+	}
+
+	div#statTable table thead tr th, 
+	table#statBatchPreviewTable thead tr th {
+		background-color: #202830;
+		color:white;
+	}
+
+	div#statTable table thead tr th.sortBy {
+		background-color: #2F9ACD;
+		color:black;
+	}
+
+	/* other table styles */
+	div#statTable {
+		width: 90%;
+		margin:auto;
+		margin-top: 3.35em;
+		margin-bottom: 6.7em;
+	}
+
+	div#statTable table.pure-table tbody tr:nth-child(even) td:not(:last-child) {
+		background-color: #FFFFFF;
+	}
+
+	/* The below is for hiding the table cells in which the edit/delete buttons are rendered.
+	** The excessive specificity of the selectors ensures we override Materialize's styles.
+	*/
+
+	/* Remove the borders surrounding the table, the thead, and individual non-header cells */
+	div#statTable table,
+	div#statTable thead {
+		border: none;
+	}
+
+	/* Reinstate all borders on header cells */
+	div#statTable table thead tr th {
+		border: 1px solid white;
+	}
+
+	div#statTable table tbody tr td {
+		border: 1px solid #cbcbcb;
+	}
+
+
+	/* Hide the rightmost header cell entirely */
+	div#statTable table thead tr th:last-child {
+		display: none;
+	}
+
+	div#statTable table tbody tr td:last-child {
+		border:none;
+		background-color: transparent;
+	}
+
+/* Bottom-sheet modals */
+	/* Let bottom-sheet modal be as tall as they need to be to avoid overflow */
+	.modal.bottom-sheet {
+		max-height: initial;
+	}
+	/* Reduce spacing in and around searchModal and addModal content to make it more compact */
+	.modal.bottom-sheet div.modal-content {
+		padding-bottom: 0px;
+		padding-top: 0px;
+	}
+
+	/* Modal header background */
+	div.modal-header {
+		background-color: #202830;
+		padding: 0px;
+		margin: 0px;
+	}
+
+	/* Modal header text */
+	div.modal-header h5 {
+		color: #FFFFFF;
+		padding: 0.66em;
+		margin: 0px;
+	}
+
+	/* Header icon */
+	div.modal-header h5 i.material-icons {
+		right: 0px;
+	}
+
+	/* Modal footer */
+	form div.modal-footer {
+		margin-left: -1.5rem;
+    	margin-right: -1.5rem;
+	}
+
+	/* Buttons */
+	.modal .modal-footer button.btn:first-child,
+	.modal .modal-footer a.btn:first-child {
+		margin-left: 0.33em;
+	}
+
+	.modal .modal-footer button.btn[type=submit] {
+		background-color: #2F9ACD;
+	}	
+
+	.modal .modal-footer button.btn:not(first-child),
+	.modal .modal-footer a.btn:not(first-child) {
+		background-color: #4D4d4d;
+		margin-left: 0.33em;
+	}
+
+	a#saveStatButton {
+		background-color: #B3C44B;
+	}
+
+	/* Inputs */
+	/* Placeholder text (DO NOT group these rules) */
+		/* Chrome */
+		*::-webkit-input-placeholder {
+		    color: black;
+		    opacity: 1 !important;
+		}
+
+		/* FF 4-18 */
+		*:-moz-placeholder {
+		    color: black;
+		    opacity: 1 !important;
+		}
+
+		/* FF 19+ */
+		*::-moz-placeholder {
+		    color: black;
+		    opacity: 1 !important;
+		}
+
+	.input-field {
+		color: black;
+	}
+
+	/* Override styles applied when modals open, which prevent scrolling */
+	/* Background image from https://subtlepatterns.com/old-husks/ */
+	/* CC BY-SA 3.0 - Subtle Patterns © Atle Mo & Toptal Designers. */
+	/* Creator: https://joshgreendesign.com/ */
+	body {
+		width: initial !important;
+		background-color: #DFDFDF;
+		background: url('../imgs/husk.png');
+	}
+
+	.noscroll {
+		overflow: hide !important;
+	}
+
+	.scroll {
+		overflow: auto !important;
+	}
+
+/* Batch-adding preview modal */
+	/* Hide the last 'stat' in the batch, which is blank by design and will not be submitted */
+	div#statBatchPreviewModal div.modal-content table tbody tr:last-child {
+		display: none !important;
+	}
+
+	/* Hide the action button cell and the dateAdded cell in the preview */
+	div#statBatchPreviewModal div.modal-content table tbody tr td:nth-last-child(-n + 2) {
+		display: none !important;
+	}
+
+	/* Table of stats to be added */
+	div#statBatchPreviewModal div.modal-content {
+		padding: 1em;
+	}
+
+	#statBatchPreviewModal {
+		width: 95%;
+		height: 100%;
+	}
