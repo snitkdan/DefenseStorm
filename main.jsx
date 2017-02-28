@@ -1001,6 +1001,37 @@ var StatBatchPreviewModal = React.createClass({
     }
 });
 
+//Contains the Stat-adding feature
+var AddStat = React.createClass({
+  // An array storing the submission in the following order:
+  // org, published, entryType, stat, topicTags[]
+  submission: [],
+
+  saveInput: function(index, inputId) {
+    console.log(inputId);
+    var input_val = $('#' + inputId).val();
+    console.log(input_val);
+  },
+
+  submit: function() {
+    alert('submitted ' + this.submission[0]);
+  },
+
+  // renders the adding Stat form
+  render:function() {
+      return(
+          <div className='row'>
+            <div className="input-field col s6">
+
+                <input placeholder="Add Source URL..." id="AddSourceUrl" type="text" className="validate" onChange={this.saveInput(0, 'AddSourceUrl')}></input>
+                <label>Source</label>
+                <button onClick={this.submit}>Submit</button>
+            </div>
+          </div>
+      )
+  }
+});
+
 // The ReactDOM.render renders components to the dom. It takes 2 args:
 // 1. Component(s) to be rendered and 2. Location to render specified component(s)
 var renderTable = function() {
